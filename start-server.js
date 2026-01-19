@@ -1,72 +1,98 @@
 #!/usr/bin/env node
 /**
- * Startup script for Next.js standalone server on Railway
- * Ensures proper port handling and error reporting
+ * Smart startup script for Next.js server
+ * Automatically chooses between standalone mode (production) and custom server (dev/fallback)
  */
 
-const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
 const PORT = process.env.PORT || 3000;
+const NODE_ENV = process.env.NODE_ENV || 'production';
+const isProduction = NODE_ENV === 'production';
 const standalonePath = path.join(process.cwd(), '.next', 'standalone', 'server.js');
+const customServerPath = path.join(process.cwd(), 'server.js');
+const hasStandalone = fs.existsSync(standalonePath);
+const hasCustomServer = fs.existsSync(customServerPath);
 
 console.log('='.repeat(60));
-console.log('Next.js Standalone Server Startup');
+console.log('Next.js Server Startup');
 console.log('='.repeat(60));
 console.log(`PORT: ${PORT}`);
-console.log(`NODE_ENV: ${process.env.NODE_ENV || 'not set'}`);
+console.log(`NODE_ENV: ${NODE_ENV}`);
 console.log(`Working Directory: ${process.cwd()}`);
-console.log(`Standalone Path: ${standalonePath}`);
-console.log(`Standalone exists: ${fs.existsSync(standalonePath)}`);
-
-if (!fs.existsSync(standalonePath)) {
-  console.error('ERROR: Standalone server not found!');
-  console.error('Make sure "next build" completed successfully.');
-  console.error(`Expected at: ${standalonePath}`);
-  process.exit(1);
-}
-
-console.log('Starting standalone server...');
+console.log(`Standalone build exists: ${hasStandalone}`);
+console.log(`Custom server exists: ${hasCustomServer}`);
 console.log('='.repeat(60));
 
-// Set PORT environment variable for the child process
-const env = {
-  ...process.env,
-  PORT: PORT.toString(),
-  NODE_ENV: process.env.NODE_ENV || 'production'
-};
+// Decision logic:
+// 1. If standalone exists and we're in production, use it (optimal for Railway)
+// 2. Otherwise, use custom server.js (works in dev and as fallback)
+// 3. If neither exists, show helpful error
 
-// Ensure HOSTNAME is set for Railway
-if (!env.HOSTNAME) {
-  env.HOSTNAME = '0.0.0.0';
-}
+if (hasStandalone && isProduction) {
+  console.log('✓ Using standalone server (production mode)');
+  console.log(`Starting: ${standalonePath}`);
+  console.log('='.repeat(60));
+  
+  // Use standalone server
+  const { spawn } = require('child_process');
+  const env = {
+    ...process.env,
+    PORT: PORT.toString(),
+    NODE_ENV: 'production',
+    HOSTNAME: process.env.HOSTNAME || '0.0.0.0'
+  };
 
-console.log(`Environment: PORT=${env.PORT}, HOSTNAME=${env.HOSTNAME}`);
+  const server = spawn('node', [standalonePath], {
+    env: env,
+    stdio: 'inherit',
+    cwd: path.join(process.cwd(), '.next', 'standalone')
+  });
 
-const server = spawn('node', [standalonePath], {
-  env: env,
-  stdio: 'inherit',
-  cwd: path.join(process.cwd(), '.next', 'standalone')
-});
+  server.on('error', (err) => {
+    console.error('Failed to start standalone server:', err);
+    process.exit(1);
+  });
 
-server.on('error', (err) => {
-  console.error('Failed to start server:', err);
+  server.on('exit', (code, signal) => {
+    if (code !== 0 && code !== null) {
+      console.error(`Standalone server exited with code ${code} and signal ${signal}`);
+      process.exit(code || 1);
+    }
+  });
+
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM received, shutting down...');
+    server.kill('SIGTERM');
+  });
+
+  process.on('SIGINT', () => {
+    console.log('SIGINT received, shutting down...');
+    server.kill('SIGINT');
+  });
+} else if (hasCustomServer) {
+  console.log('✓ Using custom server.js');
+  if (!hasStandalone && isProduction) {
+    console.log('⚠ Warning: Standalone build not found, using custom server as fallback');
+    console.log('  Run "npm run build" first for optimal production performance');
+  }
+  console.log(`Starting: ${customServerPath}`);
+  console.log('='.repeat(60));
+  
+  // Use custom server
+  require(customServerPath);
+} else {
+  console.error('='.repeat(60));
+  console.error('ERROR: No server found!');
+  console.error('='.repeat(60));
+  console.error('Expected one of:');
+  console.error(`  1. Standalone: ${standalonePath}`);
+  console.error(`  2. Custom server: ${customServerPath}`);
+  console.error('');
+  console.error('Solutions:');
+  console.error('  - For development: Run "npm run dev"');
+  console.error('  - For production: Run "npm run build" first, then "npm start"');
+  console.error('='.repeat(60));
   process.exit(1);
-});
-
-server.on('exit', (code, signal) => {
-  console.error(`Server exited with code ${code} and signal ${signal}`);
-  process.exit(code || 1);
-});
-
-// Handle termination signals
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down...');
-  server.kill('SIGTERM');
-});
-
-process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down...');
-  server.kill('SIGINT');
-});
+}
