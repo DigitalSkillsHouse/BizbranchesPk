@@ -3,16 +3,25 @@ const next = require("next");
 
 // Detect production correctly (Railway sets NODE_ENV=production automatically)
 const dev = process.env.NODE_ENV !== "production";
+// Railway automatically sets PORT environment variable - use it!
+// If not set, default to 3000 for local development
 const port = parseInt(process.env.PORT || "3000", 10);
 const hostname = "0.0.0.0";
 
 console.log("=".repeat(50));
 console.log(`Starting Next.js server`);
 console.log(`Mode: ${dev ? "development" : "production"}`);
-console.log(`Port: ${port}`);
+console.log(`Port: ${port} (from PORT env: ${process.env.PORT || "not set"})`);
 console.log(`Hostname: ${hostname}`);
 console.log(`NODE_ENV: ${process.env.NODE_ENV || "not set"}`);
+console.log(`Working Directory: ${process.cwd()}`);
 console.log("=".repeat(50));
+
+// Verify port is valid
+if (isNaN(port) || port < 1 || port > 65535) {
+  console.error(`Invalid port: ${port}`);
+  process.exit(1);
+}
 
 let app;
 let handle;
@@ -92,7 +101,14 @@ app.prepare()
       console.log("=".repeat(50));
       console.log(`✓ Server is ready and listening`);
       console.log(`  http://${hostname}:${port}`);
+      console.log(`  Railway will proxy to this port`);
       console.log("=".repeat(50));
+    });
+
+    // Verify server is actually listening
+    server.on("listening", () => {
+      const address = server.address();
+      console.log(`Server listening on:`, address);
     });
 
     // Handle graceful shutdown
