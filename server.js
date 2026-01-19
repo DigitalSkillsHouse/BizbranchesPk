@@ -63,7 +63,20 @@ app.prepare()
       const method = req.method || "UNKNOWN";
       const url = req.url || "/";
       
-      console.log(`[${new Date().toISOString()}] ${method} ${url}`);
+      console.log(`[${new Date().toISOString()}] Incoming request: ${method} ${url}`);
+      
+      // Simple health check endpoint that doesn't use Next.js
+      if (url === "/health" || url === "/health/") {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ 
+          status: "ok", 
+          timestamp: new Date().toISOString(),
+          uptime: process.uptime(),
+          port: port
+        }));
+        console.log(`[${new Date().toISOString()}] ${method} ${url} - 200 (health check)`);
+        return;
+      }
       
       // Set timeout to prevent hanging requests
       req.setTimeout(30000, () => {
@@ -74,17 +87,27 @@ app.prepare()
         }
       });
 
+      // Add error handler for response
+      res.on("error", (err) => {
+        console.error(`Response error for ${method} ${url}:`, err);
+      });
+
       try {
+        console.log(`[${new Date().toISOString()}] Calling Next.js handler for ${method} ${url}`);
         await handle(req, res);
         const duration = Date.now() - startTime;
-        console.log(`[${new Date().toISOString()}] ${method} ${url} - ${res.statusCode || 200} (${duration}ms)`);
+        const statusCode = res.statusCode || (res.headersSent ? 200 : 500);
+        console.log(`[${new Date().toISOString()}] ${method} ${url} - ${statusCode} (${duration}ms)`);
       } catch (err) {
         const duration = Date.now() - startTime;
-        console.error(`[${new Date().toISOString()}] Error handling ${method} ${url} (${duration}ms):`, err);
+        console.error(`[${new Date().toISOString()}] CRITICAL ERROR handling ${method} ${url} (${duration}ms):`, err);
+        console.error("Error stack:", err.stack);
         if (!res.headersSent) {
           res.statusCode = 500;
           res.setHeader("Content-Type", "text/plain");
-          res.end("Internal Server Error");
+          res.end(`Internal Server Error: ${err.message}`);
+        } else {
+          console.error("Response already sent, cannot send error response");
         }
       }
     });
