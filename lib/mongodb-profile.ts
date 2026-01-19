@@ -6,7 +6,9 @@ declare global {
 }
 
 const uri = process.env.MONGODB_PROFILE_URI
-if (!uri) {
+// Note: Profile lookup is optional - app works fine without it
+// Only log in development to reduce production noise
+if (!uri && process.env.NODE_ENV === 'development') {
   console.warn("[profiles] MONGODB_PROFILE_URI is not set. Profile lookup will be disabled.")
 }
 
