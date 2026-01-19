@@ -18,14 +18,15 @@ const nextConfig = {
       { source: '/404', destination: '/', permanent: false },
     ]
   },
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/:path*`,
-      },
-    ]
-  },
+  // Removed API rewrites - using Next.js API routes directly
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: '/api/:path*',
+  //       destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/:path*`,
+  //     },
+  //   ]
+  // },
 }
 export default nextConfig
 

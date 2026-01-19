@@ -1,28 +1,44 @@
 const { createServer } = require("http");
 const next = require("next");
 
-// Detect production correctly (cPanel sets NODE_ENV=production)
+// Detect production correctly
 const dev = process.env.NODE_ENV !== "production";
-const port = process.env.PORT || 3000;
+const port = parseInt(process.env.PORT || "3000", 10);
+const hostname = "0.0.0.0";
 
-const app = next({ dev });
+console.log(`Starting Next.js server in ${dev ? "development" : "production"} mode on port ${port}`);
+
+const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
-  createServer((req, res) => {
-    handle(req, res).catch((err) => {
+  const server = createServer(async (req, res) => {
+    try {
+      await handle(req, res);
+    } catch (err) {
       console.error("Error handling request:", err);
       if (!res.headersSent) {
         res.statusCode = 500;
         res.end("Internal Server Error");
       }
-    });
-  }).listen(port, "0.0.0.0", (err) => {
+    }
+  });
+
+  server.listen(port, hostname, (err) => {
     if (err) {
       console.error("Failed to start server:", err);
       process.exit(1);
     }
-    console.log(`> Server is ready on port ${port}`);
+    console.log(`> Server is ready on http://${hostname}:${port}`);
+  });
+
+  // Handle graceful shutdown
+  process.on("SIGTERM", () => {
+    console.log("SIGTERM received, shutting down gracefully");
+    server.close(() => {
+      console.log("Server closed");
+      process.exit(0);
+    });
   });
 }).catch((err) => {
   console.error("Failed to prepare Next.js app:", err);
