@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { client } from '@/lib/mongodb';
+import { getDb } from '@/lib/mongodb';
 
 export async function GET(request: NextRequest) {
   try {
-    const admin = client.db().admin();
+    const db = await getDb();
+    const admin = db.admin();
     const ping = await admin.ping();
 
     return NextResponse.json({
