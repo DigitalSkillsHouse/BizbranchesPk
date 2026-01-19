@@ -37,6 +37,13 @@ const env = {
   NODE_ENV: process.env.NODE_ENV || 'production'
 };
 
+// Ensure HOSTNAME is set for Railway
+if (!env.HOSTNAME) {
+  env.HOSTNAME = '0.0.0.0';
+}
+
+console.log(`Environment: PORT=${env.PORT}, HOSTNAME=${env.HOSTNAME}`);
+
 const server = spawn('node', [standalonePath], {
   env: env,
   stdio: 'inherit',
