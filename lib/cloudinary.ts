@@ -4,21 +4,29 @@ import { v2 as cloudinary } from "cloudinary"
 // Required: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
 const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } = process.env
 
-if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
+let cloudinaryConfigured = false
+
+if (CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET) {
+  try {
+    cloudinary.config({
+      cloud_name: CLOUDINARY_CLOUD_NAME,
+      api_key: CLOUDINARY_API_KEY,
+      api_secret: CLOUDINARY_API_SECRET,
+      secure: true,
+    })
+    cloudinaryConfigured = true
+  } catch (error) {
+    console.warn("Failed to configure Cloudinary:", error)
+  }
+} else {
   // Do not throw here to allow app to boot without Cloudinary for non-image flows
   console.warn(
-    "Cloudinary environment variables are missing. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET in .env",
+    "Cloudinary environment variables are missing. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET in .env. Image uploads will be disabled.",
   )
 }
 
-cloudinary.config({
-  cloud_name: CLOUDINARY_CLOUD_NAME,
-  api_key: CLOUDINARY_API_KEY,
-  api_secret: CLOUDINARY_API_SECRET,
-  secure: true,
-})
-
 export default cloudinary
+export { cloudinaryConfigured }
 
 // Build a Cloudinary delivery URL with sensible defaults (auto format/quality, width)
 export function buildCdnUrl(publicId?: string | null, opts: { w?: number; h?: number } = {}): string | undefined {
