@@ -1,5 +1,6 @@
 const nextConfig = {
-  output: 'standalone', // ← ADD THIS LINE
+  // Removed standalone mode to use custom server.js
+  // output: 'standalone',
   eslint: {
     ignoreDuringBuilds: true,
   },
