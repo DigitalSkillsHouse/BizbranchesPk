@@ -1,6 +1,5 @@
 const nextConfig = {
-  // Removed standalone mode to use custom server.js
-  // output: 'standalone',
+  output: 'standalone', // Use standalone mode for Railway
   eslint: {
     ignoreDuringBuilds: true,
   },
