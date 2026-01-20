@@ -36,6 +36,8 @@ if (hasStandalone && isProduction) {
   console.log('='.repeat(60));
   
   // Use standalone server
+  // Note: Next.js standalone server should be run from the standalone directory
+  // but we need to ensure the parent .next directory is accessible for static files
   const { spawn } = require('child_process');
   const env = {
     ...process.env,
@@ -44,10 +46,11 @@ if (hasStandalone && isProduction) {
     HOSTNAME: process.env.HOSTNAME || '0.0.0.0'
   };
 
-  const server = spawn('node', [standalonePath], {
+  const standaloneDir = path.join(process.cwd(), '.next', 'standalone');
+  const server = spawn('node', ['server.js'], {
     env: env,
     stdio: 'inherit',
-    cwd: path.join(process.cwd(), '.next', 'standalone')
+    cwd: standaloneDir
   });
 
   server.on('error', (err) => {

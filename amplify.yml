@@ -12,12 +12,14 @@ frontend:
         - echo "LEOPARDS_API_BASE_URL=${LEOPARDS_API_BASE_URL}" >> .env.local
         - echo "LEOPARDS_API_KEY=${LEOPARDS_API_KEY}" >> .env.local
         - echo "LEOPARDS_API_PASSWORD=${LEOPARDS_API_PASSWORD}" >> .env.local
+        # Set NODE_ENV for production
+        - echo "NODE_ENV=production" >> .env.local
     build:
       commands:
         - npm ci  # Install dependencies
         - npm run build  # Build Next.js app
   artifacts:
-    baseDirectory: .next  # Output directory for standalone SSR
+    baseDirectory: .
     files:
       - '**/*'
   cache:
