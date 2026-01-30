@@ -82,6 +82,11 @@ app.get('/', (req, res) => {
   res.json({ ok: true, message: 'BizBranches API Server', timestamp: new Date().toISOString() });
 });
 
+// Simple ping (no MongoDB needed) - use to verify backend is running
+app.get('/api/ping', (req, res) => {
+  res.json({ ok: true, message: 'pong', timestamp: new Date().toISOString() });
+});
+
 app.listen(PORT, HOST, async () => {
   console.log(`🚀 Server running at http://${HOST}:${PORT}`);
   
