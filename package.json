@@ -10,7 +10,7 @@
     "build": "npm run install:all && npm run build:backend && npm run build:frontend",
     "build:frontend": "cd frontend && npm run build",
     "build:backend": "node node_modules/typescript/bin/tsc -p backend/tsconfig.json",
-    "start": "concurrently -k \"PORT=3001 npm run start:backend\" \"npm run start:frontend\"",
+    "start": "concurrently \"PORT=3001 npm run start:backend\" \"npm run start:frontend\"",
     "start:frontend": "cd frontend && npm run start",
     "start:backend": "cd backend && npm run start",
     "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install"
