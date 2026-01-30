@@ -10,8 +10,6 @@ interface AdSenseSlotProps {
   slotId: string
   /** Optional: different ad slot from AdSense dashboard */
   adSlot?: string
-  /** Layout: 'block' (responsive) | 'in-article' | 'in-feed' */
-  layout?: "block" | "in-article" | "in-feed"
   /** Additional className for container */
   className?: string
   /** Show only in production */
@@ -21,7 +19,6 @@ interface AdSenseSlotProps {
 export function AdSenseSlot({
   slotId,
   adSlot = AD_SLOT,
-  layout = "block",
   className = "",
   productionOnly = true,
 }: AdSenseSlotProps) {
