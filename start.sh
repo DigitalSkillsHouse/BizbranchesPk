@@ -16,6 +16,7 @@ sleep 2
 cd "$ROOT/frontend"
 export HOSTNAME=0.0.0.0
 export PORT="${PORT:-3000}"
+export BACKEND_URL="http://localhost:3002"
 export NEXT_PUBLIC_BACKEND_URL="http://localhost:3002"
 
 echo "[start.sh] Backend PID $BACKEND_PID, launching Next.js on port $PORT..."

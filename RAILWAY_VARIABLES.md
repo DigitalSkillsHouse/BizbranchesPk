@@ -1,9 +1,9 @@
 # Railway Variables - Required for BizBranches
 
-## Fix Port Conflict (done in code)
-- Backend runs on port **3002**
-- Frontend uses Railway's PORT
-- Set `NEXT_PUBLIC_BACKEND_URL=http://localhost:3002` in Railway
+## IMPORTANT: Backend URL must be port 3002
+- Backend runs on port **3002** (internal)
+- If you have `NEXT_PUBLIC_BACKEND_URL=http://localhost:3001` → **Change to 3002**
+- Wrong port causes "socket hang up" and businesses/categories not loading
 
 ## Fix MongoDB Connection
 
@@ -26,10 +26,11 @@ MONGODB_DB=bizbranches
 
 ## All Railway Variables
 - MONGODB_URI (full connection string - no placeholders!)
-- MONGODB_DB=bizbranches
+- MONGODB_DB=BizBranches
 - CLOUDINARY_CLOUD_NAME
 - CLOUDINARY_API_KEY
 - CLOUDINARY_API_SECRET
-- NEXT_PUBLIC_BACKEND_URL=http://localhost:3002
+- **BACKEND_URL=http://localhost:3002** (for API proxy - set by start.sh if omitted)
+- **NEXT_PUBLIC_BACKEND_URL=http://localhost:3002** (must be 3002, NOT 3001!)
 - NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
 - FRONTEND_URL=https://bizbranches.pk (for CORS)
