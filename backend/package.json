@@ -12,6 +12,7 @@
   "author": "Muhammad Hussain",
   "license": "ISC",
   "dependencies": {
+    "typescript": "^5.9.3",
     "cloudinary": "^2.5.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -27,7 +28,6 @@
     "@types/multer": "^1.4.12",
     "@types/node": "^22",
     "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.9.3"
+    "ts-node-dev": "^2.0.0"
   }
 }
