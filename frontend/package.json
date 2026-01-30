@@ -6,8 +6,8 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "HOSTNAME=0.0.0.0 node .next/standalone/server.js",
-    "postbuild": "mkdir -p .next/standalone/.next && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/ && if [ -d .next/standalone/bizbranches ]; then cp -r public .next/standalone/bizbranches/ && mkdir -p .next/standalone/bizbranches/.next && cp -r .next/static .next/standalone/bizbranches/.next/; fi && next-sitemap"
+    "start": "next start",
+    "postbuild": "next-sitemap"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

@@ -6,7 +6,6 @@ const isRailway = !!(
 );
 
 const nextConfig = {
-  output: 'standalone',
   eslint: {
     ignoreDuringBuilds: true,
   },
