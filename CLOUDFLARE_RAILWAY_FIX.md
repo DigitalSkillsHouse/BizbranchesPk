@@ -31,7 +31,7 @@ Railway gives you a URL when you add a custom domain. Use that as the CNAME targ
 
 In Railway → **Variables**, set:
 
-- `NEXT_PUBLIC_BACKEND_URL=http://localhost:3001` (for API proxying)
+- `NEXT_PUBLIC_BACKEND_URL=http://localhost:3002` (for API proxying)
 - `MONGODB_URI` = your MongoDB connection string
 - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
 

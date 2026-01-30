@@ -60,7 +60,7 @@ Your app may not be starting. Check:
    - `CLOUDINARY_CLOUD_NAME`
    - `CLOUDINARY_API_KEY`
    - `CLOUDINARY_API_SECRET`
-   - `NEXT_PUBLIC_BACKEND_URL` = `http://localhost:3001`
+   - `NEXT_PUBLIC_BACKEND_URL` = `http://localhost:3002`
 
 4. **MongoDB Atlas** – In Atlas → Network Access, add `0.0.0.0/0` so Railway can connect.
 
