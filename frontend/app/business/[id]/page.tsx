@@ -40,15 +40,13 @@ export default function BusinessDetailPage({
   const [submitting, setSubmitting] = useState(false)
   const [showAllReviews, setShowAllReviews] = useState(false)
   const [showFullDescription, setShowFullDescription] = useState(false)
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001"
-
   useEffect(() => {
     const fetchBusiness = async () => {
       if (initialBusiness) return
       
       try {
         setLoading(true)
-        const response = await fetch(`${backendUrl}/api/business/${encodeURIComponent(businessId)}`)
+        const response = await fetch(`/api/business/${encodeURIComponent(businessId)}`)
         if (response.ok) {
           const data = await response.json()
           setBusiness(data.business)
@@ -63,7 +61,7 @@ export default function BusinessDetailPage({
     if (businessId && !initialBusiness) {
       fetchBusiness()
     }
-  }, [businessId, backendUrl, initialBusiness])
+  }, [businessId, initialBusiness])
 
   // Fetch existing reviews
   useEffect(() => {
@@ -98,7 +96,7 @@ export default function BusinessDetailPage({
       
       try {
         // Fetch businesses in same category
-        const relatedResponse = await fetch(`${backendUrl}/api/business?category=${encodeURIComponent(business.category)}&limit=8`)
+        const relatedResponse = await fetch(`/api/business?category=${encodeURIComponent(business.category)}&limit=8`)
         if (relatedResponse.ok) {
           const relatedData = await relatedResponse.json()
           if (relatedData.ok && relatedData.businesses) {
@@ -111,7 +109,7 @@ export default function BusinessDetailPage({
         }
 
         // Fetch recent businesses
-        const recentResponse = await fetch(`${backendUrl}/api/business?limit=8`)
+        const recentResponse = await fetch(`/api/business?limit=8`)
         if (recentResponse.ok) {
           const recentData = await recentResponse.json()
           if (recentData.ok && recentData.businesses) {
@@ -130,7 +128,7 @@ export default function BusinessDetailPage({
     if (business) {
       fetchRelatedBusinesses()
     }
-  }, [business, backendUrl])
+  }, [business])
 
   const handleSubmitReview = async () => {
     if (reviewComment.trim().length < 3) return

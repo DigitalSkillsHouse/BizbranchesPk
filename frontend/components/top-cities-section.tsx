@@ -57,8 +57,7 @@ export function TopCitiesSection() {
   useEffect(() => {
     const fetchCities = async () => {
       try {
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'
-        const response = await fetch(`${backendUrl}/api/cities`)
+        const response = await fetch('/api/cities')
         const data = await response.json()
         
         if (data.ok && Array.isArray(data.cities)) {

@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
     const q = searchParams.get('q')
     const limit = searchParams.get('limit')
     
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:3002'
     let url = `${backendUrl}/api/categories`
     
     const params = new URLSearchParams()

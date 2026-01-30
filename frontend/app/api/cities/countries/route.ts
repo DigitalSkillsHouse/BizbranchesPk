@@ -2,7 +2,7 @@ import { NextRequest } from "next/server"
 
 export async function GET(req: NextRequest) {
   try {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:3002'
     const url = `${backendUrl}/api/cities/countries`
     
     const response = await fetch(url, {

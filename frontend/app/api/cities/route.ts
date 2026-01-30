@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
     const country = searchParams.get('country')
     const provinceId = searchParams.get('provinceId')
     
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:3002'
     let url = `${backendUrl}/api/cities`
     
     const params = new URLSearchParams()
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       return Response.json({ ok: false, error: 'Name and country are required' }, { status: 400 })
     }
     
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:3002'
     const response = await fetch(`${backendUrl}/api/cities`, {
       method: 'POST',
       headers: {
