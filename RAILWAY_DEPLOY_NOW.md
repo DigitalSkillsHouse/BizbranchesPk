@@ -15,16 +15,16 @@
 4. Add these environment variables:
 
 ```
-MONGODB_URI=mongodb+srv://prog_db_user:HqDcCtkkWYPlZvGG@cluster1.yikbs52.mongodb.net/BizBranches?retryWrites=true&w=majority&appName=Cluster1
+MONGODB_URI=mongodb+srv://USERNAME:PASSWORD@cluster1.xxxxx.mongodb.net/BizBranches?retryWrites=true&w=majority
 MONGODB_DB=BizBranches
-CLOUDINARY_CLOUD_NAME=di1j7auro
-CLOUDINARY_API_KEY=548847798353185
-CLOUDINARY_API_SECRET=H-OJsUSpFWodCCN_Pmm2PYuJWm8
-LEOPARDS_API_BASE_URL=https://merchantapi.leopardscourier.com/api
-LEOPARDS_API_KEY=487F7B22F68312D2C1BBC93B1AEA445B1745228754
-LEOPARDS_API_PASSWORD=123456
-FRONTEND_URL=https://your-app-name.up.railway.app
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_key
+CLOUDINARY_API_SECRET=your_secret
+NEXT_PUBLIC_BACKEND_URL=http://localhost:3002
+FRONTEND_URL=https://bizbranches.pk
 ```
+
+Add these in Railway → Variables. Get credentials from MongoDB Atlas and Cloudinary - never commit real credentials to GitHub.
 
 **Important**: Update `FRONTEND_URL` with your actual Railway domain!
 

@@ -20,7 +20,7 @@ In Railway → **Variables**, confirm these exist:
 
 | Variable | Value |
 |----------|-------|
-| MONGODB_URI | `mongodb+srv://digitalskillshouse_db_user:7PgCCANQ6udJN0nJ@cluster1.yikbs52.mongodb.net/BizBranches?retryWrites=true&w=majority&appName=Cluster1` |
+| MONGODB_URI | Your connection string from MongoDB Atlas (never commit to git) |
 | MONGODB_DB | `BizBranches` |
 | NEXT_PUBLIC_BACKEND_URL | `http://localhost:3002` |
 
