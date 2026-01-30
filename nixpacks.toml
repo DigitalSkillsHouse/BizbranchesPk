@@ -1,5 +1,9 @@
 [phases.install]
-cmds = ["npm run install:all"]
+cmds = [
+  "npm install",
+  "npm install --prefix frontend",
+  "npm install --prefix backend"
+]
 
 [phases.build]
 cmds = ["npm run build"]
