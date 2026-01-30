@@ -57,7 +57,7 @@ export function TopCitiesSection() {
   useEffect(() => {
     const fetchCities = async () => {
       try {
-        const response = await fetch('/api/cities')
+        const response = await fetch('/api/cities?country=Pakistan')
         const data = await response.json()
         
         if (data.ok && Array.isArray(data.cities)) {

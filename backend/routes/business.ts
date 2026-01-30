@@ -143,6 +143,7 @@ router.get('/featured', async (req, res) => {
       logoUrl: b.logoUrl || buildCdnUrl(b.logoPublicId),
     }));
 
+    res.set('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
     res.json({ ok: true, businesses: enriched });
   } catch (err: any) {
     console.error('Error fetching featured businesses:', err);

@@ -1,27 +1,38 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { ArrowRight, Grid3x3, Sparkles, TrendingUp } from "lucide-react"
+import Image from "next/image"
+import { ArrowRight, Grid3x3, Sparkles } from "lucide-react"
 
 type Category = { name: string; slug: string; count?: number; icon?: string; image?: string }
 
-// Image mapping per category slug (served from /public)
+function mapApiToCategory(c: any): Category {
+  return {
+    name: c.name || c.slug,
+    slug: c.slug,
+    count: typeof c.count === "number" ? c.count : undefined,
+    image: c.imageUrl || categoryImages[c.slug],
+    icon: c.icon || fallbackIcon[c.slug] || "📦",
+  }
+}
+
+// Image mapping per category slug (served from /public - webp for fast load)
 const categoryImages: Record<string, string> = {
-  restaurants: "/pakistani-restaurant-interior.png",
-  healthcare: "/modern-hospital.png",
-  education: "/school-building-with-playground.png",
-  automotive: "/car-showroom.png",
-  retail: "/clothing-store-interior.png",
-  "beauty-spa": "/modern-beauty-salon.png",
-  "real-estate": "/real-estate-office.png",
-  technology: "/modern-tech-office.png",
-  legal: "/law-office.png",
-  construction: "/construction-site.png",
-  travel: "/travel-agency.png",
-  finance: "/financial-advisor-office.png",
+  restaurants: "/pakistani-restaurant-interior.webp",
+  healthcare: "/modern-hospital.webp",
+  education: "/school-building-with-playground.webp",
+  automotive: "/car-repair-garage.webp",
+  retail: "/placeholder.svg",
+  "beauty-spa": "/placeholder.svg",
+  "real-estate": "/placeholder.svg",
+  technology: "/placeholder.svg",
+  legal: "/placeholder.svg",
+  construction: "/placeholder.svg",
+  travel: "/placeholder.svg",
+  finance: "/placeholder.svg",
 }
 
 // Fallback icons by common slugs (optional, for a nicer UI when image missing)
@@ -40,10 +51,15 @@ const fallbackIcon: Record<string, string> = {
   finance: "💰",
 }
 
-export function CategoriesSection() {
+export function CategoriesSection({ initialCategories = [] }: { initialCategories?: any[] }) {
+  const initialMapped = useMemo(
+    () => (Array.isArray(initialCategories) ? initialCategories.map(mapApiToCategory) : []),
+    [initialCategories]
+  )
+  const hasInitial = initialMapped.length > 0
   const [showAll, setShowAll] = useState(false)
-  const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(true)
+  const [categories, setCategories] = useState<Category[]>(initialMapped)
+  const [loading, setLoading] = useState(!hasInitial)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
@@ -54,60 +70,41 @@ export function CategoriesSection() {
     ;(async () => {
       try {
         setError(null)
-        // Try sessionStorage cache first
         const now = Date.now()
-        let cached: any | null = null
+        let cached: any[] | null = null
         try {
           const raw = sessionStorage.getItem("categories_initial")
           if (raw) {
             const parsed = JSON.parse(raw)
-            if (parsed && Array.isArray(parsed.data) && typeof parsed.ts === "number" && (now - parsed.ts) < CACHE_TTL_MS) {
+            if (parsed?.data && Array.isArray(parsed.data) && (now - (parsed.ts || 0)) < CACHE_TTL_MS) {
               cached = parsed.data
             }
           }
         } catch {}
 
-        let data: any = null
-        if (cached) {
-          data = { ok: true, categories: cached }
+        if (cached && active && !hasInitial) {
+          setCategories(cached.map((c: any) => mapApiToCategory(c)))
         }
-        // Always fetch a full fresh list for accuracy
-        const fres = await fetch(`/api/categories?limit=200&nocache=1`, { cache: "no-store" })
+
+        const fres = await fetch(`/api/categories?limit=24`)
         const fdata = await fres.json().catch(() => ({}))
-        if (fdata?.ok && Array.isArray(fdata.categories)) {
-          data = fdata
+        if (active && fdata?.ok && Array.isArray(fdata.categories) && fdata.categories.length > 0) {
+          setCategories(fdata.categories.map((c: any) => mapApiToCategory(c)))
           try {
             sessionStorage.setItem("categories_initial", JSON.stringify({ ts: now, data: fdata.categories }))
           } catch {}
         }
-        if (active) {
-          if (data?.ok && Array.isArray(data.categories) && data.categories.length > 0) {
-            const mapped = data.categories.map((c: any) => ({
-              name: c.name || c.slug,
-              slug: c.slug,
-              count: typeof c.count === "number" ? c.count : undefined,
-              image: c.imageUrl || categoryImages[c.slug],
-              icon: c.icon || fallbackIcon[c.slug] || "📦",
-            }))
-            setCategories(mapped)
-          } else {
-            // No categories returned; leave list empty
-            setCategories([])
-          }
-        }
+        if (active) setLoading(false)
       } catch (e: any) {
         if (active) {
           setError(e?.message || "Failed to load categories")
-          setCategories([])
+          if (!hasInitial) setCategories([])
+          setLoading(false)
         }
-      } finally {
-        if (active) setLoading(false)
       }
     })()
-    return () => {
-      active = false
-    }
-  }, [reloadKey])
+    return () => { active = false }
+  }, [reloadKey, hasInitial])
 
   // When user expands, lazily fetch more categories once
   useEffect(() => {
@@ -126,15 +123,7 @@ export function CategoriesSection() {
             }
           } catch {}
           if (active && data?.ok && Array.isArray(data.categories)) {
-            setCategories(
-              data.categories.map((c: any) => ({
-                name: c.name || c.slug,
-                slug: c.slug,
-                count: typeof c.count === "number" ? c.count : undefined,
-                image: c.imageUrl || categoryImages[c.slug],
-                icon: c.icon || fallbackIcon[c.slug] || "📦",
-              })),
-            )
+            setCategories(data.categories.map((c: any) => mapApiToCategory(c)))
           }
         } catch {
           // ignore errors for the lazy load
@@ -197,12 +186,14 @@ export function CategoriesSection() {
                 <Link key={category.slug} href={`/category/${category.slug}`} prefetch>
                   <Card className="h-full overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50/50 group cursor-pointer">
                   <CardContent className="p-0">
-                      <div className="relative h-40 sm:h-44 md:h-48 overflow-hidden bg-gradient-to-br from-primary/5 to-purple-50">
+                      <div className="relative h-40 sm:h-44 md:h-48 overflow-hidden bg-gradient-to-br from-primary/5 to-purple-50 min-h-[160px]">
                       {category.image ? (
-                        <img
+                        <Image
                           src={category.image}
                           alt={`${category.name} category`}
-                            className="w-full h-full object-contain bg-white group-hover:opacity-90 transition-opacity duration-500"
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                          className="object-contain bg-white group-hover:opacity-90 transition-opacity duration-500"
                           loading="lazy"
                         />
                       ) : (

@@ -143,30 +143,37 @@ function FeaturedCategoryCard({ categoryName, categorySlug }: FeaturedCategoryCa
   )
 }
 
-export function TopListingsSection() {
-  const [featured, setFeatured] = useState<(typeof mockBusinesses)[number][]>([])
+function mapFeatured(b: any) {
+  return {
+    id: String(b._id || b.id || b.slug || b.name),
+    slug: b.slug,
+    name: b.name,
+    category: b.category,
+    city: (b.city || '').toLowerCase(),
+    phone: b.phone || '',
+    image: b.logoUrl || '/placeholder.svg',
+  }
+}
+
+export function TopListingsSection({ initialFeatured = [] }: { initialFeatured?: any[] }) {
+  const initialMapped = useMemo(
+    () => (Array.isArray(initialFeatured) ? initialFeatured.map(mapFeatured) : []),
+    [initialFeatured]
+  )
+  const [featured, setFeatured] = useState<(typeof mockBusinesses)[number][]>(initialMapped)
   useEffect(() => {
+    if (initialMapped.length > 0) return
     const load = async () => {
       try {
-        const url = `/api/business/featured?limit=12`
-        const res = await fetch(url)
+        const res = await fetch(`/api/business/featured?limit=12`)
         const json = await res.json()
         if (json?.ok && Array.isArray(json.businesses)) {
-          const mapped = json.businesses.map((b: any) => ({
-            id: String(b._id || b.id || b.slug || b.name),
-            slug: b.slug,
-            name: b.name,
-            category: b.category,
-            city: (b.city || '').toLowerCase(),
-            phone: b.phone || '',
-            image: b.logoUrl || '/placeholder.svg',
-          }))
-          setFeatured(mapped)
+          setFeatured(json.businesses.map(mapFeatured))
         }
       } catch {}
     }
     load()
-  }, [])
+  }, [initialMapped.length])
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     loop: true, 
     align: "start",

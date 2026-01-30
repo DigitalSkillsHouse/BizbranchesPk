@@ -164,7 +164,7 @@ export default function SearchPage() {
     ;(async () => {
       try {
         const [cRes, catRes] = await Promise.all([
-          fetch('/api/cities', { cache: 'no-store' }),
+          fetch('/api/cities?country=Pakistan', { cache: 'no-store' }),
           fetch('/api/categories?limit=200&nocache=1', { cache: 'no-store' }),
         ])
         const citiesJson = await cRes.json().catch(() => ({}))

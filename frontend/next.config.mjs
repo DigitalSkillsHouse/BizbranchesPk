@@ -15,7 +15,13 @@ const nextConfig = {
   images: {
     unoptimized: false,
     domains: ["res.cloudinary.com"],
+    remotePatterns: [
+      { protocol: "https", hostname: "res.cloudinary.com", pathname: "/**" },
+    ],
   },
+  compress: true,
+  poweredByHeader: false,
+  reactStrictMode: true,
   async redirects() {
     return [
       { source: '/business/:slug', destination: '/:slug', permanent: true },

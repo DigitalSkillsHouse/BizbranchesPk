@@ -78,23 +78,24 @@ export function HeroSection() {
 
   useEffect(() => {
     let alive = true
+    const cacheKey = "hero:cities:pakistan"
     ;(async () => {
       try {
         setCitiesLoading(true)
         try {
-          const raw = sessionStorage.getItem("hero:cities")
+          const raw = sessionStorage.getItem(cacheKey)
           if (raw) {
             const parsed = JSON.parse(raw)
             if (Array.isArray(parsed?.data)) setCities(parsed.data)
           }
         } catch {}
-        const res = await fetch('/api/cities', { cache: 'no-store' })
+        const res = await fetch('/api/cities?country=Pakistan', { cache: 'no-store' })
         const data = await res.json().catch(() => ({}))
         const list: Array<{ id: string; name: string }> = Array.isArray(data?.cities) ? data.cities : []
         if (alive) {
           const mapped = list.map(c => ({ id: String(c.id), name: c.name, slug: c.name.toLowerCase().replace(/\s+/g, '-') }))
           setCities(mapped)
-          try { sessionStorage.setItem("hero:cities", JSON.stringify({ data: mapped })) } catch {}
+          try { sessionStorage.setItem(cacheKey, JSON.stringify({ data: mapped })) } catch {}
         }
       } catch {
         if (alive) setCities([])

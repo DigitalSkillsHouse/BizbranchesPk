@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
     }
   } catch (err: any) {
     console.error('Cities API error:', err)
-    return Response.json({ ok: false, error: err?.message || "Failed to fetch cities from Leopards API" }, { status: 500 })
+    return Response.json({ ok: false, error: err?.message || "Failed to fetch cities from backend" }, { status: 500 })
   }
 }
 

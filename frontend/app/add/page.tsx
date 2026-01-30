@@ -141,7 +141,7 @@ export function AddBusinessForm({
     contactPersonName: "",
     category: "",
     subCategory: "",
-    country: "",
+    country: "Pakistan",
     city: "",
     postalCode: "",
     address: "",
