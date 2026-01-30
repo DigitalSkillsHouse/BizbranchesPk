@@ -1,5 +1,12 @@
+// Railway-optimized Next.js configuration
+const isRailway = !!(
+  process.env.RAILWAY_ENVIRONMENT ||
+  process.env.RAILWAY_PROJECT_ID ||
+  process.env.RAILWAY_SERVICE_NAME
+);
+
 const nextConfig = {
-  output: 'standalone', // ← ADD THIS LINE
+  output: 'standalone',
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -27,42 +34,5 @@ const nextConfig = {
     ]
   },
 }
+
 export default nextConfig
-
-
-
-
-
-// /** @type {import('next').NextConfig} */
-// const nextConfig = {
-//   eslint: {
-//     ignoreDuringBuilds: true,
-//   },
-//   typescript: {
-//     ignoreBuildErrors: true,
-//   },
-//   images: {
-//     unoptimized: false,
-//     domains: ["res.cloudinary.com"],
-//     remotePatterns: [
-//       {
-//         protocol: "https",
-//         hostname: "res.cloudinary.com",
-//         pathname: "/**",
-//       },
-//     ],
-//   },
-//   async redirects() {
-//     return [
-//       // Legacy direct business URL -> clean slug
-//       { source: '/business/:slug', destination: '/:slug', permanent: true },
-//       // Legacy nested city/category paths -> clean slug
-//       { source: '/city/:path*/business/:slug', destination: '/:slug', permanent: true },
-//       { source: '/category/:path*/business/:slug', destination: '/:slug', permanent: true },
-//       // Redirect explicit /404 path to homepage
-//       { source: '/404', destination: '/', permanent: false },
-//     ]
-//   },
-// }
-
-// export default nextConfig

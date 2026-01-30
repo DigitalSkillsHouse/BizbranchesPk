@@ -1,38 +1,53 @@
 import { MongoClient, Db } from 'mongodb';
 
-const uri = process.env.MONGODB_URI;
-const MONGODB_DB = process.env.MONGODB_DB || 'BizBranches'; // Match .env case
+const MONGODB_DB = process.env.MONGODB_DB || 'BizBranches';
 
-if (!uri) {
-  console.error('MONGODB_URI is undefined. Ensure .env file exists and contains MONGODB_URI.');
-  throw new Error('MONGODB_URI environment variable is not defined in .env file');
-}
-
-console.log('MONGODB_URI:', uri.replace(/\/\/.*@/, '//<redacted>@')); // Log redacted URI for debugging
-console.log('MONGODB_DB:', MONGODB_DB);
-
-export const client = new MongoClient(uri);
+// Global connection cache
+let client: MongoClient | null = null;
 let cachedDb: Db | null = null;
+
+function getClient(): MongoClient {
+  if (!client) {
+    const uri = process.env.MONGODB_URI;
+    if (!uri) {
+      console.error('MONGODB_URI is undefined. Check environment variables.');
+      throw new Error('MONGODB_URI environment variable is not defined');
+    }
+
+    // Log connection attempt (without credentials)
+    const redactedUri = uri.replace(/\/\/.*@/, '//<credentials>@');
+    console.log('Connecting to MongoDB:', redactedUri);
+    console.log('Database:', MONGODB_DB);
+
+    client = new MongoClient(uri, {
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    });
+  }
+  return client;
+}
 
 export async function getDb(): Promise<Db> {
   if (cachedDb) {
     try {
-      // Test connection
       await cachedDb.admin().ping();
       return cachedDb;
     } catch (error) {
       console.log('Cached connection failed, reconnecting...');
       cachedDb = null;
+      client = null;
     }
   }
 
   try {
-    await client.connect();
-    cachedDb = client.db(MONGODB_DB);
-    console.log('Connected to MongoDB database:', MONGODB_DB);
+    const mongoClient = getClient();
+    await mongoClient.connect();
+    cachedDb = mongoClient.db(MONGODB_DB);
+    console.log('✅ Connected to MongoDB database:', MONGODB_DB);
     return cachedDb;
   } catch (error) {
-    console.error('MongoDB connection error:', (error as Error).message);
+    console.error('❌ MongoDB connection error:', (error as Error).message);
     throw new Error(`Failed to connect to MongoDB: ${(error as Error).message}`);
   }
 }
@@ -50,6 +65,7 @@ export async function getAllBusinessSlugs() {
 export async function closeDb(): Promise<void> {
   if (client) {
     await client.close();
+    client = null;
     cachedDb = null;
     console.log('MongoDB connection closed');
   }

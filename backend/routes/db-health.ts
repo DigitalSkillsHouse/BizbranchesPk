@@ -1,11 +1,12 @@
 import express from 'express';
-import { client } from '../lib/mongodb';
+import { getDb } from '../lib/mongodb';
 
 const router = express.Router();
 
 router.get('/', async (req, res) => {
   try {
-    const admin = client.db().admin();
+    const db = await getDb();
+    const admin = db.admin();
     const ping = await admin.ping();
 
     res.status(200).json({

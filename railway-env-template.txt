@@ -1,0 +1,29 @@
+# Railway Environment Variables Setup
+# Copy these variables to your Railway project dashboard
+
+# MongoDB Configuration (REQUIRED)
+MONGODB_URI=mongodb+srv://prog_db_user:HqDcCtkkWYPlZvGG@cluster1.yikbs52.mongodb.net/BizBranches?retryWrites=true&w=majority&appName=Cluster1
+MONGODB_DB=BizBranches
+
+# Cloudinary Configuration (REQUIRED for image uploads)
+CLOUDINARY_CLOUD_NAME=di1j7auro
+CLOUDINARY_API_KEY=548847798353185
+CLOUDINARY_API_SECRET=H-OJsUSpFWodCCN_Pmm2PYuJWm8
+
+# Leopards Courier API Configuration
+LEOPARDS_API_BASE_URL=https://merchantapi.leopardscourier.com/api
+LEOPARDS_API_KEY=487F7B22F68312D2C1BBC93B1AEA445B1745228754
+LEOPARDS_API_PASSWORD=123456
+
+# Frontend URL (Update with your Railway domain)
+FRONTEND_URL=https://your-app-name.up.railway.app
+
+# Railway automatically sets these:
+# NODE_ENV=production
+# PORT=(dynamic)
+
+# Instructions:
+# 1. Go to Railway Dashboard → Your Project → Variables
+# 2. Add each variable above (except NODE_ENV and PORT)
+# 3. Update FRONTEND_URL with your actual Railway domain
+# 4. Save and redeploy
