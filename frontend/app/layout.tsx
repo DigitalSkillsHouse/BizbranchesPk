@@ -60,7 +60,7 @@ export default function RootLayout({
         )}
       </head>
 
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} pb-20`} suppressHydrationWarning={true}>
+      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning={true}>
         <Header />
         <AdBanner placement="header" />
         <Suspense fallback={null}>
@@ -68,7 +68,6 @@ export default function RootLayout({
         </Suspense>
         <GlobalContainer>{children}</GlobalContainer>
         <Footer />
-        <AdBanner placement="sticky-footer" />
       </body>
     </html>
   );
