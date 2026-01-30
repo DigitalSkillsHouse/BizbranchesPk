@@ -542,28 +542,39 @@ router.post('/', upload.single('logo'), async (req, res) => {
   }
 });
 
-// GET /api/business/:slug - Get individual business by slug (MUST be last)
+// GET /api/business/:slug - Get individual business by slug OR by MongoDB _id (MUST be last)
 router.get('/:slug', async (req, res) => {
   try {
     const models = await getModels();
-    const slug = req.params.slug;
+    const param = req.params.slug;
     
-    if (!slug) {
-      return res.status(400).json({ ok: false, error: 'Slug is required' });
+    if (!param) {
+      return res.status(400).json({ ok: false, error: 'Slug or id is required' });
     }
-    
-    const business = await models.businesses.findOne(
-      { slug, status: 'approved' },
-      { projection: { _id: 0 } }
-    );
+
+    const isObjectId = /^[a-f0-9]{24}$/i.test(param);
+    let business: any = null;
+
+    if (isObjectId) {
+      const { ObjectId } = require("mongodb") as typeof import("mongodb");
+      business = await models.businesses.findOne(
+        { _id: new ObjectId(param), status: 'approved' }
+      );
+    }
+    if (!business) {
+      business = await models.businesses.findOne(
+        { slug: param, status: 'approved' }
+      );
+    }
     
     if (!business) {
       return res.status(404).json({ ok: false, error: 'Business not found' });
     }
     
-    // Build CDN URL for logo
+    // Build CDN URL for logo; include id for frontend
     const enrichedBusiness = {
       ...business,
+      id: business._id ? String(business._id) : undefined,
       logoUrl: business.logoUrl || buildCdnUrl(business.logoPublicId)
     };
     

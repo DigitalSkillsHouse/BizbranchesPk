@@ -4,6 +4,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button"
 import { ArrowRight, HelpCircle, MessageCircle } from "lucide-react"
 import Link from "next/link"
+import { FAQSchema } from "@/components/faq-schema"
 
 const faqs = [
   {
@@ -41,6 +42,7 @@ const faqs = [
 export function FAQSection() {
   return (
     <section id="faq" className="py-12 sm:py-16 md:py-20 bg-gradient-to-b from-white via-gray-50/50 to-white relative overflow-hidden">
+      <FAQSchema items={faqs} />
       {/* Decorative background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>

@@ -44,7 +44,7 @@ export default function AboutPage() {
 
           <hr className="my-6 border-primary border-2"  />
 
-          <h1 className="text-xl md:text-xl font-semibold text-foreground">DEVELOPED BY:</h1>
+          <h2 className="text-xl md:text-xl font-semibold text-foreground">Developed by</h2>
           <p className="text-muted-foreground">Taoqeer Ahmad Rajput</p>
 
           

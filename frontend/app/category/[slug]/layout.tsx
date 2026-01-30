@@ -1,0 +1,48 @@
+import { Metadata } from "next";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
+
+const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const prettyName = slug
+    .split("-")
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+    .join(" ");
+  let categoryName = prettyName;
+
+  try {
+    const res = await fetch(`${apiUrl}/api/categories?slug=${encodeURIComponent(slug)}`, { next: { revalidate: 3600 } });
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.category?.name) categoryName = data.category.name;
+    }
+  } catch {
+    // use prettyName
+  }
+
+  const title = `${categoryName} - Businesses by Category | ${SITE_NAME}`;
+  const description = `Find and explore ${categoryName} businesses on LocatorBranches. Browse listings, read reviews, and get contact details.`;
+  const canonicalUrl = `${SITE_URL}/category/${slug}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: canonicalUrl },
+    openGraph: {
+      title: `${categoryName} | ${SITE_NAME}`,
+      description,
+      url: canonicalUrl,
+      type: "website",
+    },
+    twitter: { card: "summary", title: `${categoryName} | ${SITE_NAME}` },
+  };
+}
+
+export default function CategorySlugLayout({ children }: { children: React.ReactNode }) {
+  return children;
+}

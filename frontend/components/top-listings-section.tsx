@@ -17,7 +17,7 @@ type FeaturedCategoryCardProps = {
 
 function BusinessCard({ b }: { b: (typeof mockBusinesses)[number] }) {
   return (
-    <Link href={`/${b.id}`} className="block group">
+    <Link href={`/${b.slug || b.id}`} className="block group">
       <Card className="h-full overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50/50 group-hover:from-white group-hover:to-primary/5">
         <div className="relative h-32 overflow-hidden bg-gradient-to-br from-primary/5 to-purple-50">
           <div className="absolute inset-0 flex items-center justify-center p-4">
@@ -153,7 +153,8 @@ export function TopListingsSection() {
         const json = await res.json()
         if (json?.ok && Array.isArray(json.businesses)) {
           const mapped = json.businesses.map((b: any) => ({
-            id: String(b._id || b.slug || b.id || b.name),
+            id: String(b._id || b.id || b.slug || b.name),
+            slug: b.slug,
             name: b.name,
             category: b.category,
             city: (b.city || '').toLowerCase(),

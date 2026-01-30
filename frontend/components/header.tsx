@@ -45,8 +45,8 @@ export function Header() {
             <div className="w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:shadow-xl transition-all duration-300 shadow-lg">
               <Building2 className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
             </div>
-            <div className="hidden sm:block">
-              <h1 className="text-xl sm:text-2xl font-bold text-white group-hover:text-green-400 transition-colors duration-300">LocatorBranches</h1>
+            <div className="hidden sm:block" aria-label="LocatorBranches - Business Directory">
+              <span className="text-xl sm:text-2xl font-bold text-white group-hover:text-green-400 transition-colors duration-300 block">LocatorBranches</span>
               <p className="text-xs sm:text-sm text-gray-300 -mt-1">Business Directory</p>
             </div>
           </Link>

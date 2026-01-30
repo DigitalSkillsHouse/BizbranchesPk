@@ -1,18 +1,21 @@
-import { Metadata } from 'next'
+import { Metadata } from "next";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "List Your Business - Free Global Business Directory Listing | BizDirectory",
-  description: "Add your business to the world's premier business directory. Free business listing with instant visibility to millions of customers worldwide. List restaurants, services, shops and more.",
-  keywords: "business listing, free business directory, add business, global business directory, business registration, international business directory, business promotion, worldwide business listing",
+  title: `List Your Business - Free Business Directory | ${SITE_NAME}`,
+  description:
+    "Add your business to Pakistan's premier business directory. Free listing with instant visibility. List restaurants, services, shops and more.",
+  keywords:
+    "business listing, free business directory, add business, Pakistan business directory, business registration, list your business",
+  alternates: { canonical: `${SITE_URL}/add` },
   openGraph: {
-    title: "List Your Business - Free Global Business Directory Listing",
-    description: "Add your business to the world's premier business directory. Free listing with instant visibility worldwide.",
+    title: `List Your Business | ${SITE_NAME}`,
+    description: "Free business listing with instant visibility on our directory.",
+    url: `${SITE_URL}/add`,
     type: "website",
   },
-  alternates: {
-    canonical: "/add"
-  }
-}
+  twitter: { card: "summary", title: `List Your Business | ${SITE_NAME}` },
+};
 
 export default function AddLayout({
   children,

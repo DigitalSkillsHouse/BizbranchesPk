@@ -1,5 +1,8 @@
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { BusinessSchema } from "@/components/business-schema";
+import { BreadcrumbSchema } from "@/components/breadcrumb-schema";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 import BusinessDetailPage from "../business/[id]/page";
 
 function serializeId(doc: any): any {
@@ -67,29 +70,27 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     // Continue with null business, will use fallbacks
   }
 
-  // Resolve request domain for title formatting
-  const hdrs = await headers();
-  const host = hdrs.get("x-forwarded-host") || hdrs.get("host") || "bizbranches.local";
-  const domain = host.replace(/^(https?:\/\/)?/i, "").replace(/\/$/, "");
-
   const businessName = business?.name || slug;
-  const title = `${domain}/${businessName}`;
-  
-  let description = "Discover local businesses on BizBranches.";
+  const title = `${businessName} - ${business?.category || "Business"} | ${SITE_NAME}`;
+  let description = "Discover this business on LocatorBranches. View contact details, reviews, and location.";
   if (business?.description) {
     const rawDesc = typeof business.description === "string" ? business.description : "";
     const normalized = rawDesc.replace(/\s+/g, " ").trim();
     description = normalized.length > 160 ? `${normalized.slice(0, 157)}...` : normalized;
   }
+  const canonicalUrl = `${SITE_URL}/${encodeURIComponent(slug)}`;
 
   return {
     title,
     description,
+    alternates: { canonical: canonicalUrl },
     openGraph: {
-      title,
+      title: `${businessName} | ${SITE_NAME}`,
       description,
       type: "website",
+      url: canonicalUrl,
     },
+    twitter: { card: "summary_large_image", title: `${businessName} | ${SITE_NAME}`, description },
   };
 }
 
@@ -158,6 +159,12 @@ export default async function BusinessBySlugPage({
     }
     business = serializeId(bizData.business);
 
+    // Redirect to slug URL when user visited by id (pretty URL + SEO)
+    const isObjectId = /^[a-f0-9]{24}$/i.test(slug);
+    if (isObjectId && business.slug && business.slug !== slug) {
+      redirect(`/${encodeURIComponent(business.slug)}`);
+    }
+
     // Fetch related businesses (same category and city)
     if (business?.category && business?.city) {
       try {
@@ -225,9 +232,17 @@ export default async function BusinessBySlugPage({
     );
   }
 
+  const categorySlug = business.category ? String(business.category).toLowerCase().replace(/\s+/g, "-") : "";
+  const breadcrumbs = [
+    { name: "Home", url: "/" },
+    ...(categorySlug ? [{ name: business.category || categorySlug, url: `/category/${categorySlug}` }] : []),
+    { name: business.name, url: `/${slug}` },
+  ];
+
   return (
     <>
-      <BusinessSchema business={business} />
+      <BusinessSchema business={business} ratingAvg={ratingAvg} ratingCount={ratingCount} />
+      <BreadcrumbSchema items={breadcrumbs} />
       <BusinessDetailPage
         initialBusiness={business}
         initialReviews={reviews}

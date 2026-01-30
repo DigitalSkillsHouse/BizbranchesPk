@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { AdSenseSlot } from "@/components/adsense-slot"
+import { BusinessSchema } from "@/components/business-schema"
+import { BreadcrumbSchema } from "@/components/breadcrumb-schema"
 
 export default function BusinessDetailPage({
   initialBusiness,
@@ -194,16 +196,27 @@ export default function BusinessDetailPage({
     )
   }
 
+  const categorySlug = business.category ? String(business.category).toLowerCase().replace(/\s+/g, "-") : "";
+  const breadcrumbItems = [
+    { name: "Home", url: "/" },
+    ...(categorySlug ? [{ name: business.category || categorySlug, url: `/category/${categorySlug}` }] : []),
+    { name: business.name, url: `/business/${businessId}` },
+  ];
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
+      <BusinessSchema business={business} ratingAvg={ratingAvg} ratingCount={ratingCount} />
+      <BreadcrumbSchema items={breadcrumbItems} />
       {/* Breadcrumb */}
-      <div className="text-sm text-gray-500 mb-6 flex gap-2">
-        <Link href="/" className="hover:text-red-500">Home</Link> /
+      <nav aria-label="Breadcrumb" className="text-sm text-gray-500 mb-6 flex gap-2">
+        <Link href="/" className="hover:text-red-500">Home</Link>
+        <span aria-hidden>/</span>
         <Link href={`/category/${business.category?.toLowerCase().replace(/\s+/g, '-')}`} className="hover:text-red-500">
           {business.category}
-        </Link> /
+        </Link>
+        <span aria-hidden>/</span>
         <span className="text-red-500 font-medium">{business.name}</span>
-      </div>
+      </nav>
 
       {/* Header Section */}
       <div className="flex flex-col md:flex-row gap-8 items-start">

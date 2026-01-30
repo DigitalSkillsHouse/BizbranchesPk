@@ -214,9 +214,9 @@ export function HeroSection() {
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-4 sm:mb-6 leading-tight px-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] shadow-black">
             Discover Local Businesses & Branches Near You
           </h1>
-          <h2 className="text-sm sm:text-base md:text-lg font-medium text-white mb-4 sm:mb-6 leading-tight px-2 whitespace-nowrap overflow-hidden drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)] shadow-black">
+          <p className="text-sm sm:text-base md:text-lg font-medium text-white mb-4 sm:mb-6 leading-tight px-2 whitespace-nowrap overflow-hidden drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)] shadow-black">
             Search verified business listings by city and category in one place.
-          </h2>
+          </p>
 
 
           {/* Stats */}
