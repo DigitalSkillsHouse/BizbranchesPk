@@ -8,6 +8,7 @@ import { Filter, Grid, List, MapPin, Star, Clock, DollarSign, Search, SlidersHor
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import dynamic from "next/dynamic"
+import { AdSenseSlot } from "@/components/adsense-slot"
 
 // Client-only wrapper to prevent hydration issues
 const ClientOnlySelect = dynamic(() => Promise.resolve(({ value, onValueChange, children, className, placeholder }: any) => (
@@ -39,29 +40,6 @@ type Business = {
   phone?: string
   email?: string
   status?: "pending" | "approved" | "rejected"
-}
-
-function AdsSlot({ k }: { k?: string }) {
-  useEffect(() => {
-    try {
-      // @ts-ignore
-      (window.adsbygoogle = window.adsbygoogle || []).push({})
-    } catch {}
-  }, [])
-  return (
-    <div className="my-6">
-      <ins
-        className="adsbygoogle"
-        style={{ display: 'block' }}
-        data-ad-client="ca-pub-4083132987699578"
-        data-ad-slot="3877186043"
-        data-ad-format="auto"
-        data-full-width-responsive="true"
-        key={k}
-        suppressHydrationWarning
-      />
-    </div>
-  )
 }
 
 export default function SearchPage() {
@@ -167,16 +145,6 @@ export default function SearchPage() {
   const hasMore = useMemo(() => currentPage < totalPages, [currentPage, totalPages])
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      try {
-        // @ts-ignore
-        (window.adsbygoogle = window.adsbygoogle || []).push({})
-      } catch {}
-    }, 1000)
-    return () => clearTimeout(timer)
-  }, [])
-
-  useEffect(() => {
     const el = sentinelRef.current
     if (!el) return
     const observer = new IntersectionObserver((entries) => {
@@ -259,7 +227,7 @@ export default function SearchPage() {
         </div>
       )
       if ((idx + 1) % 6 === 0) {
-        elements.push(<AdsSlot key={`ad-${currentPage}-${idx}`} />)
+        elements.push(<div key={`ad-${currentPage}-${idx}`} className="my-6"><AdSenseSlot slotId={`search-inline-${idx}`} /></div>)
       }
     })
     return elements

@@ -8,6 +8,7 @@ import { useState, useEffect } from "react"
 import { useParams, useSearchParams, useRouter } from "next/navigation"
 import { CategoryFooter } from "@/components/category-footer"
 import FancyLoader from "@/components/fancy-loader"
+import { AdSenseSlot } from "@/components/adsense-slot"
 import { ArrowRight, Building2, Grid3x3, List } from "lucide-react"
 import Link from "next/link"
 
@@ -232,6 +233,11 @@ export default function CategoryPage() {
             )}
           </div>
         )}
+
+        {/* Center ad - between subcategories and business list */}
+        <div className="my-6 sm:my-8">
+          <AdSenseSlot slotId="category-center-ad" />
+        </div>
 
         {/* Show Businesses when subcategory is selected */}
         {selectedSubcategory && (

@@ -5,6 +5,7 @@ import { useParams, useSearchParams, useRouter } from "next/navigation"
 import { BusinessCard } from "@/components/business-card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { AdSenseSlot } from "@/components/adsense-slot"
 
 type ListBusiness = {
   id: string
@@ -159,6 +160,11 @@ export default function CityPage() {
                   <span>{" "}› {selectedSubCategory.replace(/-/g, " ")}</span>
                 )}
               </p>
+            </div>
+
+            {/* Center ad */}
+            <div className="my-6">
+              <AdSenseSlot slotId="city-center-ad" />
             </div>
 
             <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">

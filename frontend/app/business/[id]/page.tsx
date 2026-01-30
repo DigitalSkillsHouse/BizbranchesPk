@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { AdSenseSlot } from "@/components/adsense-slot"
 
 export default function BusinessDetailPage({
   initialBusiness,
@@ -349,6 +350,11 @@ export default function BusinessDetailPage({
           </div>
         </section>
       )}
+
+      {/* Center ad - between description and reviews */}
+      <div className="my-8">
+        <AdSenseSlot slotId="business-center-ad" />
+      </div>
 
       {/* Business Information & Reviews */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">

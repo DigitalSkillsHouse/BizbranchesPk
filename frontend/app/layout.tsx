@@ -6,6 +6,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { GlobalTopbar } from "@/components/global-topbar";
 import GlobalContainer from "@/components/global-container";
+import { AdBanner } from "@/components/ad-banner";
 import { Suspense } from "react";
 import Script from "next/script";
 
@@ -47,23 +48,27 @@ export default function RootLayout({
           </>
         )}
 
-        {/* ✅ Google AdSense: load once globally */}
-        <Script
-          id="adsbygoogle-init"
-          async
-          strategy="afterInteractive"
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4083132987699578"
-          crossOrigin="anonymous"
-        />
+        {/* ✅ Google AdSense: load once globally - Production only */}
+        {process.env.NODE_ENV === 'production' && (
+          <Script
+            id="adsbygoogle-init"
+            async
+            strategy="afterInteractive"
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4083132987699578"
+            crossOrigin="anonymous"
+          />
+        )}
       </head>
 
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning={true}>
+      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} pb-20`} suppressHydrationWarning={true}>
         <Header />
+        <AdBanner placement="header" />
         <Suspense fallback={null}>
           <GlobalTopbar />
         </Suspense>
         <GlobalContainer>{children}</GlobalContainer>
         <Footer />
+        <AdBanner placement="sticky-footer" />
       </body>
     </html>
   );
