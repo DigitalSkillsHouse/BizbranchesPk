@@ -6,8 +6,8 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "node .next/standalone/server.js",
-    "postbuild": "next-sitemap"
+    "start": "HOSTNAME=0.0.0.0 node .next/standalone/server.js",
+    "postbuild": "cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/ && next-sitemap"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
