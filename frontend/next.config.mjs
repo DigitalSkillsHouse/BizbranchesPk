@@ -31,6 +31,11 @@ const nextConfig = {
         source: '/api/:path*',
         destination: `${backendUrl}/api/:path*`,
       },
+      // Dynamic sitemap with all businesses - served from backend
+      {
+        source: '/sitemap.xml',
+        destination: `${backendUrl}/api/sitemap.xml`,
+      },
     ]
   },
 }

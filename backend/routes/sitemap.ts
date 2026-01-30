@@ -6,7 +6,8 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const slugs = await getAllBusinessSlugs();
-    const baseUrl = process.env.NODE_ENV === 'production' ? "https://bizbranches.pk" : "http://localhost:3000";
+    let baseUrl = process.env.SITE_URL || process.env.FRONTEND_URL || (process.env.NODE_ENV === 'production' ? "https://bizbranches.pk" : "http://localhost:3000");
+    baseUrl = (baseUrl || '').replace(/\/$/, ''); // remove trailing slash
     
     console.log('Sitemap: Found', slugs.length, 'business slugs');
 

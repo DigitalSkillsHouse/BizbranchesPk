@@ -56,10 +56,10 @@ export async function getAllBusinessSlugs() {
   const db = await getDb();
   const businesses = await db
     .collection('businesses')
-    .find({}, { projection: { slug: 1 } })
+    .find({ status: 'approved', slug: { $exists: true, $ne: '' } }, { projection: { slug: 1 } })
     .toArray();
 
-  return businesses.map((b) => b.slug);
+  return businesses.map((b) => b.slug).filter(Boolean);
 }
 
 export async function closeDb(): Promise<void> {
