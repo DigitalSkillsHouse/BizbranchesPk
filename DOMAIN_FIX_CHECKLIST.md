@@ -1,6 +1,6 @@
 # Domain Still Showing Error - Checklist
 
-Deployment is successful but bizbranches.pk shows error? Follow these steps:
+Deployment successful, logs look ok, but bizbranches.pk shows 502? Follow these steps:
 
 ---
 
@@ -27,11 +27,11 @@ Deployment is successful but bizbranches.pk shows error? Follow these steps:
 **If it works now** → The Cloudflare proxy was the issue. Go to B.
 **If still fails** → Check CNAME target. Go to C.
 
-### B. Fix SSL mode
-1. Cloudflare → **SSL/TLS**
-2. Set to **Flexible**
+### B. Fix SSL mode (important for Railway)
+1. Cloudflare → **SSL/TLS** → Overview
+2. Set to **Full** (NOT Flexible – Railway serves HTTPS)
 3. Turn the cloud back to **orange** (Proxied)
-4. Test again
+4. Wait 1 min, test https://bizbranches.pk
 
 ### C. Fix CNAME target
 1. Railway → **Settings** → **Domains** → Add `bizbranches.pk` if needed

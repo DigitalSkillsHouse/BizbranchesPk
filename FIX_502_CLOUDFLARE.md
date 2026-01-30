@@ -35,11 +35,13 @@ Your CNAME must point to the **exact** Railway URL.
 
 ---
 
-## Step 3: Cloudflare SSL Settings
+## Step 3: Cloudflare SSL Settings (IMPORTANT)
 
-1. Cloudflare → **SSL/TLS**
-2. Set encryption to **Flexible** (try this first)
-3. If Flexible works, you can try **Full** later
+Railway serves HTTPS. Cloudflare must use **Full** (not Flexible):
+
+1. Cloudflare → **SSL/TLS** → Overview
+2. Set encryption to **Full** (Cloudflare connects to Railway via HTTPS)
+3. **Flexible** often causes 502 with Railway – avoid it
 
 ---
 
