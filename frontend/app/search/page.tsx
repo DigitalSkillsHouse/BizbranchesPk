@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import dynamic from "next/dynamic"
 import { AdSenseSlot } from "@/components/adsense-slot"
+import { cities as mockCities } from "@/lib/mock-data"
 
 // Client-only wrapper to prevent hydration issues
 const ClientOnlySelect = dynamic(() => Promise.resolve(({ value, onValueChange, children, className, placeholder }: any) => (
