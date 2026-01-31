@@ -7,40 +7,44 @@ const BACKEND_URL =
 const CACHE_REVALIDATE = 300; // 5 min
 
 export async function fetchHomePageData() {
-  const [categoriesRes, featuredRes] = await Promise.all([
-    fetch(`${BACKEND_URL}/api/categories?limit=24`, {
-      next: { revalidate: CACHE_REVALIDATE },
-      headers: { "Content-Type": "application/json" },
-    }),
-    fetch(`${BACKEND_URL}/api/business/featured?limit=12`, {
-      next: { revalidate: CACHE_REVALIDATE },
-      headers: { "Content-Type": "application/json" },
-    }),
-  ]);
-
   let categories: any[] = [];
   let featured: any[] = [];
 
-  if (categoriesRes.ok) {
-    try {
-      const data = await categoriesRes.json();
-      if (data?.ok && Array.isArray(data.categories)) {
-        categories = data.categories;
-      }
-    } catch {
-      // ignore
-    }
-  }
+  try {
+    const [categoriesRes, featuredRes] = await Promise.all([
+      fetch(`${BACKEND_URL}/api/categories?limit=24`, {
+        next: { revalidate: CACHE_REVALIDATE },
+        headers: { "Content-Type": "application/json" },
+      }),
+      fetch(`${BACKEND_URL}/api/business/featured?limit=12`, {
+        next: { revalidate: CACHE_REVALIDATE },
+        headers: { "Content-Type": "application/json" },
+      }),
+    ]);
 
-  if (featuredRes.ok) {
-    try {
-      const data = await featuredRes.json();
-      if (data?.ok && Array.isArray(data.businesses)) {
-        featured = data.businesses;
+    if (categoriesRes.ok) {
+      try {
+        const data = await categoriesRes.json();
+        if (data?.ok && Array.isArray(data.categories)) {
+          categories = data.categories;
+        }
+      } catch {
+        // ignore
       }
-    } catch {
-      // ignore
     }
+
+    if (featuredRes.ok) {
+      try {
+        const data = await featuredRes.json();
+        if (data?.ok && Array.isArray(data.businesses)) {
+          featured = data.businesses;
+        }
+      } catch {
+        // ignore
+      }
+    }
+  } catch {
+    // Backend unreachable (e.g. during build). Return empty data so prerender succeeds.
   }
 
   return { categories, featured };
