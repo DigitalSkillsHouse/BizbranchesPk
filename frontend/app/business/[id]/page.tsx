@@ -287,6 +287,18 @@ export default function BusinessDetailPage({
       {/* Business Description & Map */}
       {business.description && (
         <section className="mt-8">
+          {/* Breadcrumb at top of description */}
+          <div className="mb-4">
+            <nav className="flex items-center space-x-2 text-sm text-gray-600" aria-label="Breadcrumb">
+              <Link href="/" className="hover:text-blue-600">Home</Link>
+              <span>/</span>
+              <Link href={`/category/${business.category?.toLowerCase().replace(/\s+/g, '-')}`} className="hover:text-blue-600">
+                {business.category}
+              </Link>
+              <span>/</span>
+              <span className="text-gray-800 font-medium">{business.name} - Official Details</span>
+            </nav>
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             {/* Description Box - 60% */}
             <div className="lg:col-span-3 bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
