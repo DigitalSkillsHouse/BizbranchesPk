@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
@@ -43,8 +44,8 @@ export function Header() {
 
           {/* Center Logo - Always visible */}
           <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group flex-shrink-0 min-w-0" onClick={closeMenu}>
-            <div className="w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:shadow-xl transition-all duration-300 shadow-lg">
-              <Building2 className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+            <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl overflow-hidden flex-shrink-0 group-hover:shadow-xl transition-all duration-300 shadow-lg">
+              <Image src="/BizBranches.jpeg" alt="BizBranches - Business Directory" fill className="object-contain" sizes="56px" priority />
             </div>
             <div className="hidden sm:block" aria-label="LocatorBranches - Business Directory">
               <span className="text-xl sm:text-2xl font-bold text-white group-hover:text-green-400 transition-colors duration-300 block">LocatorBranches</span>

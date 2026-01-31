@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { Mail, MapPin, Building2, Star, Users, Phone, ArrowRight } from "lucide-react"
+import Image from "next/image"
+import { Mail, MapPin, Star, Users, Phone, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SITE_NAME } from "@/lib/site"
 
@@ -12,8 +13,8 @@ export function Footer() {
           {/* Brand Column - wide, like DSH */}
           <div className="sm:col-span-2 lg:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center shadow-lg">
-                <Building2 className="h-6 w-6 text-white" />
+              <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 shadow-lg">
+                <Image src="/BizBranches.jpeg" alt={`${SITE_NAME} - Business Directory`} fill className="object-contain" sizes="48px" />
               </div>
               <div>
                 <h3 className="text-xl sm:text-2xl font-bold text-white">{SITE_NAME}</h3>

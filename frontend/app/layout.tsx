@@ -74,7 +74,7 @@ export default function RootLayout({
     "@type": "Organization",
     name: SITE_NAME,
     url: SITE_URL,
-    logo: `${SITE_URL}/placeholder-logo.svg`,
+    logo: `${SITE_URL}/BizBranches.jpeg`,
     description: SITE_DESCRIPTION,
     sameAs: [],
     contactPoint: {
