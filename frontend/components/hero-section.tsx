@@ -4,9 +4,8 @@ import type React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { ChevronsUpDown, Search, MapPin, TrendingUp, Star, Users, Building2, ArrowRight, Plus } from "lucide-react"
+import { cities } from "@/lib/mock-data"
 import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
@@ -24,10 +23,6 @@ export function HeroSection() {
   const searchInputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
 
-  const [cities, setCities] = useState<Array<{ id: string; name: string; slug: string }>>([])
-  const [citiesLoading, setCitiesLoading] = useState(true)
-  const [cityOpen, setCityOpen] = useState(false)
-  const [cityQuery, setCityQuery] = useState("")
   const [categoriesList, setCategoriesList] = useState<Array<{ slug: string; name: string }>>([])
   const [categoriesLoading, setCategoriesLoading] = useState(true)
 
@@ -75,36 +70,6 @@ export function HeroSection() {
 
     return () => clearTimeout(debounceTimer)
   }, [searchQuery, selectedCity, selectedCategory])
-
-  useEffect(() => {
-    let alive = true
-    const cacheKey = "hero:cities:pakistan"
-    ;(async () => {
-      try {
-        setCitiesLoading(true)
-        try {
-          const raw = sessionStorage.getItem(cacheKey)
-          if (raw) {
-            const parsed = JSON.parse(raw)
-            if (Array.isArray(parsed?.data)) setCities(parsed.data)
-          }
-        } catch {}
-        const res = await fetch('/api/cities?country=Pakistan', { cache: 'no-store' })
-        const data = await res.json().catch(() => ({}))
-        const list: Array<{ id: string; name: string }> = Array.isArray(data?.cities) ? data.cities : []
-        if (alive) {
-          const mapped = list.map(c => ({ id: String(c.id), name: c.name, slug: c.name.toLowerCase().replace(/\s+/g, '-') }))
-          setCities(mapped)
-          try { sessionStorage.setItem(cacheKey, JSON.stringify({ data: mapped })) } catch {}
-        }
-      } catch {
-        if (alive) setCities([])
-      } finally {
-        if (alive) setCitiesLoading(false)
-      }
-    })()
-    return () => { alive = false }
-  }, [])
 
   useEffect(() => {
     let alive = true
@@ -337,37 +302,24 @@ export function HeroSection() {
               )}
               </div>
 
-            {/* City Selector */}
+            {/* City Selector - same as category page Filter by City */}
             <div className="sm:col-span-3">
-              <Popover open={cityOpen} onOpenChange={setCityOpen}>
-                <PopoverTrigger asChild>
-                  <Button type="button" variant="outline" className="w-full h-12 justify-between bg-white border-0 hover:bg-gray-50 focus:ring-2 focus:ring-primary/30 transition-all duration-200 text-base rounded-xl">
-                    <div className="flex items-center space-x-2 min-w-0">
-                      <MapPin className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                      <span className="truncate">{selectedCity ? (cities.find(x => x.name.toLowerCase().replace(/\s+/g, '-') === selectedCity)?.name || selectedCity) : (citiesLoading ? "Loading..." : "All Cities")}</span>
-                    </div>
-                    <ChevronsUpDown className="ml-2 h-4 w-4 opacity-60 flex-shrink-0" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[--radix-popover-trigger-width] p-0 max-h-[300px]">
-                  <Command shouldFilter={false}>
-                    <CommandInput placeholder="Search city..." value={cityQuery} onValueChange={setCityQuery} className="h-9" />
-                    <CommandEmpty>{citiesLoading ? "Loading..." : "No city found."}</CommandEmpty>
-                    <CommandList className="max-h-[250px]">
-                      <CommandGroup>
-                        {cities
-                          .filter(c => cityQuery.trim() === "" || c.name.toLowerCase().includes(cityQuery.trim().toLowerCase()))
-                          .map((c) => (
-                            <CommandItem key={c.id} value={c.name.toLowerCase().replace(/\s+/g, '-')} onSelect={(val) => { setSelectedCity(val); setCityOpen(false); setCityQuery("") }}>
-                              {c.name}
-                            </CommandItem>
-                          ))}
-                        <CommandItem value="" onSelect={() => { setSelectedCity(""); setCityOpen(false); setCityQuery("") }}>All Cities</CommandItem>
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              <Select value={selectedCity || "all"} onValueChange={(v) => setSelectedCity(v === "all" ? "" : v)}>
+                <SelectTrigger className="h-12 bg-white border-0 hover:bg-gray-50 focus:ring-2 focus:ring-primary/30 transition-all duration-200 text-base rounded-xl">
+                  <div className="flex items-center space-x-2 min-w-0">
+                    <MapPin className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                    <SelectValue placeholder="All Cities" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  <SelectItem value="all">All Cities</SelectItem>
+                  {cities.map((city) => (
+                    <SelectItem key={city.slug} value={city.slug}>
+                      {city.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Category Selector */}

@@ -64,7 +64,9 @@ export default function SearchPage() {
   const status = searchParams.get("status") || ""
   const limit = 20
 
-  const [cities, setCities] = useState<Array<{ id: string; name: string; slug: string }>>([])
+  const [cities] = useState<Array<{ id: string; name: string; slug: string }>>(() =>
+    mockCities.map((c) => ({ id: c.slug, name: c.name, slug: c.slug }))
+  )
   const [categoriesList, setCategoriesList] = useState<Array<{ slug: string; name: string }>>([])
   const [showAllCategories, setShowAllCategories] = useState(Boolean(searchParams.get("allCategories")))
   const [showAllCities, setShowAllCities] = useState(true)
@@ -163,34 +165,16 @@ export default function SearchPage() {
     let alive = true
     ;(async () => {
       try {
-        const [cRes, catRes] = await Promise.all([
-          fetch('/api/cities?country=Pakistan', { cache: 'no-store' }),
-          fetch('/api/categories?limit=200&nocache=1', { cache: 'no-store' }),
-        ])
-        const citiesJson = await cRes.json().catch(() => ({}))
+        const catRes = await fetch('/api/categories?limit=200&nocache=1', { cache: 'no-store' })
         const categoriesJson = await catRes.json().catch(() => ({}))
         if (alive) {
-          const cityList: Array<{ id: string; name: string; slug: string }> = Array.isArray(citiesJson?.cities)
-            ? citiesJson.cities.map((c: any) => {
-                const cityId = String(c.id || c._id || c.slug || c.name);
-                const cityName = c.name || '';
-                const citySlug = cityName.toLowerCase().replace(/\s+/g, '-');
-                // Use unique ID for slug to ensure uniqueness (combine id with slug)
-                const uniqueSlug = `${citySlug}-${cityId}`;
-                return { id: cityId, name: cityName, slug: uniqueSlug };
-              })
-            : []
-          setCities(cityList)
           const catList: Array<{ slug: string; name: string }> = Array.isArray(categoriesJson?.categories)
             ? categoriesJson.categories.map((x: any) => ({ slug: x.slug, name: x.name || x.slug }))
             : []
           setCategoriesList(catList)
         }
       } catch {
-        if (alive) {
-          setCities([])
-          setCategoriesList([])
-        }
+        if (alive) setCategoriesList([])
       }
     })()
     return () => { alive = false }

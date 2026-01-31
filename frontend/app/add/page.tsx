@@ -12,6 +12,8 @@ import { useToast } from "@/hooks/use-toast"
 import { ChevronsUpDown, MapPin, Building, User, Phone, Mail, MessageSquare, Globe, Camera, CheckCircle, Upload, Star, Shield, Zap } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { cities } from "@/lib/mock-data"
 import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -149,101 +151,6 @@ export function AddBusinessForm({
     profileUsername: "",
   })
 
-  const [cityOpen, setCityOpen] = useState(false)
-  const [cityOptions, setCityOptions] = useState<Array<{ id: string; name: string; country?: string }>>([])
-  const [cityLoading, setCityLoading] = useState(false)
-  const [cityQuery, setCityQuery] = useState("")
-  const [savingCustomCity, setSavingCustomCity] = useState(false)
-  const filteredCities = useMemo(() => {
-    // Cities are already filtered by country from API, just filter by search query
-    const q = cityQuery.trim().toLowerCase()
-    if (!q) return cityOptions
-    return cityOptions.filter((c) => c.name.toLowerCase().includes(q))
-  }, [cityQuery, cityOptions])
-  
-  // Check if the query matches any existing city
-  const exactMatch = useMemo(() => {
-    if (!cityQuery.trim()) return null
-    return cityOptions.find(
-      (c) => c.name.toLowerCase() === cityQuery.trim().toLowerCase()
-    )
-  }, [cityQuery, cityOptions])
-  
-  // Check if we should show "Add custom city" option
-  const showCustomCityOption = useMemo(() => {
-    if (!form.country || !cityQuery.trim() || exactMatch) return false
-    // Show if query is at least 2 characters and doesn't match any city
-    // Always show for non-Pakistan countries, or if no cities found
-    const isPakistan = form.country.toLowerCase() === 'pakistan'
-    const hasNoCities = filteredCities.length === 0
-    // For non-Pakistan countries, show option more easily
-    if (!isPakistan) {
-      return cityQuery.trim().length >= 2
-    }
-    // For Pakistan, only show if no cities found
-    return cityQuery.trim().length >= 2 && hasNoCities
-  }, [form.country, cityQuery, exactMatch, filteredCities.length])
-  
-  // Function to save custom city
-  const saveCustomCity = async (cityName: string) => {
-    if (!form.country || !cityName.trim()) return
-    
-    try {
-      setSavingCustomCity(true)
-      const res = await fetch('/api/cities', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: cityName.trim(),
-          country: form.country
-        })
-      })
-      
-      // Check if response is ok
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ error: `HTTP ${res.status}: ${res.statusText}` }))
-        throw new Error(errorData.error || `Failed to save city: ${res.status} ${res.statusText}`)
-      }
-      
-      const data = await res.json()
-      
-      if (data.ok && data.city) {
-        // Add the new city to the options
-        setCityOptions((prev) => {
-          const exists = prev.some(c => c.name.toLowerCase() === data.city.name.toLowerCase() && c.country === data.city.country)
-          if (exists) return prev
-          return [...prev, data.city].sort((a, b) => a.name.localeCompare(b.name))
-        })
-        
-        // Set the form city to the new city
-        setForm((s) => ({ ...s, city: data.city.name }))
-        setCityOpen(false)
-        setCityQuery("")
-        
-        // Clear cache for this country to force refresh
-        try {
-          sessionStorage.removeItem(`add:cities:${form.country}`)
-        } catch {}
-        
-        toast({
-          title: "Custom city added",
-          description: `${data.city.name} has been added to the directory.`,
-        })
-      } else {
-        throw new Error(data.error || 'Failed to save city')
-      }
-    } catch (error: any) {
-      console.error('Error saving custom city:', error)
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save custom city. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setSavingCustomCity(false)
-    }
-  }
-
   const toSlug = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-")
 
   const fetchSubcategories = async () => {
@@ -309,58 +216,6 @@ export function AddBusinessForm({
     
     return Math.round((filledCount / requiredFields.length) * 100);
   }, [form]);
-
-  // Fetch Pakistan cities from Leopard API (via backend)
-  useEffect(() => {
-    const fetchCities = async () => {
-      try {
-        setCityLoading(true)
-        try {
-          sessionStorage.removeItem('add:cities:Pakistan')
-        } catch {}
-        console.log('[Frontend] 🌐 Loading cities from Leopard API (Pakistan)')
-        const timestamp = Date.now()
-        const res = await fetch(`/api/cities?country=Pakistan&_t=${timestamp}`, {
-          cache: 'no-store',
-          headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', Pragma: 'no-cache' }
-        })
-        if (!res.ok) {
-          console.error('[Frontend] ❌ Failed to fetch cities:', res.status)
-          setCityOptions([])
-          return
-        }
-        const data = await res.json()
-        const cities = Array.isArray(data?.cities) ? data.cities : []
-        setCityOptions(cities)
-        if (data?.error) {
-          const key = 'leopard_api_error_logged'
-          if (!sessionStorage.getItem(key)) {
-            console.error('[Frontend] Leopard API error:', data.error)
-            try { sessionStorage.setItem(key, 'true') } catch {}
-          }
-        } else if (cities.length > 0) {
-          console.log(`[Frontend] ✅ Loaded ${cities.length} cities from Leopard API`)
-          try {
-            sessionStorage.removeItem('leopard_api_error_logged')
-            sessionStorage.removeItem('pakistan_no_cities_logged')
-            sessionStorage.removeItem('pakistan_few_cities_logged')
-          } catch {}
-        } else {
-          const key = 'pakistan_no_cities_logged'
-          if (!sessionStorage.getItem(key)) {
-            console.warn('[Frontend] No cities returned for Pakistan')
-            try { sessionStorage.setItem(key, 'true') } catch {}
-          }
-        }
-      } catch (e) {
-        console.error('[Frontend] Error fetching cities:', e)
-        setCityOptions([])
-      } finally {
-        setCityLoading(false)
-      }
-    }
-    fetchCities()
-  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target
@@ -688,100 +543,20 @@ export function AddBusinessForm({
                                 🇵🇰 Select Your Business City (Pakistan)
                                 <span className="text-red-500 text-lg">*</span>
                               </Label>
-                              {/* <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                                Choose from 800+ cities fetched from Leopard API
-                              </p> */}
                             </div>
                           </div>
-                          <Popover open={cityOpen} onOpenChange={setCityOpen}>
-                            <PopoverTrigger asChild>
-                              <Button 
-                                type="button" 
-                                variant="outline" 
-                                role="combobox" 
-                                aria-expanded={cityOpen} 
-                                className={`w-full justify-between h-14 rounded-lg border-2 transition-all ${fieldErrors.city ? 'border-red-400 bg-red-50/50' : 'border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200'} bg-white shadow-sm hover:shadow-md`}
-                              >
-                                <span className="truncate flex items-center gap-2">
-                                  {form.city ? (
-                                    <>
-                                      <MapPin className="h-4 w-4 text-green-600" />
-                                      <span className="font-semibold">{form.city}</span>
-                                    </>
-                                  ) : (
-                                    cityLoading ? (
-                                      <span className="flex items-center gap-2">
-                                        <span className="animate-spin">⏳</span>
-                                        Loading cities from Leopard API...
-                                      </span>
-                                    ) : (
-                                      <span className="text-gray-500">Search and select your city</span>
-                                    )
-                                  )}
-                                </span>
-                                <ChevronsUpDown className="ml-2 h-4 w-4 opacity-60" />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0 max-h-[400px]">
-                              <Command shouldFilter={false}>
-                                <CommandInput 
-                                  placeholder="Search from 800+ Pakistani cities..." 
-                                  value={cityQuery} 
-                                  onValueChange={setCityQuery} 
-                                  className="h-10" 
-                                />
-                                <CommandList className="max-h-[350px]">
-                                  <CommandEmpty>
-                                    {cityLoading ? (
-                                      <div className="flex flex-col items-center justify-center py-8">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mb-3"></div>
-                                        <p className="text-sm text-gray-600">Loading cities from Leopard API...</p>
-                                        <p className="text-xs text-gray-500 mt-1">This may take a few seconds</p>
-                                      </div>
-                                    ) : filteredCities.length === 0 ? (
-                                      <div className="py-6 text-center">
-                                        <p className="text-sm text-gray-600 mb-2">No cities found matching "{cityQuery}"</p>
-                                        <p className="text-xs text-gray-500">Try searching with a different term</p>
-                                      </div>
-                                    ) : (
-                                      "No cities found"
-                                    )}
-                                  </CommandEmpty>
-                                  <CommandGroup>
-                                    {filteredCities.length > 0 && (
-                                      <div className="px-3 py-2 bg-green-50 border-b border-green-100">
-                                        <p className="text-xs font-semibold text-green-700">
-                                          📍 {filteredCities.length} {filteredCities.length === 1 ? 'city' : 'cities'} found
-                                        </p>
-                                      </div>
-                                    )}
-                                    {filteredCities.map((c) => (
-                                      <CommandItem 
-                                        key={c.id} 
-                                        value={c.name} 
-                                        onSelect={() => { 
-                                          setForm((s) => ({ ...s, city: c.name })); 
-                                          setCityOpen(false); 
-                                          setCityQuery("") 
-                                        }}
-                                        className="cursor-pointer hover:bg-green-50"
-                                      >
-                                        <MapPin className="h-4 w-4 text-green-600 mr-2" />
-                                        {c.name}
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-                          {cityLoading && (
-                            <div className="mt-3 flex items-center gap-2 text-xs text-gray-600">
-                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-green-600"></div>
-                              <span>Fetching cities from Leopard API...</span>
-                            </div>
-                          )}
-
+                          <Select value={form.city || ""} onValueChange={(v) => setForm((s) => ({ ...s, city: v }))}>
+                            <SelectTrigger className={`w-full h-14 rounded-lg border-2 transition-all ${fieldErrors.city ? 'border-red-400 bg-red-50/50' : 'border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200'} bg-white shadow-sm hover:shadow-md`}>
+                              <SelectValue placeholder="Select your city" />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-[300px]">
+                              {cities.map((city) => (
+                                <SelectItem key={city.slug} value={city.name}>
+                                  {city.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
 
