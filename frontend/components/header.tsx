@@ -4,7 +4,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
-import { Search, Menu, X, Building2, Star, MapPin, Plus } from "lucide-react"
+import { Menu, X, Building2, Star, MapPin, Plus } from "lucide-react"
 
 export function Header() {
   const [open, setOpen] = useState(false)
@@ -27,21 +27,22 @@ export function Header() {
 
   return (
     <header className="bg-gradient-to-r from-slate-900 via-gray-900 to-slate-900 border-b border-gray-700 sticky top-0 z-50 shadow-xl">
-      <div className="container mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-16 sm:h-20">
-          {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden text-white hover:bg-white/10"
+      <div className="container mx-auto px-4 sm:px-6 max-w-[100vw] overflow-x-hidden">
+        <div className="flex items-center justify-between gap-2 h-16 sm:h-20 min-h-[4rem]">
+          {/* Mobile Menu Toggle - native button so it's always visible (no variant override) */}
+          <button
+            type="button"
+            className="md:hidden flex-shrink-0 flex items-center justify-center w-11 h-11 min-w-[44px] min-h-[44px] rounded-lg text-white bg-white/10 border border-white/20 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50"
             onClick={() => setOpen(!open)}
-            aria-label="Toggle menu"
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            aria-controls="mobile-nav"
           >
-            {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </Button>
+            {open ? <X className="h-6 w-6" aria-hidden /> : <Menu className="h-6 w-6" aria-hidden />}
+          </button>
 
           {/* Center Logo - Always visible */}
-          <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group flex-shrink-0" onClick={closeMenu}>
+          <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group flex-shrink-0 min-w-0" onClick={closeMenu}>
             <div className="w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:shadow-xl transition-all duration-300 shadow-lg">
               <Building2 className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
             </div>
@@ -90,9 +91,14 @@ export function Header() {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
-        <div id="mobile-nav" className={`${open ? "block" : "hidden"} md:hidden pb-4 pt-2`}>
-          <nav className="bg-white rounded-xl border border-gray-100 shadow-lg mt-2 p-4 space-y-3">
+        {/* Mobile Navigation - visible only when open, below md breakpoint */}
+        <div
+          id="mobile-nav"
+          role="navigation"
+          aria-label="Mobile menu"
+          className={`${open ? "block" : "hidden"} md:hidden pb-4 pt-2 w-full`}
+        >
+          <nav className="bg-white rounded-xl border border-gray-100 shadow-lg mt-2 p-4 space-y-3 w-full">
             <Link href="/" onClick={closeMenu} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
               <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
                 <Building2 className="h-4 w-4 text-primary" />

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
@@ -10,6 +10,12 @@ import { AdBanner } from "@/components/ad-banner";
 import { Suspense } from "react";
 import Script from "next/script";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/site";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 const defaultTitle = `${SITE_NAME} - Discover Amazing Businesses Worldwide | Pakistan's Premier Business Directory`;
 const defaultDesc = "Discover Amazing Businesses Worldwide. Find and connect with trusted local businesses across Pakistan and worldwide. Search by category, location, or business name. Read reviews, view contact information, and grow your business with our comprehensive directory platform.";
