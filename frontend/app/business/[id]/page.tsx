@@ -273,7 +273,7 @@ export default function BusinessDetailPage({
               </a>
             )}
             <a 
-              href={`https://maps.google.com/?q=${encodeURIComponent(business.address)}`}
+              href={`https://maps.google.com/?q=${encodeURIComponent([business.address, business.city].filter(Boolean).join(", "))}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
@@ -511,24 +511,50 @@ export default function BusinessDetailPage({
           </div>
         </div>
 
-        {/* Business Information Sidebar */}
-        <div className="lg:col-span-1">
+        {/* Business Information Sidebar - NAP order: Name (page title), then Address, then Phone, then rest */}
+        <div className="lg:col-span-1" itemScope itemType="https://schema.org/LocalBusiness">
           <Card>
             <CardContent className="p-6">
-              <h3 className="text-xl font-semibold mb-4">Business Information</h3>
+              <h3 className="text-xl font-semibold mb-1 text-gray-900" itemProp="name">{business.name}</h3>
+              <p className="text-xs text-gray-500 mb-4">Business details</p>
               
               <div className="space-y-4">
-                {/* Phone */}
+                {/* 1. Address (NAP - first in sidebar for consistency) */}
+                <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <MapPin className="h-5 w-5 text-gray-600 mt-0.5 flex-shrink-0" aria-hidden />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 text-sm">Address</p>
+                    <p className="text-sm text-gray-700 mt-0.5" itemProp="address" itemScope itemType="https://schema.org/PostalAddress">
+                      <span itemProp="streetAddress">{business.address || "—"}</span>
+                      {business.city && (
+                        <>, <span itemProp="addressLocality" className="capitalize">{business.city}</span></>
+                      )}
+                      {business.postalCode && (
+                        <> <span itemProp="postalCode">{business.postalCode}</span></>
+                      )}
+                    </p>
+                  </div>
+                  <a 
+                    href={`https://maps.google.com/?q=${encodeURIComponent([business.address, business.city].filter(Boolean).join(", "))}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:text-primary/80 font-medium text-sm flex-shrink-0"
+                  >
+                    Map
+                  </a>
+                </div>
+
+                {/* 2. Phone (NAP - second in sidebar) */}
                 {business.phone && (
-                  <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-                    <Phone className="h-5 w-5 text-blue-600" />
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900">Phone</p>
-                      <p className="text-sm text-gray-600">{business.phone}</p>
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                    <Phone className="h-5 w-5 text-gray-600 flex-shrink-0" aria-hidden />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 text-sm">Phone</p>
+                      <p className="text-sm text-gray-700 mt-0.5" itemProp="telephone">{business.phone}</p>
                     </div>
                     <a 
-                      href={`tel:${business.phone}`}
-                      className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                      href={`tel:${business.phone.replace(/\s/g, "")}`}
+                      className="text-primary hover:text-primary/80 font-medium text-sm flex-shrink-0"
                     >
                       Call
                     </a>
@@ -538,16 +564,16 @@ export default function BusinessDetailPage({
                 {/* WhatsApp */}
                 {business.whatsapp && (
                   <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                    <MessageCircle className="h-5 w-5 text-green-600" />
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900">WhatsApp</p>
+                    <MessageCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 text-sm">WhatsApp</p>
                       <p className="text-sm text-gray-600">{business.whatsapp}</p>
                     </div>
                     <a 
-                      href={`https://wa.me/${business.whatsapp.replace(/[^0-9]/g, '')}`}
+                      href={`https://wa.me/${business.whatsapp.replace(/[^0-9]/g, "")}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-green-600 hover:text-green-800 font-medium text-sm"
+                      className="text-green-600 hover:text-green-800 font-medium text-sm flex-shrink-0"
                     >
                       Chat
                     </a>
@@ -557,14 +583,14 @@ export default function BusinessDetailPage({
                 {/* Email */}
                 {business.email && (
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Mail className="h-5 w-5 text-gray-600" />
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900">Email</p>
+                    <Mail className="h-5 w-5 text-gray-600 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 text-sm">Email</p>
                       <p className="text-sm text-gray-600 break-all">{business.email}</p>
                     </div>
                     <a 
                       href={`mailto:${business.email}`}
-                      className="text-gray-600 hover:text-gray-800 font-medium text-sm"
+                      className="text-gray-600 hover:text-gray-800 font-medium text-sm flex-shrink-0"
                     >
                       Email
                     </a>
@@ -574,16 +600,16 @@ export default function BusinessDetailPage({
                 {/* Website */}
                 {business.websiteUrl && (
                   <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
-                    <Globe className="h-5 w-5 text-purple-600" />
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900">Website</p>
+                    <Globe className="h-5 w-5 text-purple-600 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 text-sm">Website</p>
                       <p className="text-sm text-gray-600 truncate">{business.websiteUrl}</p>
                     </div>
                     <a 
-                      href={business.websiteUrl}
+                      href={business.websiteUrl.startsWith("http") ? business.websiteUrl : `https://${business.websiteUrl}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-purple-600 hover:text-purple-800 font-medium text-sm"
+                      className="text-purple-600 hover:text-purple-800 font-medium text-sm flex-shrink-0"
                     >
                       Visit
                     </a>
@@ -593,33 +619,13 @@ export default function BusinessDetailPage({
                 {/* Contact Person */}
                 {business.contactPerson && (
                   <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
-                    <User className="h-5 w-5 text-orange-600" />
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900">Contact Person</p>
+                    <User className="h-5 w-5 text-orange-600 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 text-sm">Contact Person</p>
                       <p className="text-sm text-gray-600">{business.contactPerson}</p>
                     </div>
                   </div>
                 )}
-
-                {/* Address */}
-                <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg">
-                  <MapPin className="h-5 w-5 text-red-600 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">Address</p>
-                    <p className="text-sm text-gray-600">{business.address}</p>
-                    {business.city && (
-                      <p className="text-sm text-gray-500 capitalize">{business.city}</p>
-                    )}
-                  </div>
-                  <a 
-                    href={`https://maps.google.com/?q=${encodeURIComponent(business.address)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-red-600 hover:text-red-800 font-medium text-sm"
-                  >
-                    Map
-                  </a>
-                </div>
               </div>
             </CardContent>
           </Card>
