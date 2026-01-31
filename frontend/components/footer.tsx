@@ -12,13 +12,9 @@ export function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
           {/* Brand Column - wide, like DSH */}
           <div className="sm:col-span-2 lg:col-span-2">
-            <div className="flex items-center gap-3 mb-4">
+            <div className="mb-4">
               <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 shadow-lg">
-                <Image src="/BizBranches.jpeg" alt={`${SITE_NAME} - Business Directory`} fill className="object-contain" sizes="48px" />
-              </div>
-              <div>
-                <h3 className="text-xl sm:text-2xl font-bold text-white">{SITE_NAME}</h3>
-                <p className="text-sm text-gray-400">Business Directory</p>
+                <Image src="/BizBranches.jpeg" alt="BizBranches" fill className="object-contain" sizes="48px" />
               </div>
             </div>
             <p className="text-sm sm:text-base text-gray-300 leading-relaxed mb-6 max-w-md">
@@ -50,8 +46,8 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-3 text-gray-300">
                 <Phone className="h-4 w-4 text-green-400 flex-shrink-0" />
-                <a href="tel:+923001234567" className="hover:text-green-400 transition-colors">
-                  +92 300 123 4567
+                <a href="tel:+923142552851" className="hover:text-green-400 transition-colors">
+                  0314-2552851
                 </a>
               </div>
               <div className="flex items-center gap-3 text-gray-300">
@@ -148,11 +144,11 @@ export function Footer() {
                 </Link>
               </Button>
               <a
-                href="tel:+923001234567"
+                href="tel:+923142552851"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-600 text-gray-300 hover:border-green-500 hover:text-green-400 transition-colors text-sm font-medium"
               >
                 <Phone className="h-4 w-4" />
-                Call: +92 300 123 4567
+                Call: 0314-2552851
               </a>
             </div>
           </div>

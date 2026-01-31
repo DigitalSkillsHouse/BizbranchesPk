@@ -83,7 +83,7 @@ export function DuplicateValidationExample() {
             <Input
               id="phone"
               type="tel"
-              placeholder="+92-21-34567890"
+              placeholder="0314-2552851"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />

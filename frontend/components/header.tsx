@@ -43,13 +43,9 @@ export function Header() {
           </button>
 
           {/* Center Logo - Always visible */}
-          <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group flex-shrink-0 min-w-0" onClick={closeMenu}>
+          <Link href="/" className="flex items-center flex-shrink-0 min-w-0" onClick={closeMenu} aria-label="Home">
             <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl overflow-hidden flex-shrink-0 group-hover:shadow-xl transition-all duration-300 shadow-lg">
-              <Image src="/BizBranches.jpeg" alt="BizBranches - Business Directory" fill className="object-contain" sizes="56px" priority />
-            </div>
-            <div className="hidden sm:block" aria-label="LocatorBranches - Business Directory">
-              <span className="text-xl sm:text-2xl font-bold text-white group-hover:text-green-400 transition-colors duration-300 block">LocatorBranches</span>
-              <p className="text-xs sm:text-sm text-gray-300 -mt-1">Business Directory</p>
+              <Image src="/BizBranches.jpeg" alt="BizBranches" fill className="object-contain" sizes="56px" priority />
             </div>
           </Link>
 

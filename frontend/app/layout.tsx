@@ -81,6 +81,7 @@ export default function RootLayout({
       "@type": "ContactPoint",
       contactType: "customer service",
       email: "support@bizbranches.pk",
+      telephone: "+923142552851",
       areaServed: "PK",
     },
   };
