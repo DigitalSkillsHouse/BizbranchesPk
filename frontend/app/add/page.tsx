@@ -784,19 +784,6 @@ export function AddBusinessForm({
 
                         </div>
                       </div>
-                                      <p className="flex items-center gap-2">
-                                        <span>💡</span>
-                                        <span>City not found? Type the full city name to add it.</span>
-                                      </p>
-                                    </div>
-                                  )}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-                    )}
 
                     <div className="space-y-2">
                       <Label htmlFor="postalCode" className="text-gray-700 font-semibold text-sm">Postal/ZIP Code</Label>
