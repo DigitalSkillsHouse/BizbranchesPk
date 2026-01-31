@@ -639,9 +639,10 @@ export default function BusinessDetailPage({
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {recentBusinesses.slice(0, 5).map((recentBusiness, index) => (
-            <div
+            <Link
               key={recentBusiness.id || recentBusiness._id || index}
-              className="border rounded-lg overflow-hidden hover:shadow-lg transition bg-white"
+              href={`/${recentBusiness.slug || recentBusiness._id}`}
+              className="border rounded-lg overflow-hidden hover:shadow-lg transition bg-white block"
             >
               <div className="relative h-24 bg-gray-50">
                 <Image
@@ -659,15 +660,12 @@ export default function BusinessDetailPage({
                 <p className="text-xs text-gray-500 mb-2">
                   {recentBusiness.category}
                 </p>
-                <Link
-                  href={`/${recentBusiness.slug || recentBusiness._id}`}
-                  className="text-red-500 text-xs font-medium hover:underline"
-                >
+                <span className="text-red-500 text-xs font-medium hover:underline">
                   View Details →
-                </Link>
+                </span>
               </div>
-            </div>
-          ))}}
+            </Link>
+          ))}
         </div>
 
         {recentBusinesses.length === 0 && (

@@ -4,9 +4,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cities } from "@/lib/mock-data"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useParams, useSearchParams, useRouter } from "next/navigation"
-import { CategoryFooter } from "@/components/category-footer"
 import FancyLoader from "@/components/fancy-loader"
 import { AdSenseSlot } from "@/components/adsense-slot"
 import { ArrowRight, Building2, Grid3x3, List } from "lucide-react"
@@ -27,12 +26,12 @@ export default function CategoryPage() {
   const [businesses, setBusinesses] = useState<any[]>([])
   const [filteredBusinesses, setFilteredBusinesses] = useState<any[]>([])
   const [selectedCity, setSelectedCity] = useState("all")
-  const [currentPage, setCurrentPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [apiPage, setApiPage] = useState(1)
   const [apiTotalPages, setApiTotalPages] = useState(1)
   const PAGE_SIZE = 12
+  const loadMoreSentinelRef = useRef<HTMLDivElement>(null)
 
   const prettyName = categorySlug
     .split("-")
@@ -102,7 +101,7 @@ export default function CategoryPage() {
     return () => { active = false }
   }, [selectedSubcategory, categorySlug])
 
-  const loadMore = async () => {
+  const loadMore = useCallback(async () => {
     if (loadingMore || !selectedSubcategory) return
     const next = apiPage + 1
     if (next > apiTotalPages) return
@@ -119,7 +118,7 @@ export default function CategoryPage() {
     } finally {
       setLoadingMore(false)
     }
-  }
+  }, [categorySlug, selectedSubcategory, apiPage, apiTotalPages, loadingMore])
 
   useEffect(() => {
     let filtered = businesses
@@ -132,13 +131,22 @@ export default function CategoryPage() {
     }
 
     setFilteredBusinesses(filtered)
-    setCurrentPage(1)
   }, [businesses, selectedCity])
 
-  // Pagination (client-side slice over currently loaded items)
-  const totalPages = Math.ceil(filteredBusinesses.length / PAGE_SIZE)
-  const startIndex = (currentPage - 1) * PAGE_SIZE
-  const currentBusinesses = filteredBusinesses.slice(startIndex, startIndex + PAGE_SIZE)
+  // Infinite scroll: load more when sentinel is in view
+  useEffect(() => {
+    if (!selectedSubcategory || loadingMore || apiPage >= apiTotalPages) return
+    const el = loadMoreSentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) loadMore()
+      },
+      { root: null, rootMargin: "200px", threshold: 0 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [selectedSubcategory, loadingMore, apiPage, apiTotalPages, loadMore])
 
   const handleSubcategoryClick = (subcategoryName: string) => {
     setSelectedSubcategory(subcategoryName)
@@ -277,27 +285,32 @@ export default function CategoryPage() {
               </Select>
             </div>
 
-            {/* Business Listings */}
+            {/* Business Listings - all loaded items, AdSense every 3, infinite scroll */}
             {loading ? (
               <div className="py-16 flex items-center justify-center">
                 <FancyLoader />
               </div>
-            ) : currentBusinesses.length > 0 ? (
+            ) : filteredBusinesses.length > 0 ? (
               <>
                 <div className="mb-8 divide-y divide-gray-100 border-y">
-                  {currentBusinesses.map((business) => (
-                    <div key={business.id || business._id} className="py-4">
-                      <BusinessListItem business={business} compact />
+                  {filteredBusinesses.map((business, idx) => (
+                    <div key={business.id || business._id}>
+                      {(idx > 0 && idx % 3 === 0) && (
+                        <div className="py-6">
+                          <AdSenseSlot slotId={`category-branches-ad-${Math.floor(idx / 3)}`} />
+                        </div>
+                      )}
+                      <div className="py-4">
+                        <BusinessListItem business={business} compact />
+                      </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Load more (server pagination) */}
+                {/* Infinite scroll sentinel - load more when this is in view */}
                 {apiPage < apiTotalPages && (
-                  <div className="flex justify-center items-center mt-6">
-                    <Button variant="outline" onClick={loadMore} disabled={loadingMore}>
-                      {loadingMore ? "Loading…" : "Load more"}
-                    </Button>
+                  <div ref={loadMoreSentinelRef} className="h-4 flex items-center justify-center py-8">
+                    {loadingMore && <FancyLoader />}
                   </div>
                 )}
               </>
@@ -316,7 +329,6 @@ export default function CategoryPage() {
           </>
         )}
       </main>
-      <CategoryFooter categorySlug={categorySlug} categoryName={categoryName} categoryIcon={categoryIcon} />
     </div>
   )
 }
