@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import express from 'express';
-import { getModels } from '../lib/models';
+import { courierGet, courierPost } from '../lib/courier';
 
 const router = express.Router();
 
@@ -399,6 +399,68 @@ const globalCities = [
   { id: "al-aqiq-2", name: "Al Aqiq", country: "Saudi Arabia" }
 ];
 
+// Try to fetch Pakistan cities from Leopard Merchant API
+async function fetchPakistanCitiesFromLeopard(): Promise<Array<{ id: string; name: string; country: string }>> {
+  const base = process.env.LEOPARDS_API_BASE_URL || process.env.COURIER_API_BASE_URL;
+  const apiKey = process.env.LEOPARDS_API_KEY || process.env.COURIER_API_KEY;
+  if (!base || !apiKey) return [];
+
+  const normalize = (raw: any): Array<{ id: string; name: string; country: string }> => {
+    const arr = Array.isArray(raw)
+      ? raw
+      : raw?.data || raw?.cities || raw?.city_list || raw?.results || raw?.items || [];
+    if (!Array.isArray(arr) || arr.length === 0) return [];
+    return arr
+      .map((it: any) => {
+        const name = it?.name ?? it?.city_name ?? it?.cityName ?? it?.label ?? it?.title ?? String(it?.id ?? it?.city_id ?? it?.value ?? '');
+        const id = it?.id ?? it?.city_id ?? it?.value ?? it?.code ?? toSlug(name);
+        if (!name) return null;
+        return { id: String(id), name: String(name).trim(), country: 'Pakistan' };
+      })
+      .filter(Boolean) as Array<{ id: string; name: string; country: string }>;
+  };
+
+  const pathsToTry = ['/cities', '/city', '/GetCities', '/merchant/cities', '/api/cities'];
+  for (const p of pathsToTry) {
+    try {
+      const res = await courierGet(p);
+      const text = await res.text();
+      let data: any;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        continue;
+      }
+      const list = normalize(data);
+      if (list.length > 0) {
+        console.log(`[Cities API] Leopard API: got ${list.length} cities from ${p}`);
+        return list;
+      }
+    } catch (_) {
+      continue;
+    }
+  }
+
+  try {
+    const res = await courierPost('/cities', {});
+    const text = await res.text();
+    let data: any;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return [];
+    }
+    const list = normalize(data);
+    if (list.length > 0) {
+      console.log(`[Cities API] Leopard API: got ${list.length} cities from POST /cities`);
+      return list;
+    }
+  } catch (_) {
+    // ignore
+  }
+  return [];
+}
+
 // GET /api/cities - Get cities
 router.get('/', async (req, res) => {
   try {
@@ -408,10 +470,13 @@ router.get('/', async (req, res) => {
     let cities: Array<{ id: string; name: string; country: string }> = [];
     
     if (isPakistan) {
-      // Pakistan cities: Leopard-style list (from pakistan-cities.json; can be replaced with Leopard Active City List API when endpoint is available)
-      console.log('[Cities API] Loading Pakistan cities (Leopard-style list)...');
-      cities = loadPakistanCities();
-      console.log(`[Cities API] Loaded ${cities.length} Pakistan cities from Leopard-style list`);
+      console.log('[Cities API] Fetching Pakistan cities from Leopard API...');
+      cities = await fetchPakistanCitiesFromLeopard();
+      if (cities.length === 0) {
+        console.log('[Cities API] Leopard API returned no cities; using local JSON fallback.');
+        cities = loadPakistanCities();
+      }
+      console.log(`[Cities API] Loaded ${cities.length} Pakistan cities`);
     } else {
       cities = [...globalCities, ...loadPakistanCities()];
       if (country && country.trim()) {
