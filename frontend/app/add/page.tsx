@@ -126,15 +126,7 @@ export function AddBusinessForm({
     return subCategoryOptions.filter((s) => s.toLowerCase().includes(q))
   }, [subCatQuery, subCategoryOptions])
   
-  const [countryOpen, setCountryOpen] = useState(false)
-  const [countryOptions, setCountryOptions] = useState<string[]>([])
-  const [countryLoading, setCountryLoading] = useState(false)
-  const [countryQuery, setCountryQuery] = useState("")
-  const filteredCountries = useMemo(() => {
-    const q = countryQuery.trim().toLowerCase()
-    if (!q) return countryOptions
-    return countryOptions.filter((c) => c.toLowerCase().includes(q))
-  }, [countryQuery, countryOptions])
+  // Country is fixed to Pakistan; no dropdown
   
   const [form, setForm] = useState<FormState>({
     businessName: "",
@@ -318,187 +310,57 @@ export function AddBusinessForm({
     return Math.round((filledCount / requiredFields.length) * 100);
   }, [form]);
 
-  // Fetch countries
-  useEffect(() => {
-    const fetchCountries = async () => {
-      try {
-        setCountryLoading(true)
-        const now = Date.now()
-        const cacheKey = "add:countries"
-        let loaded: string[] | null = null
-        try {
-          const raw = sessionStorage.getItem(cacheKey)
-          if (raw) {
-            const parsed = JSON.parse(raw)
-            if (Array.isArray(parsed?.data) && typeof parsed?.ts === "number" && (now - parsed.ts) < CACHE_TTL_MS) {
-              loaded = parsed.data
-            }
-          }
-        } catch {}
-        if (!loaded) {
-          const res = await fetch("/api/cities/countries", { cache: "force-cache" })
-          const data = await res.json()
-          loaded = Array.isArray(data?.countries) ? data.countries : []
-          try { sessionStorage.setItem(cacheKey, JSON.stringify({ ts: now, data: loaded })) } catch {}
-        }
-        setCountryOptions(loaded ?? [])
-      } catch (e) {
-        setCountryOptions([])
-      } finally {
-        setCountryLoading(false)
-      }
-    }
-    fetchCountries()
-  }, [])
-
-  // Fetch cities from API when country is selected
+  // Fetch Pakistan cities from Leopard API (via backend)
   useEffect(() => {
     const fetchCities = async () => {
-      if (!form.country) {
-        setCityOptions([])
-        return
-      }
-
       try {
         setCityLoading(true)
-        const isPakistan = form.country.toLowerCase() === 'pakistan'
-        const cacheKey = `add:cities:${form.country}`
-        
-        // ALWAYS skip cache for Pakistan to force fresh API call
-        if (isPakistan) {
-          console.log('[Frontend] 🇵🇰 Pakistan selected - clearing cache and fetching fresh data from Leopard API')
-          // Clear any existing cache for Pakistan
-          try {
-            sessionStorage.removeItem(cacheKey)
-          } catch {}
+        try {
+          sessionStorage.removeItem('add:cities:Pakistan')
+        } catch {}
+        console.log('[Frontend] 🌐 Loading cities from Leopard API (Pakistan)')
+        const timestamp = Date.now()
+        const res = await fetch(`/api/cities?country=Pakistan&_t=${timestamp}`, {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', Pragma: 'no-cache' }
+        })
+        if (!res.ok) {
+          console.error('[Frontend] ❌ Failed to fetch cities:', res.status)
+          setCityOptions([])
+          return
         }
-        
-        // Always fetch from API for Pakistan, check cache for others
-        let loaded: Array<{ id: string; name: string; country?: string }> | null = null
-        
-        if (!isPakistan) {
-          // For non-Pakistan, check cache first
-          const now = Date.now()
-          try {
-            const raw = sessionStorage.getItem(cacheKey)
-            if (raw) {
-              const parsed = JSON.parse(raw)
-              if (Array.isArray(parsed?.data) && typeof parsed?.ts === "number" && (now - parsed.ts) < CACHE_TTL_MS) {
-                loaded = parsed.data
-                console.log(`[Frontend] Using cached cities for ${form.country}`)
-              }
-            }
-          } catch {}
-        }
-        
-        // Fetch from API if not in cache (or if Pakistan)
-        if (!loaded || isPakistan) {
-          console.log(`[Frontend] 🌐 Fetching cities from API for country: "${form.country}"`)
-          console.log(`[Frontend] API URL: /api/cities?country=${encodeURIComponent(form.country)}`)
-          
-          // Add timestamp to prevent browser caching
-          const timestamp = Date.now()
-          const res = await fetch(`/api/cities?country=${encodeURIComponent(form.country)}&_t=${timestamp}`, { 
-            cache: "no-store",
-            headers: {
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache',
-            }
-          })
-          
-          console.log(`[Frontend] API Response status: ${res.status} ${res.statusText}`)
-          
-          if (!res.ok) {
-            console.error(`[Frontend] ❌ Failed to fetch cities: ${res.status} ${res.statusText}`)
-            const errorText = await res.text().catch(() => '')
-            console.error('[Frontend] Error response:', errorText.substring(0, 500))
-            loaded = []
-          } else {
-            const data = await res.json()
-            console.log('[Frontend] API Response data keys:', Object.keys(data))
-            const cities = Array.isArray(data?.cities) ? data.cities : []
-            loaded = cities
-            
-            if (isPakistan) {
-              // Check if there's an error message in the response
-              if (data?.error) {
-                // Only log error once to avoid console spam
-                const errorKey = 'leopard_api_error_logged';
-                if (!sessionStorage.getItem(errorKey)) {
-                  console.error('[Frontend] ❌ Leopard API Error:', data.error);
-                  console.error('[Frontend] Check backend terminal for [Leopard] logs or test: http://localhost:3001/api/cities/test-leopard');
-                  try {
-                    sessionStorage.setItem(errorKey, 'true');
-                  } catch {}
-                }
-              } else if (cities.length === 0) {
-                const noCitiesKey = 'pakistan_no_cities_logged';
-                if (!sessionStorage.getItem(noCitiesKey)) {
-                  console.warn('[Frontend] ⚠️ No cities returned for Pakistan. Check backend logs.');
-                  try {
-                    sessionStorage.setItem(noCitiesKey, 'true');
-                  } catch {}
-                }
-              } else if (cities.length < 100) {
-                const fewCitiesKey = 'pakistan_few_cities_logged';
-                if (!sessionStorage.getItem(fewCitiesKey)) {
-                  console.warn(`[Frontend] ⚠️ Only ${cities.length} cities returned, expected 800+`);
-                  try {
-                    sessionStorage.setItem(fewCitiesKey, 'true');
-                  } catch {}
-                }
-              } else {
-                console.log(`[Frontend] ✅ Success! Got ${cities.length} cities from Leopard API`);
-                // Clear error flags on success
-                try {
-                  sessionStorage.removeItem('leopard_api_error_logged');
-                  sessionStorage.removeItem('pakistan_no_cities_logged');
-                  sessionStorage.removeItem('pakistan_few_cities_logged');
-                } catch {}
-              }
-            } else {
-              console.log(`[Frontend] Loaded ${cities.length} cities for ${form.country}`);
-            }
-            
-            // Only cache for non-Pakistan countries
-            if (!isPakistan) {
-              try { 
-                const now = Date.now()
-                sessionStorage.setItem(cacheKey, JSON.stringify({ ts: now, data: cities })) 
-              } catch {}
-            }
+        const data = await res.json()
+        const cities = Array.isArray(data?.cities) ? data.cities : []
+        setCityOptions(cities)
+        if (data?.error) {
+          const key = 'leopard_api_error_logged'
+          if (!sessionStorage.getItem(key)) {
+            console.error('[Frontend] Leopard API error:', data.error)
+            try { sessionStorage.setItem(key, 'true') } catch {}
           }
-        }
-        
-        setCityOptions(loaded ?? [])
-        
-        if (isPakistan && (!loaded || loaded.length === 0)) {
-          // Only log once to avoid multiple console warnings
-          const criticalKey = 'pakistan_critical_error_logged';
-          if (!sessionStorage.getItem(criticalKey)) {
-            console.error('[Frontend] ⚠️ CRITICAL: No cities loaded for Pakistan! Check backend terminal logs.');
-            try {
-              sessionStorage.setItem(criticalKey, 'true');
-            } catch {}
+        } else if (cities.length > 0) {
+          console.log(`[Frontend] ✅ Loaded ${cities.length} cities from Leopard API`)
+          try {
+            sessionStorage.removeItem('leopard_api_error_logged')
+            sessionStorage.removeItem('pakistan_no_cities_logged')
+            sessionStorage.removeItem('pakistan_few_cities_logged')
+          } catch {}
+        } else {
+          const key = 'pakistan_no_cities_logged'
+          if (!sessionStorage.getItem(key)) {
+            console.warn('[Frontend] No cities returned for Pakistan')
+            try { sessionStorage.setItem(key, 'true') } catch {}
           }
         }
       } catch (e) {
-        console.error('[Frontend] ❌ Error fetching cities:', e)
+        console.error('[Frontend] Error fetching cities:', e)
         setCityOptions([])
       } finally {
         setCityLoading(false)
       }
     }
-    
     fetchCities()
-  }, [form.country])
-
-  // Reset city when country changes
-  useEffect(() => {
-    if (form.country) {
-      setForm((prev) => ({ ...prev, city: "" }))
-    }
-  }, [form.country])
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target
@@ -656,57 +518,7 @@ export function AddBusinessForm({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50">
-      {/* Modern Hero Header */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-violet-600 via-blue-600 to-cyan-500 w-full">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
-        <div className="absolute inset-0">
-          <div className="absolute top-4 left-4 w-12 h-12 bg-white/10 rounded-full blur-xl animate-pulse"></div>
-          <div className="absolute top-12 right-8 w-8 h-8 bg-pink-300/20 rounded-full blur-lg animate-bounce"></div>
-          <div className="absolute bottom-8 left-1/4 w-6 h-6 bg-yellow-300/20 rounded-full blur-md animate-pulse delay-1000"></div>
-        </div>
-        <div className="relative w-full px-4 sm:px-6 py-6 sm:py-8">
-          <div className="text-center max-w-5xl mx-auto">
-            <div className="inline-flex items-center space-x-2 bg-white/15 backdrop-blur-md text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-bold mb-3 sm:mb-4 border border-white/20 shadow-lg">
-              <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
-              <span>🌍 Global Business Directory</span>
-              <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
-            </div>
-            
-            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-white mb-3 sm:mb-4 leading-tight">
-              <span className="block mb-1">Grow Your Business</span>
-              <span className="block bg-gradient-to-r from-yellow-300 via-pink-300 to-cyan-300 bg-clip-text text-transparent">
-                Reach Millions
-              </span>
-            </h1>
-            
-            <p className="text-sm sm:text-base text-white/95 mb-4 sm:mb-6 max-w-xl mx-auto leading-relaxed font-medium">
-              Join thousands of successful businesses worldwide. Get discovered by customers in your area and beyond.
-            </p>
-            
-            {/* Enhanced Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 max-w-2xl mx-auto mb-4 sm:mb-6">
-              <div className="bg-white/10 backdrop-blur-lg rounded-lg p-2 sm:p-3 border border-white/20 hover:bg-white/15 transition-all duration-300 group">
-                <div className="text-lg sm:text-xl font-black text-white mb-0.5 group-hover:scale-110 transition-transform">50K+</div>
-                <div className="text-white/90 text-xs font-semibold">Active Businesses</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-lg rounded-lg p-2 sm:p-3 border border-white/20 hover:bg-white/15 transition-all duration-300 group">
-                <div className="text-lg sm:text-xl font-black text-white mb-0.5 group-hover:scale-110 transition-transform">2M+</div>
-                <div className="text-white/90 text-xs font-semibold">Monthly Visitors</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-lg rounded-lg p-2 sm:p-3 border border-white/20 hover:bg-white/15 transition-all duration-300 group">
-                <div className="text-lg sm:text-xl font-black text-white mb-0.5 group-hover:scale-110 transition-transform">195</div>
-                <div className="text-white/90 text-xs font-semibold">Countries</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-lg rounded-lg p-2 sm:p-3 border border-white/20 hover:bg-white/15 transition-all duration-300 group">
-                <div className="text-lg sm:text-xl font-black text-white mb-0.5 group-hover:scale-110 transition-transform">FREE</div>
-                <div className="text-white/90 text-xs font-semibold">Always Free</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 md:py-12 -mt-4 sm:-mt-8">
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 md:py-12">
         <div className="max-w-6xl mx-auto">
           {/* Enhanced Progress Card */}
           <div className="mb-6 sm:mb-8 md:mb-10">
@@ -855,45 +667,17 @@ export function AddBusinessForm({
                     </div>
                   </div>
                   
-                  <div className={`grid grid-cols-1 ${form.country?.toLowerCase() === 'pakistan' ? 'lg:grid-cols-1' : 'lg:grid-cols-2'} gap-6`}>
+                  <div className="grid grid-cols-1 gap-6">
+                    {/* Country: Pakistan only (no dropdown) */}
                     <div className="space-y-2">
-                      <Label className="text-gray-700 font-semibold text-sm flex items-center gap-1">Country <span className="text-red-500 text-lg">*</span></Label>
-                      <Popover open={countryOpen} onOpenChange={setCountryOpen}>
-                        <PopoverTrigger asChild>
-                          <Button type="button" variant="outline" role="combobox" aria-expanded={countryOpen} className={`w-full justify-between h-12 rounded-lg border-2 transition-all ${fieldErrors.country ? 'border-red-400 bg-red-50/50' : 'border-gray-200 focus:border-blue-500'} bg-white`}>
-                            <span className="truncate">{form.country || (countryLoading ? "Loading..." : "Select country")}</span>
-                            <ChevronsUpDown className="ml-2 h-4 w-4 opacity-60" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                          <Command shouldFilter={false}>
-                            <CommandInput placeholder="Search country..." value={countryQuery} onValueChange={setCountryQuery} className="h-9" />
-                            <CommandList>
-                              <CommandEmpty>No country found.</CommandEmpty>
-                              <CommandGroup>
-                                {filteredCountries.map((country) => (
-                                  <CommandItem 
-                                    key={country} 
-                                    value={country} 
-                                    onSelect={() => { 
-                                      setForm((s) => ({ ...s, country, city: "" })); 
-                                      setCountryOpen(false); 
-                                      setCountryQuery("") 
-                                    }}
-                                  >
-                                    {country}
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
+                      <Label className="text-gray-700 font-semibold text-sm flex items-center gap-1">Country</Label>
+                      <div className="flex items-center gap-2 h-12 px-4 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-700 font-medium">
+                        🇵🇰 Pakistan
+                      </div>
                     </div>
 
-                    {/* Pakistani City Selection - Special Section */}
-                    {form.country?.toLowerCase() === 'pakistan' ? (
-                      <div className="space-y-2 lg:col-span-2">
+                    {/* City: Loading from Leopard API */}
+                    <div className="space-y-2 lg:col-span-2">
                         <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-4 sm:p-5">
                           <div className="flex items-center gap-3 mb-3">
                             <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-md">
@@ -1000,91 +784,6 @@ export function AddBusinessForm({
 
                         </div>
                       </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <div className="mb-3">
-                          <Label className="text-gray-700 font-semibold text-sm flex items-center gap-1">City <span className="text-red-500 text-lg">*</span></Label>
-                          <p className="text-sm text-blue-600 font-medium mt-1 bg-blue-50 px-3 py-2 rounded-lg border border-blue-200">
-                            💡 Please type your city if you don't find it in the list
-                          </p>
-                        </div>
-                        <Popover open={cityOpen} onOpenChange={setCityOpen}>
-                          <PopoverTrigger asChild>
-                            <Button 
-                              type="button" 
-                              variant="outline" 
-                              role="combobox" 
-                              aria-expanded={cityOpen} 
-                              className={`w-full justify-between h-12 rounded-lg border-2 transition-all ${fieldErrors.city ? 'border-red-400 bg-red-50/50' : 'border-gray-200 focus:border-blue-500'} bg-white`}
-                              disabled={!form.country}
-                            >
-                              <span className="truncate">
-                                {!form.country 
-                                  ? "Select country first" 
-                                  : form.city || (cityLoading ? "Loading..." : "Select city")
-                                }
-                              </span>
-                              <ChevronsUpDown className="ml-2 h-4 w-4 opacity-60" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                            <Command shouldFilter={false}>
-                              <CommandInput 
-                                placeholder="Search city or type to add new..." 
-                                value={cityQuery} 
-                                onValueChange={setCityQuery} 
-                                className="h-9" 
-                              />
-                              <CommandList>
-                                <CommandEmpty>
-                                  {!form.country 
-                                    ? "Please select a country first" 
-                                    : filteredCities.length === 0 && !showCustomCityOption 
-                                      ? "No cities found. Type your city name above to add it."
-                                      : ""}
-                                </CommandEmpty>
-                                <CommandGroup>
-                                  {filteredCities.map((c) => (
-                                    <CommandItem 
-                                      key={c.id} 
-                                      value={c.name} 
-                                      onSelect={() => { 
-                                        setForm((s) => ({ ...s, city: c.name })); 
-                                        setCityOpen(false); 
-                                        setCityQuery("") 
-                                      }}
-                                    >
-                                      {c.name}
-                                    </CommandItem>
-                                  ))}
-                                  {showCustomCityOption && (
-                                    <div className="border-t border-gray-200 my-1">
-                                      <CommandItem
-                                        value={`Add "${cityQuery.trim()}"`}
-                                        onSelect={() => {
-                                          saveCustomCity(cityQuery.trim())
-                                        }}
-                                        className="text-primary font-semibold bg-gradient-to-r from-primary/10 to-purple-50 border-l-4 border-primary mx-2 my-1"
-                                        disabled={savingCustomCity}
-                                      >
-                                        {savingCustomCity ? (
-                                          <span className="flex items-center gap-2">
-                                            <span className="animate-spin">⏳</span>
-                                            Adding city...
-                                          </span>
-                                        ) : (
-                                          <span className="flex items-center gap-2">
-                                            <span className="text-lg">➕</span>
-                                            <span>
-                                              <strong>Add "{cityQuery.trim()}"</strong> as a new city in {form.country}
-                                            </span>
-                                          </span>
-                                        )}
-                                      </CommandItem>
-                                    </div>
-                                  )}
-                                  {!showCustomCityOption && form.country && cityQuery.trim().length > 0 && filteredCities.length > 0 && (
-                                    <div className="border-t border-gray-200 my-1 px-3 py-2 text-sm text-gray-600 bg-gray-50">
                                       <p className="flex items-center gap-2">
                                         <span>💡</span>
                                         <span>City not found? Type the full city name to add it.</span>
@@ -1396,12 +1095,12 @@ export default function AddBusinessPage() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebPage",
-            "name": "List Your Business - Global Business Directory",
-            "description": "Add your business to the world's premier business directory for free",
+            "name": "List Your Business",
+            "description": "Add your business to the directory for free",
             "url": "https://biz-own.com/add",
             "mainEntity": {
               "@type": "Service",
-              "name": "Global Business Listing Service",
+              "name": "Business Listing Service",
               "description": "Free business directory listing service for businesses worldwide",
               "provider": {
                 "@type": "Organization",

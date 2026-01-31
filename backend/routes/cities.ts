@@ -408,9 +408,10 @@ router.get('/', async (req, res) => {
     let cities: Array<{ id: string; name: string; country: string }> = [];
     
     if (isPakistan) {
-      console.log('[Cities API] Loading Pakistan cities from JSON file...');
+      // Pakistan cities: Leopard-style list (from pakistan-cities.json; can be replaced with Leopard Active City List API when endpoint is available)
+      console.log('[Cities API] Loading Pakistan cities (Leopard-style list)...');
       cities = loadPakistanCities();
-      console.log(`[Cities API] Loaded ${cities.length} Pakistan cities`);
+      console.log(`[Cities API] Loaded ${cities.length} Pakistan cities from Leopard-style list`);
     } else {
       cities = [...globalCities, ...loadPakistanCities()];
       if (country && country.trim()) {
