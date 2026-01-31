@@ -1,126 +1,130 @@
 import Link from "next/link"
-import { Mail, MapPin, Building2, Star, Users, Phone } from "lucide-react"
+import { Mail, MapPin, Building2, Star, Users, Phone, ArrowRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { SITE_NAME } from "@/lib/site"
 
 export function Footer() {
   return (
     <footer className="bg-gray-900 text-white">
-      <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 lg:py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-          {/* Brand */}
+      {/* Main Footer - same structure as Digital Skills House (digitalskillshouse.pk) */}
+      <div className="container mx-auto px-4 sm:px-6 py-10 sm:py-14 lg:py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
+          {/* Brand Column - wide, like DSH */}
           <div className="sm:col-span-2 lg:col-span-2">
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center shadow-lg">
                 <Building2 className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-white">LocatorBranches</h3>
-                <p className="text-xs text-gray-400">Business Directory</p>
+                <h3 className="text-xl sm:text-2xl font-bold text-white">{SITE_NAME}</h3>
+                <p className="text-sm text-gray-400">Business Directory</p>
               </div>
             </div>
-            <p className="text-sm sm:text-base text-gray-300 leading-relaxed mb-4 sm:mb-6 max-w-md">
-              Pakistan's premier business directory platform, connecting millions of customers with trusted local businesses. 
+            <p className="text-sm sm:text-base text-gray-300 leading-relaxed mb-6 max-w-md">
+              Pakistan&apos;s premier business directory platform, connecting millions of customers with trusted local businesses.
               Discover services, read authentic reviews, and grow your business with our comprehensive directory.
             </p>
-            
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
-              <div className="text-center">
-                <div className="text-xl sm:text-2xl font-bold text-primary">50K+</div>
-                <div className="text-xs text-gray-400">Businesses</div>
+
+            {/* Stats Row - like DSH (500+ Students, 95% Job Placement, etc.) */}
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="text-center py-3 px-2 bg-gray-800/50 rounded-lg border border-gray-700/50">
+                <div className="text-xl sm:text-2xl font-bold text-green-400">50K+</div>
+                <div className="text-xs text-gray-400 mt-0.5">Businesses</div>
               </div>
-              <div className="text-center">
-                <div className="text-xl sm:text-2xl font-bold text-accent">2M+</div>
-                <div className="text-xs text-gray-400">Users</div>
+              <div className="text-center py-3 px-2 bg-gray-800/50 rounded-lg border border-gray-700/50">
+                <div className="text-xl sm:text-2xl font-bold text-blue-400">2M+</div>
+                <div className="text-xs text-gray-400 mt-0.5">Users</div>
               </div>
-              <div className="text-center">
+              <div className="text-center py-3 px-2 bg-gray-800/50 rounded-lg border border-gray-700/50">
                 <div className="text-xl sm:text-2xl font-bold text-purple-400">1M+</div>
-                <div className="text-xs text-gray-400">Reviews</div>
+                <div className="text-xs text-gray-400 mt-0.5">Reviews</div>
               </div>
             </div>
 
-            <div className="space-y-2 sm:space-y-3 text-sm">
-              <div className="flex items-center gap-2 sm:gap-3 text-gray-300">
-                <Mail className="h-4 w-4 text-primary flex-shrink-0" />
-                <a href="mailto:support@bizdirectory.pk" className="hover:text-primary transition-colors break-all">
-                  support@bizdirectory.pk
-                </a>
+            {/* Contact - Address, Phone, Email (icon + text like DSH) */}
+            <div className="space-y-3 text-sm">
+              <div className="flex items-start gap-3 text-gray-300">
+                <MapPin className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <span>Pakistan — Find businesses in your city</span>
               </div>
-              <div className="flex items-center gap-2 sm:gap-3 text-gray-300">
-                <Phone className="h-4 w-4 text-primary flex-shrink-0" />
-                <a href="tel:+923001234567" className="hover:text-primary transition-colors">
+              <div className="flex items-center gap-3 text-gray-300">
+                <Phone className="h-4 w-4 text-green-400 flex-shrink-0" />
+                <a href="tel:+923001234567" className="hover:text-green-400 transition-colors">
                   +92 300 123 4567
                 </a>
               </div>
-              <div className="flex items-center gap-2 sm:gap-3 text-gray-300">
-                <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
-                <span>Lahore, Punjab, Pakistan</span>
+              <div className="flex items-center gap-3 text-gray-300">
+                <Mail className="h-4 w-4 text-green-400 flex-shrink-0" />
+                <a href="mailto:support@bizdirectory.pk" className="hover:text-green-400 transition-colors break-all">
+                  support@bizdirectory.pk
+                </a>
               </div>
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Quick Links - like DSH Quick Links */}
           <div>
-            <h4 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-white">Quick Links</h4>
-            <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-gray-300">
+            <h4 className="text-base font-semibold text-white mb-4 uppercase tracking-wide">Quick Links</h4>
+            <ul className="space-y-3 text-sm text-gray-300">
               <li>
-                <Link href="/" className="hover:text-primary transition-colors">
-                  Home
+                <Link href="/" className="hover:text-green-400 transition-colors flex items-center gap-2 group">
+                  <span className="group-hover:translate-x-0.5 transition-transform">Home</span>
                 </Link>
               </li>
               <li>
-                <Link href="/search" className="hover:text-primary transition-colors">
-                  Browse Businesses
+                <Link href="/search" className="hover:text-green-400 transition-colors flex items-center gap-2 group">
+                  <span className="group-hover:translate-x-0.5 transition-transform">Browse Businesses</span>
                 </Link>
               </li>
               <li>
-                <Link href="/add" className="hover:text-primary transition-colors">
-                  List Your Business
+                <Link href="/add" className="hover:text-green-400 transition-colors flex items-center gap-2 group">
+                  <span className="group-hover:translate-x-0.5 transition-transform">List Your Business</span>
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="hover:text-primary transition-colors">
-                  About Us
+                <Link href="/about" className="hover:text-green-400 transition-colors flex items-center gap-2 group">
+                  <span className="group-hover:translate-x-0.5 transition-transform">About Us</span>
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-primary transition-colors">
-                  Contact
+                <Link href="/contact" className="hover:text-green-400 transition-colors flex items-center gap-2 group">
+                  <span className="group-hover:translate-x-0.5 transition-transform">Contact</span>
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Business Categories */}
+          {/* Popular Categories - like DSH Courses column */}
           <div>
-            <h4 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-white">Popular Categories</h4>
-            <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-gray-300">
+            <h4 className="text-base font-semibold text-white mb-4 uppercase tracking-wide">Popular Categories</h4>
+            <ul className="space-y-3 text-sm text-gray-300">
               <li>
-                <Link href="/category/restaurants" className="hover:text-primary transition-colors">
+                <Link href="/category/restaurants" className="hover:text-green-400 transition-colors">
                   Restaurants
                 </Link>
               </li>
               <li>
-                <Link href="/category/healthcare" className="hover:text-primary transition-colors">
+                <Link href="/category/healthcare" className="hover:text-green-400 transition-colors">
                   Healthcare
                 </Link>
               </li>
               <li>
-                <Link href="/category/education" className="hover:text-primary transition-colors">
+                <Link href="/category/education" className="hover:text-green-400 transition-colors">
                   Education
                 </Link>
               </li>
               <li>
-                <Link href="/category/automotive" className="hover:text-primary transition-colors">
+                <Link href="/category/automotive" className="hover:text-green-400 transition-colors">
                   Automotive
                 </Link>
               </li>
               <li>
-                <Link href="/category/real-estate" className="hover:text-primary transition-colors">
+                <Link href="/category/real-estate" className="hover:text-green-400 transition-colors">
                   Real Estate
                 </Link>
               </li>
               <li>
-                <Link href="/category/technology" className="hover:text-primary transition-colors">
+                <Link href="/category/technology" className="hover:text-green-400 transition-colors">
                   Technology
                 </Link>
               </li>
@@ -128,20 +132,47 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Bottom Section */}
-        <div className="border-t border-gray-800 mt-8 sm:mt-12 pt-6 sm:pt-8">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
+        {/* CTA Strip - like DSH "Ready to Start? Enroll Now | Call" */}
+        <div className="mt-10 sm:mt-12 pt-8 sm:pt-10 border-t border-gray-800">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-800/50 rounded-xl px-6 py-5 sm:px-8 sm:py-6 border border-gray-700/50">
+            <div className="text-center sm:text-left">
+              <h4 className="text-lg font-semibold text-white mb-1">Ready to grow your business?</h4>
+              <p className="text-sm text-gray-400">List your business for free and reach millions of customers.</p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Button asChild className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-semibold px-6">
+                <Link href="/add" className="flex items-center gap-2">
+                  List Your Business
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <a
+                href="tel:+923001234567"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-600 text-gray-300 hover:border-green-500 hover:text-green-400 transition-colors text-sm font-medium"
+              >
+                <Phone className="h-4 w-4" />
+                Call: +92 300 123 4567
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Bar - Copyright + Legal (like DSH footer bottom) */}
+      <div className="border-t border-gray-800">
+        <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-5">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
             <div className="text-gray-400 text-xs sm:text-sm text-center sm:text-left">
-              © 2025 LocatorBranches. All rights reserved.
+              © {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
             </div>
             <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm">
-              <Link href="/privacy" className="text-gray-400 hover:text-primary transition-colors">
+              <Link href="/privacy" className="text-gray-400 hover:text-green-400 transition-colors">
                 Privacy Policy
               </Link>
-              <Link href="/terms" className="text-gray-400 hover:text-primary transition-colors">
+              <Link href="/terms" className="text-gray-400 hover:text-green-400 transition-colors">
                 Terms of Service
               </Link>
-              <a href="/sitemap.xml" className="text-gray-400 hover:text-primary transition-colors">
+              <a href="/sitemap.xml" className="text-gray-400 hover:text-green-400 transition-colors">
                 Sitemap
               </a>
             </div>
