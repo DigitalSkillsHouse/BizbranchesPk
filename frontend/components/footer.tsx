@@ -12,10 +12,11 @@ export function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
           {/* Brand Column - wide, like DSH */}
           <div className="sm:col-span-2 lg:col-span-2">
-            <div className="mb-4">
+            <div className="flex items-center gap-3 mb-4">
               <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 shadow-lg">
                 <Image src="/BizBranches.jpeg" alt="BizBranches" fill className="object-contain" sizes="48px" />
               </div>
+              <span className="text-xl sm:text-2xl font-bold text-white">BizBranches.Pk</span>
             </div>
             <p className="text-sm sm:text-base text-gray-300 leading-relaxed mb-6 max-w-md">
               Pakistan&apos;s premier business directory platform, connecting millions of customers with trusted local businesses.

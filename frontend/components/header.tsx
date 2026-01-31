@@ -43,10 +43,11 @@ export function Header() {
           </button>
 
           {/* Center Logo - Always visible */}
-          <Link href="/" className="flex items-center flex-shrink-0 min-w-0" onClick={closeMenu} aria-label="Home">
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 flex-shrink-0 min-w-0" onClick={closeMenu} aria-label="Home">
             <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl overflow-hidden flex-shrink-0 group-hover:shadow-xl transition-all duration-300 shadow-lg">
               <Image src="/BizBranches.jpeg" alt="BizBranches" fill className="object-contain" sizes="56px" priority />
             </div>
+            <span className="text-lg sm:text-xl font-bold text-white group-hover:text-green-400 transition-colors duration-300">BizBranches.Pk</span>
           </Link>
 
           {/* Desktop Navigation - Hidden on mobile */}
