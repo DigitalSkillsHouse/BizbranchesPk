@@ -74,27 +74,31 @@ export default function RootLayout({
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": `${SITE_URL}/#organization`,
     name: SITE_NAME,
     url: SITE_URL,
     logo: `${SITE_URL}/BizBranches.jpeg`,
-    description: SITE_DESCRIPTION,
+    description: "BizBranches is a free business listing directory for Pakistan. It helps users find local businesses by city and category and allows business owners to add their listing for free.",
     sameAs: [],
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer service",
       email: "support@bizbranches.pk",
       telephone: "+923142552851",
-      areaServed: "PK",
+      areaServed: { "@type": "Country", name: "Pakistan" },
     },
+    areaServed: { "@type": "Country", name: "Pakistan" },
   };
 
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": `${SITE_URL}/#website`,
     name: SITE_NAME,
     url: SITE_URL,
-    description: SITE_DESCRIPTION,
+    description: "Free Pakistan business directory. Find local businesses by city and category. Add your business free.",
     publisher: { "@id": `${SITE_URL}/#organization` },
+    inLanguage: "en-PK",
     potentialAction: {
       "@type": "SearchAction",
       target: { "@type": "EntryPoint", urlTemplate: `${SITE_URL}/search?q={search_term_string}` },
@@ -105,6 +109,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning={true}>
       <head>
+        <link rel="alternate" type="text/plain" href={`${SITE_URL}/llms.txt`} title="Site description for AI and LLMs" />
         {/* Organization + WebSite schema for SEO */}
         <script
           type="application/ld+json"

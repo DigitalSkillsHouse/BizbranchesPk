@@ -225,6 +225,10 @@ export function Footer() {
                 <Map className="h-4 w-4" />
                 Sitemap
               </a>
+              <Link href="/llms.txt" className="inline-flex items-center gap-2 text-slate-500 hover:text-emerald-400 transition-colors" rel="alternate" type="text/plain">
+                <Info className="h-4 w-4" />
+                For AI / LLMs
+              </Link>
             </div>
           </div>
         </div>

@@ -590,6 +590,14 @@ export function AddBusinessForm({
             <p className="text-gray-600 text-sm sm:text-base max-w-xl mx-auto">
               {description}
             </p>
+            <section className="mt-6 text-left max-w-2xl mx-auto" aria-labelledby="how-to-add-heading">
+              <h2 id="how-to-add-heading" className="text-lg font-semibold text-gray-900 mb-2">How to add your business listing in Pakistan</h2>
+              <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1">
+                <li>Fill in your business name, category, city, and address.</li>
+                <li>Add contact details (phone, email, WhatsApp, website).</li>
+                <li>Submit the form. Listing is free and goes live after submission.</li>
+              </ol>
+            </section>
           </div>
           {/* Enhanced Progress Card */}
           <div className="mb-6 sm:mb-8 md:mb-10">

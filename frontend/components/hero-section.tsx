@@ -172,13 +172,13 @@ export function HeroSection() {
       <div className="absolute inset-0 bg-gradient-to-b from-slate-900/75 to-slate-900/92" aria-hidden />
 
       <div className="relative container mx-auto px-4 sm:px-6 text-center z-10 max-w-3xl">
-        {/* 1. Headline — SEO + value in 3 seconds */}
+        {/* 1. Headline — clear for humans and AI: site name + primary intent */}
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4 leading-tight tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
-          Free Business Listing in Pakistan
+          BizBranches: Free Pakistan Business Directory
         </h1>
-        {/* 2. Subheadline — benefits + trust, no fluff */}
+        {/* 2. Subheadline — what the site does and who it is for */}
         <p className="text-sm sm:text-base md:text-lg text-white/95 mb-6 sm:mb-8 leading-snug max-w-xl mx-auto drop-shadow-[0_1px_4px_rgba(0,0,0,0.3)]">
-          List your business in minutes. Get found by customers across Pakistan. No fees, no credit card.
+          Find local businesses by city and category. List your business free—no fees, no credit card. For Pakistan.
         </p>
 
         {/* 3. Primary CTA — stands out, action + trust */}

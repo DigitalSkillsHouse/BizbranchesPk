@@ -10,46 +10,46 @@ const steps = [
   {
     step: "1",
     title: "Search & Discover",
-    description: "Use our AI-powered search to find businesses by name, category, or location across 50+ countries worldwide.",
+    description: "Find businesses in Pakistan by name, category, or city. Use the search bar or browse categories and cities.",
     icon: Search,
     color: "from-blue-500 to-cyan-500",
     bgColor: "bg-blue-50",
-    features: ["Global Search", "Smart Filters", "Real-time Results"]
+    features: ["Search by Name", "Filter by City", "Browse Categories"]
   },
   {
     step: "2",
     title: "Browse & Compare",
-    description: "View detailed business profiles, verified reviews, ratings, photos, and comprehensive contact information.",
+    description: "View business profiles with contact details, address, description, and reviews. Compare options before contacting.",
     icon: FileText,
     color: "from-purple-500 to-pink-500",
     bgColor: "bg-purple-50",
-    features: ["Verified Reviews", "Photo Gallery", "Detailed Profiles"]
+    features: ["Contact Details", "Address & Map", "Reviews"]
   },
   {
     step: "3",
     title: "Connect & Engage",
-    description: "Contact businesses instantly through multiple channels: phone, WhatsApp, email, or visit their website.",
+    description: "Contact businesses by phone, WhatsApp, email, or website. Details are on each listing.",
     icon: Phone,
     color: "from-green-500 to-emerald-500",
     bgColor: "bg-green-50",
-    features: ["Instant Contact", "Multiple Channels", "Direct Connection"]
+    features: ["Phone & WhatsApp", "Email", "Website"]
   },
   {
     step: "4",
     title: "List Your Business",
-    description: "Business owner? Add your business for FREE and reach millions of potential customers worldwide.",
+    description: "Business owner? Add your business free on BizBranches. Reach customers across Pakistan at no cost.",
     icon: Building2,
     color: "from-orange-500 to-red-500",
     bgColor: "bg-orange-50",
-    features: ["Free Listing", "Global Reach", "Instant Visibility"]
+    features: ["Free Listing", "Pakistan-Wide", "Instant Visibility"]
   },
 ]
 
 const stats = [
-  { icon: Users, value: "5M+", label: "Active Users" },
-  { icon: Building2, value: "100K+", label: "Businesses Listed" },
-  { icon: Globe, value: "50+", label: "Countries" },
-  { icon: Star, value: "4.9", label: "Average Rating" },
+  { icon: Users, value: "Find", label: "Businesses" },
+  { icon: Building2, value: "Add Free", label: "Your Listing" },
+  { icon: Globe, value: "Pakistan", label: "Coverage" },
+  { icon: Star, value: "Free", label: "No Fees" },
 ]
 
 export function HowItWorksSection() {
@@ -104,8 +104,7 @@ export function HowItWorksSection() {
           </h2>
           
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-8">
-            Discover, connect, and grow with the world's most comprehensive business directory. 
-            <span className="font-semibold text-primary">Join millions</span> who trust us daily.
+            Find local businesses in Pakistan or add your business free. Search by category and city—no signup or fee required.
           </p>
 
           {/* Stats Row */}
@@ -213,8 +212,7 @@ export function HowItWorksSection() {
             </h3>
             
             <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-              Whether you're searching for services or want to grow your business, we've got you covered. 
-              <span className="font-semibold">Start your journey today!</span>
+              Search for businesses in Pakistan or add your business free. No credit card, no fees.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

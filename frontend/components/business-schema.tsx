@@ -16,6 +16,11 @@ export function BusinessSchema({ business, ratingAvg = 0, ratingCount = 0 }: Bus
   const sameAs = [business.facebookUrl, business.youtubeUrl, business.gmbUrl, business.websiteUrl].filter(
     (v: unknown) => typeof v === "string" && v.trim().length > 0
   );
+  const description =
+    typeof business.description === "string" && business.description.trim()
+      ? business.description
+      : `${business.name} is a ${business.category || "business"} in ${business.city || "Pakistan"}. Contact via phone, email, or visit.`;
+
   const schemaData: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -34,8 +39,9 @@ export function BusinessSchema({ business, ratingAvg = 0, ratingCount = 0 }: Bus
     email: business.email || undefined,
     url: canonicalUrl,
     priceRange: "PKR",
-    description: typeof business.description === "string" ? business.description : undefined,
+    description,
     sameAs: sameAs.length > 0 ? sameAs : undefined,
+    areaServed: { "@type": "Country", name: "Pakistan" },
   };
 
   if (business.openingHours && Array.isArray(business.openingHours) && business.openingHours.length > 0) {

@@ -8,34 +8,44 @@ import { FAQSchema } from "@/components/faq-schema"
 
 const faqs = [
   {
-    question: "How do I add my business to BizDirectory?",
+    question: "What is the best business directory in Pakistan?",
     answer:
-      'Click on "Add Your Business" button and fill out the simple form with your business details. It\'s completely free to list your business on our platform.',
+      "BizBranches is a free business directory for Pakistan. You can find local businesses by city and category, and business owners can add their listing at no cost. It covers major cities like Karachi, Lahore, Islamabad, and many categories including restaurants, healthcare, education, and retail.",
+  },
+  {
+    question: "How do I add a business listing in Pakistan?",
+    answer:
+      "Go to the Add Your Business page on BizBranches, fill in your business name, category, city, address, phone, email, and description. Submit the form—it is free and no credit card is required. Your listing goes live after submission.",
+  },
+  {
+    question: "How do I add my business to BizBranches?",
+    answer:
+      'Click "Add Your Business Free" on the homepage or go to /add. Fill out the form with your business details (name, category, city, address, phone, email). Submission is free.',
   },
   {
     question: "Is it free to list my business?",
     answer:
-      "Yes, basic business listings are completely free. We also offer premium features for businesses that want enhanced visibility and additional marketing tools.",
+      "Yes. Listing your business on BizBranches is completely free. There is no fee to add or maintain your listing.",
   },
   {
     question: "How can customers find my business?",
     answer:
-      "Customers can find your business through our search functionality, by browsing categories, or by exploring businesses in their city. We optimize listings for maximum visibility.",
+      "Customers can find your business by searching by name, browsing by category (e.g. restaurants, healthcare), or by city. Your listing appears in search results and on the relevant category and city pages.",
   },
   {
     question: "Can I edit my business information after listing?",
     answer:
-      "Yes, you can update your business information at any time. Contact our support team for assistance with updates.",
+      "Yes. You can update your business information. Contact support for assistance with updates.",
   },
   {
     question: "What information should I include in my business listing?",
     answer:
-      "Include your business name, category, complete address, phone number, email, business hours, and a detailed description of your services. High-quality photos also help attract customers.",
+      "Include business name, category, complete address, phone number, email, and a short description. A logo and website link help customers find and trust your listing.",
   },
   {
-    question: "How do I contact businesses listed on BizDirectory?",
+    question: "How do I contact businesses listed on BizBranches?",
     answer:
-      "Each business listing includes contact information such as phone numbers, email addresses, and WhatsApp numbers where available. You can reach out directly through your preferred method.",
+      "Each listing shows contact details such as phone, email, WhatsApp, and website where provided. Use the details on the business page to contact them directly.",
   },
 ]
 
@@ -61,7 +71,7 @@ export function FAQSection() {
             Frequently Asked <span className="bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">Questions</span>
           </h2>
           <p className="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed px-4">
-            Find answers to common questions about using BizDirectory business directory platform.
+            Answers to common questions about finding businesses in Pakistan and adding your business free on BizBranches.
           </p>
         </div>
 

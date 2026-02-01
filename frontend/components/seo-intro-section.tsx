@@ -8,11 +8,25 @@ import Link from "next/link";
  */
 export function SEOIntroSection() {
   return (
-    <section className="w-full bg-white border-y border-gray-100">
+    <section className="w-full bg-white border-y border-gray-100" aria-labelledby="what-is-bizbranches">
       <div className="container mx-auto px-4 sm:px-6 py-10 sm:py-14 max-w-4xl">
-        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
-          Pakistan&apos;s Free Business Listing Directory
+        <h2 id="what-is-bizbranches" className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
+          What is BizBranches?
         </h2>
+        <p className="text-lg text-gray-700 font-medium mb-4">
+          BizBranches is Pakistan&apos;s free business listing directory. It helps people find local businesses and lets business owners add a listing at no cost.
+        </p>
+        <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-2">Who is it for?</h3>
+        <ul className="list-disc pl-6 text-gray-700 space-y-1 mb-4">
+          <li>People in Pakistan looking for local businesses (restaurants, clinics, shops, services).</li>
+          <li>Business owners in Pakistan who want a free listing so customers can find them.</li>
+        </ul>
+        <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-2">What value does it provide?</h3>
+        <ul className="list-disc pl-6 text-gray-700 space-y-1 mb-6">
+          <li>Search and browse by category and city.</li>
+          <li>Free listings with contact details (phone, email, address, website).</li>
+          <li>No cost to list or to search.</li>
+        </ul>
         <div className="prose prose-gray max-w-none text-gray-700 leading-relaxed space-y-4">
           <p>
             BizBranches is a free business listing site for Pakistan. Whether you run a small shop in Lahore,
