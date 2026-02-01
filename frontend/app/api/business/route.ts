@@ -30,3 +30,29 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
+/** POST /api/business – proxy Add Business form (FormData) to backend */
+export async function POST(request: NextRequest) {
+  try {
+    const formData = await request.formData()
+    const backendUrl = `${BACKEND_URL}/api/business`
+    const response = await fetch(backendUrl, {
+      method: 'POST',
+      body: formData,
+      // Do not set Content-Type – fetch sets multipart/form-data with boundary
+    })
+    const text = await response.text()
+    try {
+      const data = JSON.parse(text)
+      return NextResponse.json(data, { status: response.status })
+    } catch {
+      return new NextResponse(text, { status: response.status })
+    }
+  } catch (error) {
+    console.error('Business POST proxy error:', error)
+    return NextResponse.json(
+      { ok: false, error: 'Failed to submit business' },
+      { status: 500 }
+    )
+  }
+}
