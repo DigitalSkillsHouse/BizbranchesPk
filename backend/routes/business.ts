@@ -5,6 +5,7 @@ import { CreateBusinessSchema, BusinessSchema } from '../lib/schemas';
 import cloudinary from '../lib/cloudinary';
 import { pingGoogleSitemap } from '../lib/google-ping';
 import { checkDuplicateBusiness, hasAnyConflict, getNormalizedForInsert } from '../lib/duplicate-check';
+import { sendConfirmationEmail } from '../lib/email';
 import { logger } from '../lib/logger';
 import { rateLimit, getClientIp } from '../lib/rate-limit';
 
@@ -506,8 +507,9 @@ router.post('/', upload.single('logo'), async (req, res) => {
     }
 
     const { phoneDigits, websiteNormalized } = getNormalizedForInsert(validatedData.phone, validatedData.websiteUrl);
+    const now = new Date();
 
-    // Create business document with schema validation
+    // Auto-approve when duplicate validation passes — listing is visible immediately
     const businessDoc = BusinessSchema.parse({
       ...validatedData,
       slug: uniqueSlug,
@@ -515,11 +517,12 @@ router.post('/', upload.single('logo'), async (req, res) => {
       logoPublicId: logoPublicId || undefined,
       phoneDigits,
       websiteNormalized: websiteNormalized || undefined,
-      status: "pending" as const,
-      createdAt: new Date(),
+      status: "approved" as const,
+      approvedAt: now,
+      approvedBy: "auto" as const,
+      createdAt: now,
     });
 
-    // Insert into database
     const result = await models.businesses.insertOne(businessDoc);
 
     // Update category count
@@ -528,10 +531,24 @@ router.post('/', upload.single('logo'), async (req, res) => {
       { $inc: { count: 1 } }
     );
 
-    res.status(201).json({ 
-      ok: true, 
-      id: result.insertedId, 
-      business: { ...businessDoc, _id: result.insertedId } 
+    // Non-blocking: ping Google for sitemap and send confirmation email
+    pingGoogleSitemap().catch((e) => logger.error('Sitemap ping after create:', e));
+    sendConfirmationEmail({
+      name: businessDoc.name,
+      slug: businessDoc.slug,
+      category: businessDoc.category,
+      city: businessDoc.city,
+      address: businessDoc.address,
+      phone: businessDoc.phone,
+      email: businessDoc.email,
+      websiteUrl: businessDoc.websiteUrl,
+    }).catch((e) => logger.error('Confirmation email:', e));
+
+    res.status(201).json({
+      ok: true,
+      id: result.insertedId,
+      slug: uniqueSlug,
+      business: { ...businessDoc, _id: result.insertedId },
     });
   } catch (err: any) {
     logger.error("Business creation error:", err);

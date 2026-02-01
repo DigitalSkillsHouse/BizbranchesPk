@@ -204,13 +204,13 @@ export async function checkDuplicateBusiness(input: DuplicateCheckInput): Promis
 
     const outcomes = await Promise.all(queries.map(async (q) => ({ key: q.key, found: await q.run() })));
     for (const { key, found } of outcomes) {
-      if (found) (result as Record<string, boolean>)[key] = true;
+      if (found) (conflicts as Record<string, boolean>)[key] = true;
     }
   } catch (e) {
     const { logger } = await import('./logger');
     logger.error('Duplicate check error:', e);
   }
-  return result;
+  return conflicts;
 }
 
 export function hasAnyConflict(conflicts: DuplicateConflicts): boolean {

@@ -374,6 +374,9 @@ export function AddBusinessForm({
       })
 
       if (res.ok) {
+        const data = await res.json().catch(() => ({}))
+        const slug = data?.slug ?? data?.business?.slug ?? null
+        setSubmittedSlug(slug)
         setForm({
           businessName: "",
           contactPersonName: "",
@@ -950,7 +953,7 @@ export function AddBusinessForm({
                     </Button>
                     <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-5 border border-white/20">
                       <p className="text-white font-semibold text-sm sm:text-base">
-                        Your listing will be reviewed and published within 24–48 hours. Free forever.
+                        Your listing goes live immediately after submission. Free forever.
                       </p>
                     </div>
                   </div>
@@ -966,32 +969,45 @@ export function AddBusinessForm({
                   <CheckCircle className="h-8 w-8 text-emerald-600" />
                 </div>
                 <DialogTitle className="text-2xl font-bold text-emerald-800">
-                  Submission received
+                  Your listing is live
                 </DialogTitle>
                 <DialogDescription id="success-desc" className="text-gray-600 mt-2">
-                  Your listing has been received. We’ll review it within 24–48 hours and publish it once approved. You can add another business or return home.
+                  Your business is now visible on BizBranches. We’'ve sent a confirmation to your email. You can view your listing, add another business, or return home.
                 </DialogDescription>
               </DialogHeader>
-              <div className="flex flex-col sm:flex-row gap-3 pt-6">
-                <Button 
-                  onClick={() => {
-                    setShowSuccessDialog(false)
-                    router.push("/")
-                  }}
-                  className="flex-1 min-h-[44px]"
-                >
-                  Return to Home
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => {
-                    setShowSuccessDialog(false)
-                    setSubmitted(false)
-                  }}
-                  className="flex-1 min-h-[44px]"
-                >
-                  Add another business
-                </Button>
+              <div className="flex flex-col gap-3 pt-6">
+                {submittedSlug && (
+                  <Button
+                    asChild
+                    className="w-full min-h-[44px] bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    <Link href={`/${encodeURIComponent(submittedSlug)}`} target="_blank" rel="noopener noreferrer">
+                      View your listing
+                    </Link>
+                  </Button>
+                )}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button 
+                    onClick={() => {
+                      setShowSuccessDialog(false)
+                      router.push("/")
+                    }}
+                    className="flex-1 min-h-[44px]"
+                  >
+                    Return to Home
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      setShowSuccessDialog(false)
+                      setSubmitted(false)
+                      setSubmittedSlug(null)
+                    }}
+                    className="flex-1 min-h-[44px]"
+                  >
+                    Add another business
+                  </Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>

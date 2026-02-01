@@ -72,6 +72,7 @@ app.use('/api/search', searchRouter);
 app.use('/api/sitemap.xml', sitemapRouter);
 app.use('/api/sitemap', sitemapApiRouter);
 app.use('/api/business/related', businessRelatedRouter);
+app.use('/api/admin', adminRouter);
 if (!isProd) app.use('/api/debug', debugRouter);
 
 // Root route
