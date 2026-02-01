@@ -202,6 +202,8 @@ export function AddBusinessForm({
             city: city || "",
             category: category || "",
             phone: phone || "",
+            whatsapp: form.whatsapp?.trim() || undefined,
+            address: form.address?.trim() || undefined,
             email: email || "",
             websiteUrl: form.websiteUrl?.trim() || undefined,
             facebookUrl: form.facebookUrl?.trim() || undefined,
@@ -210,13 +212,78 @@ export function AddBusinessForm({
           }),
         })
         const data = await res.json().catch(() => ({}))
-        setDuplicateWarning(!!data?.hasDuplicates)
+        const hasDupes = !!data?.hasDuplicates
+        setDuplicateWarning(hasDupes)
+        // Show "already registered" on the exact fields that conflict
+        if (hasDupes && data?.conflicts && typeof data.conflicts === "object") {
+          const conflicts = data.conflicts as Record<string, boolean>
+          const errs: Record<string, boolean> = {}
+          const msgs: Record<string, string> = {}
+          if (conflicts.nameCityCategory) {
+            errs.businessName = true
+            errs.city = true
+            errs.category = true
+            msgs.businessName = "This business name, city and category is already registered."
+            msgs.city = msgs.businessName
+            msgs.category = msgs.businessName
+          }
+          if (conflicts.phone) {
+            errs.phone = true
+            msgs.phone = "This phone number is already registered in our system."
+          }
+          if (conflicts.whatsapp) {
+            errs.whatsapp = true
+            msgs.whatsapp = "This WhatsApp number is already registered in our system."
+          }
+          if (conflicts.address) {
+            errs.address = true
+            msgs.address = "This address is already registered in our system."
+          }
+          if (conflicts.email) {
+            errs.email = true
+            msgs.email = "This email is already registered in our system."
+          }
+          if (conflicts.websiteUrl) {
+            errs.websiteUrl = true
+            msgs.websiteUrl = "This website URL is already registered in our system."
+          }
+          if (conflicts.facebookUrl) {
+            errs.facebookUrl = true
+            msgs.facebookUrl = "This Facebook link is already registered."
+          }
+          if (conflicts.gmbUrl) {
+            errs.gmbUrl = true
+            msgs.gmbUrl = "This Google Business link is already registered."
+          }
+          if (conflicts.youtubeUrl) {
+            errs.youtubeUrl = true
+            msgs.youtubeUrl = "This YouTube link is already registered."
+          }
+          if (Object.keys(errs).length) {
+            setFieldErrors((prev) => ({ ...prev, ...errs }))
+            setFieldErrorMessages((prev) => ({ ...prev, ...msgs }))
+          }
+        } else if (!hasDupes) {
+          // Clear duplicate-related field errors when check says no duplicates
+          setFieldErrors((prev) => {
+            const next = { ...prev }
+            const dupKeys = ["businessName", "city", "category", "phone", "whatsapp", "address", "email", "websiteUrl", "facebookUrl", "gmbUrl", "youtubeUrl"]
+            dupKeys.forEach((k) => delete next[k])
+            return next
+          })
+          setFieldErrorMessages((prev) => {
+            const next = { ...prev }
+            const dupKeys = ["businessName", "city", "category", "phone", "whatsapp", "address", "email", "websiteUrl", "facebookUrl", "gmbUrl", "youtubeUrl"]
+            dupKeys.forEach((k) => delete next[k])
+            return next
+          })
+        }
       } catch {
         setDuplicateWarning(false)
       }
     }, 600)
     return () => clearTimeout(t)
-  }, [form.businessName, form.city, form.category, form.phone, form.email, form.websiteUrl, form.facebookUrl, form.gmbUrl, form.youtubeUrl])
+  }, [form.businessName, form.city, form.category, form.phone, form.whatsapp, form.address, form.email, form.websiteUrl, form.facebookUrl, form.gmbUrl, form.youtubeUrl])
 
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
@@ -290,14 +357,29 @@ export function AddBusinessForm({
     country: { label: "Country", inputId: "country", message: "Country is required" },
     city: { label: "City", inputId: "city", message: "Select your city" },
     address: { label: "Complete Address", inputId: "address", message: "Enter your full address" },
-    phone: { label: "Phone Number", inputId: "phone", message: "Enter a phone number" },
+    phone: { label: "Phone Number", inputId: "phone", message: "Enter a valid phone number" },
+    whatsapp: { label: "WhatsApp Number", inputId: "whatsapp", message: "Enter a valid WhatsApp number" },
     email: { label: "Email", inputId: "email", message: "Enter a valid email" },
     description: { label: "Business Description", inputId: "description", message: "Add a short description" },
     logo: { label: "Business Logo", inputId: "logo", message: "Upload your business logo" },
-    websiteUrl: { label: "Website URL", inputId: "websiteUrl", message: "Check this URL" },
-    facebookUrl: { label: "Facebook", inputId: "facebookUrl", message: "Check this URL" },
-    gmbUrl: { label: "Google Business", inputId: "gmbUrl", message: "Check this URL" },
-    youtubeUrl: { label: "YouTube", inputId: "youtubeUrl", message: "Check this URL" },
+    websiteUrl: { label: "Website URL", inputId: "websiteUrl", message: "Enter a valid website URL" },
+    facebookUrl: { label: "Facebook", inputId: "facebookUrl", message: "Enter a valid Facebook URL" },
+    gmbUrl: { label: "Google Business", inputId: "gmbUrl", message: "Enter a valid Google Business URL" },
+    youtubeUrl: { label: "YouTube", inputId: "youtubeUrl", message: "Enter a valid YouTube URL" },
+  }
+
+  // Client-side format validation helpers
+  const phoneDigits = (s: string) => String(s || "").replace(/\D/g, "")
+  const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || "").trim())
+  const isValidUrl = (s: string) => {
+    const v = String(s || "").trim()
+    if (!v) return true
+    try {
+      new URL(v.startsWith("http") ? v : `https://${v}`)
+      return true
+    } catch {
+      return false
+    }
   }
 
   const validate = () => {
@@ -317,20 +399,53 @@ export function AddBusinessForm({
 
     const errors: Record<string, boolean> = {}
     const messages: Record<string, string> = {}
+
     missingKeys.forEach(key => {
       errors[key] = true
       messages[key] = friendlyLabels[key]?.message || "This field is required"
     })
+
+    // Format validation (only for filled optional fields and phone/email)
+    if (form.phone?.trim() && phoneDigits(form.phone).length < 7) {
+      errors.phone = true
+      messages.phone = "Enter a valid phone number (at least 7 digits)"
+    }
+    if (form.email?.trim() && !isValidEmail(form.email)) {
+      errors.email = true
+      messages.email = "Enter a valid email address"
+    }
+    if (form.whatsapp?.trim() && phoneDigits(form.whatsapp).length < 7) {
+      errors.whatsapp = true
+      messages.whatsapp = "Enter a valid WhatsApp number (at least 7 digits)"
+    }
+    if (form.websiteUrl?.trim() && !isValidUrl(form.websiteUrl)) {
+      errors.websiteUrl = true
+      messages.websiteUrl = "Enter a valid website URL"
+    }
+    if (form.facebookUrl?.trim() && !isValidUrl(form.facebookUrl)) {
+      errors.facebookUrl = true
+      messages.facebookUrl = "Enter a valid Facebook URL"
+    }
+    if (form.gmbUrl?.trim() && !isValidUrl(form.gmbUrl)) {
+      errors.gmbUrl = true
+      messages.gmbUrl = "Enter a valid Google Business URL"
+    }
+    if (form.youtubeUrl?.trim() && !isValidUrl(form.youtubeUrl)) {
+      errors.youtubeUrl = true
+      messages.youtubeUrl = "Enter a valid YouTube URL"
+    }
+
     setFieldErrors(errors)
     setFieldErrorMessages(messages)
 
-    if (missingKeys.length) {
+    const hasErrors = Object.keys(errors).length > 0
+    if (hasErrors) {
       toast({
         title: "Please fix the errors below",
         description: "Check the fields marked in red.",
         variant: "destructive",
       })
-      const firstKey = missingKeys[0]
+      const firstKey = Object.keys(errors)[0]
       const inputId = friendlyLabels[firstKey]?.inputId || firstKey
       const el = document.getElementById(inputId)
       if (el) {
@@ -413,20 +528,21 @@ export function AddBusinessForm({
           const data = await res.json()
 
           if (res.status === 409 && data?.conflicts && typeof data.conflicts === "object") {
-            userMessage = "This business already exists in our directory. Please check your information."
-            const conflictMsg = "Already listed with this information"
+            userMessage = "Some details are already registered in our system. Please check the fields below."
             const conflicts = data.conflicts as Record<string, boolean>
             if (conflicts.nameCityCategory) {
-              fieldMap.businessName = conflictMsg
-              fieldMap.city = conflictMsg
-              fieldMap.category = conflictMsg
+              fieldMap.businessName = "This business name, city and category is already registered."
+              fieldMap.city = "This business name, city and category is already registered."
+              fieldMap.category = "This business name, city and category is already registered."
             }
-            if (conflicts.phone) fieldMap.phone = conflictMsg
-            if (conflicts.email) fieldMap.email = conflictMsg
-            if (conflicts.websiteUrl) fieldMap.websiteUrl = conflictMsg
-            if (conflicts.facebookUrl) fieldMap.facebookUrl = conflictMsg
-            if (conflicts.gmbUrl) fieldMap.gmbUrl = conflictMsg
-            if (conflicts.youtubeUrl) fieldMap.youtubeUrl = conflictMsg
+            if (conflicts.phone) fieldMap.phone = "This phone number is already registered in our system."
+            if (conflicts.whatsapp) fieldMap.whatsapp = "This WhatsApp number is already registered in our system."
+            if (conflicts.address) fieldMap.address = "This address is already registered in our system."
+            if (conflicts.email) fieldMap.email = "This email is already registered in our system."
+            if (conflicts.websiteUrl) fieldMap.websiteUrl = "This website URL is already registered in our system."
+            if (conflicts.facebookUrl) fieldMap.facebookUrl = "This Facebook link is already registered."
+            if (conflicts.gmbUrl) fieldMap.gmbUrl = "This Google Business link is already registered."
+            if (conflicts.youtubeUrl) fieldMap.youtubeUrl = "This YouTube link is already registered."
             setFieldErrors(prev => ({ ...prev, ...Object.fromEntries(Object.keys(fieldMap).map(k => [k, true])) }))
             setFieldErrorMessages(prev => ({ ...prev, ...fieldMap }))
           } else if (Array.isArray(data?.details)) {
@@ -445,7 +561,7 @@ export function AddBusinessForm({
           }
           if (data?.error && typeof data.error === "string") {
             const lower = data.error.toLowerCase()
-            if (res.status !== 409 && (lower.includes("duplicate") || lower.includes("already"))) userMessage = "This business may already be listed. Check the directory or try different details."
+            if (res.status !== 409 && (lower.includes("duplicate") || lower.includes("already"))) userMessage = "Some details may already be registered. Check the directory or try different details."
             else if (res.status === 409) userMessage = data.error
             else if (lower.includes("invalid") || lower.includes("validation")) userMessage = "Please fix the highlighted fields and try again."
             else userMessage = data.error
@@ -529,7 +645,7 @@ export function AddBusinessForm({
                 )}
                 {duplicateWarning && !formErrorMessage && (
                   <div className="mx-4 sm:mx-6 md:mx-8 lg:mx-10 mt-4 sm:mt-6 p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm" role="status">
-                    A similar listing may already exist. Please check your business name, phone, email, and city before submitting.
+                    Some details are already registered in our system. Check the fields marked in red below and change them if this is a different business.
                   </div>
                 )}
                 {/* Basic Information */}
@@ -613,9 +729,10 @@ export function AddBusinessForm({
                         value={form.phone} 
                         onChange={handleChange} 
                         className={`h-12 border-2 rounded-lg transition-all ${fieldErrors.phone ? 'border-red-400 bg-red-50/50' : 'border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200'} bg-white`}
-                        aria-describedby="phone-help"
+                        aria-invalid={!!fieldErrors.phone}
+                        aria-describedby={fieldErrors.phone ? "phone-error" : "phone-help"}
                       />
-                      <p id="phone-help" className="text-xs text-gray-500 mt-1">Include country code for Pakistan (+92)</p>
+                      {fieldErrorMessages.phone ? <p id="phone-error" className="text-sm text-red-600 mt-1" role="alert">{fieldErrorMessages.phone}</p> : <p id="phone-help" className="text-xs text-gray-500 mt-1">Include country code for Pakistan (+92)</p>}
                     </div>
 
                     <div className="space-y-2">
@@ -625,8 +742,11 @@ export function AddBusinessForm({
                         placeholder="+92 3XX XXXXXXX (optional)" 
                         value={form.whatsapp} 
                         onChange={handleChange} 
-                        className="h-12 border-2 rounded-lg border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 bg-white transition-all" 
+                        className={`h-12 border-2 rounded-lg transition-all bg-white ${fieldErrors.whatsapp ? 'border-red-400 bg-red-50/50 focus:border-red-500 focus:ring-2 focus:ring-red-200' : 'border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200'}`}
+                        aria-invalid={!!fieldErrors.whatsapp}
+                        aria-describedby={fieldErrors.whatsapp ? "whatsapp-error" : "whatsapp-help"}
                       />
+                      {fieldErrorMessages.whatsapp ? <p id="whatsapp-error" className="text-sm text-red-600 mt-1" role="alert">{fieldErrorMessages.whatsapp}</p> : <p id="whatsapp-help" className="text-xs text-gray-500 mt-1">Optional; include country code</p>}
                     </div>
                   </div>
                 </section>

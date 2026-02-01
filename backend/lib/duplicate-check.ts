@@ -41,7 +41,9 @@ export function getNormalizedForInsert(phone: string, websiteUrl?: string | null
 export type DuplicateConflicts = {
   nameCityCategory?: boolean;
   phone?: boolean;
+  whatsapp?: boolean;
   email?: boolean;
+  address?: boolean;
   websiteUrl?: boolean;
   facebookUrl?: boolean;
   gmbUrl?: boolean;
@@ -53,7 +55,9 @@ export type DuplicateCheckInput = {
   city: string;
   category: string;
   phone: string;
+  whatsapp?: string | null;
   email: string;
+  address?: string | null;
   websiteUrl?: string | null;
   facebookUrl?: string | null;
   gmbUrl?: string | null;
@@ -74,7 +78,9 @@ export async function checkDuplicateBusiness(input: DuplicateCheckInput): Promis
     const city = String(input.city || '').trim();
     const category = String(input.category || '').trim();
     const phoneNorm = normalizePhone(input.phone);
+    const whatsappNorm = input.whatsapp ? normalizePhone(input.whatsapp) : '';
     const emailNorm = normalizeEmail(input.email);
+    const addressNorm = input.address ? String(input.address).trim().toLowerCase().replace(/\s+/g, ' ') : '';
     const websiteNorm = input.websiteUrl ? normalizeUrl(input.websiteUrl) : null;
     const facebookNorm = input.facebookUrl ? normalizeUrl(input.facebookUrl) : null;
     const gmbNorm = input.gmbUrl ? normalizeUrl(input.gmbUrl) : null;
@@ -117,6 +123,20 @@ export async function checkDuplicateBusiness(input: DuplicateCheckInput): Promis
       });
     }
 
+    if (whatsappNorm.length >= 7) {
+      queries.push({
+        key: 'whatsapp',
+        run: async () => {
+          const escaped = escapeRegex(input.whatsapp!.trim());
+          const doc = await models.businesses.findOne(
+            withExclude({ whatsapp: { $regex: new RegExp(escaped, 'i') } }),
+            { projection: { _id: 1 } }
+          );
+          return !!doc;
+        },
+      });
+    }
+
     if (emailNorm) {
       queries.push({
         key: 'email',
@@ -129,6 +149,36 @@ export async function checkDuplicateBusiness(input: DuplicateCheckInput): Promis
           const escaped = escapeRegex(input.email.trim());
           const docRegex = await models.businesses.findOne(
             withExclude({ email: { $regex: new RegExp(`^${escaped}$`, 'i') } }),
+            { projection: { _id: 1 } }
+          );
+          return !!docRegex;
+        },
+      });
+    }
+
+    if (addressNorm.length >= 10 && city) {
+      queries.push({
+        key: 'address',
+        run: async () => {
+          const doc = await models.businesses.findOne(
+            withExclude({
+              $expr: {
+                $eq: [
+                  { $toLower: { $trim: { input: { $replaceAll: { input: '$address', find: { $literal: ' ' }, replacement: ' ' } } } } },
+                  addressNorm,
+                ],
+              },
+              city: { $regex: new RegExp(`^${escapeRegex(city)}$`, 'i') },
+            }),
+            { collation: COLLATION, projection: { _id: 1 } }
+          );
+          if (doc) return true;
+          const escaped = escapeRegex(addressNorm.slice(0, 50));
+          const docRegex = await models.businesses.findOne(
+            withExclude({
+              address: { $regex: new RegExp(escaped, 'i') },
+              city: { $regex: new RegExp(`^${escapeRegex(city)}$`, 'i') },
+            }),
             { projection: { _id: 1 } }
           );
           return !!docRegex;
@@ -221,7 +271,9 @@ export function hasAnyConflict(conflicts: DuplicateConflicts): boolean {
 export const conflictToFormField: Record<keyof DuplicateConflicts, string> = {
   nameCityCategory: 'businessName',
   phone: 'phone',
+  whatsapp: 'whatsapp',
   email: 'email',
+  address: 'address',
   websiteUrl: 'websiteUrl',
   facebookUrl: 'facebookUrl',
   gmbUrl: 'gmbUrl',
