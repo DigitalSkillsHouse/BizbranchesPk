@@ -348,7 +348,6 @@ router.post('/check-duplicates', async (req, res) => {
     const category = String(body.category ?? '').trim();
     const phone = String(body.phone ?? '').trim();
     const whatsapp = body.whatsapp != null ? String(body.whatsapp).trim() : undefined;
-    const address = body.address != null ? String(body.address).trim() : undefined;
     const email = String(body.email ?? '').trim();
     const websiteUrl = body.websiteUrl != null ? String(body.websiteUrl).trim() : undefined;
     const facebookUrl = body.facebookUrl != null ? String(body.facebookUrl).trim() : undefined;
@@ -368,7 +367,6 @@ router.post('/check-duplicates', async (req, res) => {
       category: category || '',
       phone: phone || '',
       whatsapp: whatsapp || undefined,
-      address: address || undefined,
       email: email || '',
       websiteUrl: websiteUrl || undefined,
       facebookUrl: facebookUrl || undefined,
@@ -470,7 +468,6 @@ router.post('/', upload.single('logo'), async (req, res) => {
       category: validatedData.category,
       phone: validatedData.phone,
       whatsapp: validatedData.whatsapp || undefined,
-      address: validatedData.address || undefined,
       email: validatedData.email,
       websiteUrl: validatedData.websiteUrl,
       facebookUrl: validatedData.facebookUrl,

@@ -154,36 +154,6 @@ export async function checkDuplicateBusiness(input: DuplicateCheckInput): Promis
       });
     }
 
-    if (addressNorm.length >= 10 && city) {
-      queries.push({
-        key: 'address',
-        run: async () => {
-          const doc = await models.businesses.findOne(
-            withExclude({
-              $expr: {
-                $eq: [
-                  { $toLower: { $trim: { input: { $replaceAll: { input: '$address', find: { $literal: ' ' }, replacement: ' ' } } } } },
-                  addressNorm,
-                ],
-              },
-              city: { $regex: new RegExp(`^${escapeRegex(city)}$`, 'i') },
-            }),
-            { collation: COLLATION, projection: { _id: 1 } }
-          );
-          if (doc) return true;
-          const escaped = escapeRegex(addressNorm.slice(0, 50));
-          const docRegex = await models.businesses.findOne(
-            withExclude({
-              address: { $regex: new RegExp(escaped, 'i') },
-              city: { $regex: new RegExp(`^${escapeRegex(city)}$`, 'i') },
-            }),
-            { projection: { _id: 1 } }
-          );
-          return !!docRegex;
-        },
-      });
-    }
-
     if (websiteNorm) {
       queries.push({
         key: 'websiteUrl',
