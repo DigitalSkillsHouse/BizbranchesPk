@@ -53,6 +53,11 @@ In **Variables**, set these (at least):
 
 If these are not set, the listing still succeeds but no email is sent. Check Railway logs for: `Confirmation email not sent: set SMTP_HOST...`.
 
+**If email still doesn’t arrive:** In Railway → your service → **Deployments** → **View Logs**, look for:
+- `[Email] Sending confirmation to ...` → attempt was made.
+- `[Email] Sent successfully for: ...` → server accepted the email (check spam; delivery is up to the mail server).
+- `[Email] Failed for: ...` → see the error (e.g. "Invalid login", "Connection timeout"). If you see connection/timeout on port 465, try **SMTP_PORT=587** and **SMTP_SECURE=false** (STARTTLS).
+
 **Backend** runs on **3002 inside the container** (set in `start.sh`).  
 **Frontend** runs on **PORT** (e.g. 3000) – Railway sends traffic to this port.
 

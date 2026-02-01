@@ -32,6 +32,7 @@ function getTransporter() {
     port,
     secure,
     auth: { user, pass },
+    // If 465 is blocked (e.g. Railway), use SMTP_PORT=587 and SMTP_SECURE=false for STARTTLS
   });
 }
 
@@ -101,18 +102,23 @@ If you have any questions, contact us at ${supportEmail}.
 — BizBranches Support
 `.trim();
 
+  const toEmail = business.email.trim();
+  // Log so it appears in Railway (logger.log is dev-only)
+  logger.error('[Email] Sending confirmation to', toEmail.replace(/(.{2}).*@(.*)/, '$1***@$2'), 'for:', business.name);
+
   try {
     await transporter.sendMail({
       from: `"${fromName}" <${fromEmail}>`,
-      to: business.email || undefined,
+      to: toEmail,
       replyTo,
       subject: 'Your business is live on BizBranches',
       text,
       html: htmlBody,
     });
-    logger.log('Confirmation email sent for:', business.name);
-  } catch (err) {
-    logger.error('Confirmation email failed:', business.name, (err as Error)?.message || err);
+    logger.error('[Email] Sent successfully for:', business.name);
+  } catch (err: unknown) {
+    const e = err as { message?: string; code?: string; response?: string };
+    logger.error('[Email] Failed for:', business.name, '|', e?.message || err, e?.code ? `| code: ${e.code}` : '', e?.response ? `| response: ${String(e.response).slice(0, 200)}` : '');
   }
 }
 
