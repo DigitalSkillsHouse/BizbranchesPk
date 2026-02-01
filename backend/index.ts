@@ -14,6 +14,7 @@ import provincesRouter from './routes/provinces';
 import reviewsRouter from './routes/reviews';
 import searchRouter from './routes/search';
 import sitemapRouter from './routes/sitemap';
+import sitemapApiRouter from './routes/sitemap-api';
 import businessRelatedRouter from './routes/business-related';
 import debugRouter from './routes/debug';
 
@@ -69,6 +70,7 @@ app.use('/api/provinces', provincesRouter);
 app.use('/api/reviews', reviewsRouter);
 app.use('/api/search', searchRouter);
 app.use('/api/sitemap.xml', sitemapRouter);
+app.use('/api/sitemap', sitemapApiRouter);
 app.use('/api/business/related', businessRelatedRouter);
 if (!isProd) app.use('/api/debug', debugRouter);
 
