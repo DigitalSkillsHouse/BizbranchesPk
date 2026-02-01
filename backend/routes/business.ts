@@ -163,40 +163,47 @@ router.get('/', async (req, res) => {
     
     const filter: any = { status: 'approved' };
     
-    // Optional filters
+    // Optional filters - match both slug and name so all categories/subcategories work
+    let categoryCondition: any = null;
     if (req.query.category) {
-      const categoryQuery = req.query.category as string;
-      // Handle both slug format (technology) and proper name (Technology)
-      const categoryRegex = new RegExp(`^${categoryQuery}$`, 'i');
-      filter.category = categoryRegex;
+      const categoryQuery = (req.query.category as string).trim();
+      const slugForm = categoryQuery.replace(/\s+/g, '-').replace(/&/g, '-');
+      const nameForm = categoryQuery.replace(/-/g, ' ');
+      const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      categoryCondition = {
+        $or: [
+          { category: new RegExp(`^${escape(slugForm)}$`, 'i') },
+          { category: new RegExp(`^${escape(nameForm)}$`, 'i') }
+        ]
+      };
     }
-    // Store subcategory filter separately to combine with search if needed
     let subCategoryFilter: any = null;
     if (req.query.subCategory || req.query.subcategory) {
       const subCategoryQuery = (req.query.subCategory || req.query.subcategory) as string;
       const raw = subCategoryQuery.trim();
-      // Match both slug form (meezan-bank) and name form (Meezan Bank) - DB may store either
       const slugForm = raw.replace(/\s+/g, '-');
       const nameForm = raw.replace(/-/g, ' ');
       const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const slugRegex = new RegExp(`^${escape(slugForm)}$`, 'i');
-      const nameRegex = new RegExp(`^${escape(nameForm)}$`, 'i');
-      // Try both field name variations (subCategory and subcategory) and both value formats
       subCategoryFilter = {
         $or: [
-          { subCategory: slugRegex },
-          { subCategory: nameRegex },
-          { subcategory: slugRegex },
-          { subcategory: nameRegex }
+          { subCategory: new RegExp(`^${escape(slugForm)}$`, 'i') },
+          { subCategory: new RegExp(`^${escape(nameForm)}$`, 'i') },
+          { subcategory: new RegExp(`^${escape(slugForm)}$`, 'i') },
+          { subcategory: new RegExp(`^${escape(nameForm)}$`, 'i') }
         ]
       };
     }
     if (req.query.city) {
       const cityQuery = req.query.city as string;
-      // Handle both slug format (karachi) and proper name (Karachi)
       const cityRegex = new RegExp(`^${cityQuery}$`, 'i');
       filter.city = cityRegex;
     }
+    // Build AND list so category + subcategory both apply without overwriting each other
+    const andParts: any[] = [];
+    if (categoryCondition) andParts.push(categoryCondition);
+    if (subCategoryFilter) andParts.push(subCategoryFilter);
+    if (andParts.length > 0) filter.$and = andParts;
+
     let businesses;
     let total;
     
@@ -204,7 +211,6 @@ router.get('/', async (req, res) => {
       const searchTerm = req.query.q as string;
       const searchRegex = new RegExp(searchTerm, 'i');
       
-      // Build search filter - combine base filter with search $or and subcategory filter
       const searchOrConditions = [
           { name: searchRegex },
           { category: searchRegex },
@@ -214,16 +220,7 @@ router.get('/', async (req, res) => {
       ];
       
       const searchFilter: any = { ...filter };
-      if (subCategoryFilter) {
-        // If we have subcategory filter, use $and to combine it with search
-        searchFilter.$and = [
-          { $or: searchOrConditions },
-          subCategoryFilter
-        ];
-        delete searchFilter.$or; // Remove any existing $or from base filter
-      } else {
-        searchFilter.$or = searchOrConditions;
-      }
+      searchFilter.$and = [ ...(searchFilter.$and || []), { $or: searchOrConditions } ];
       
       // Use aggregation for relevance scoring
       businesses = await models.businesses.aggregate([
@@ -255,19 +252,15 @@ router.get('/', async (req, res) => {
       
       total = await models.businesses.countDocuments(searchFilter);
     } else {
-      // Combine base filter with subcategory filter if present
-      const finalFilter = subCategoryFilter 
-        ? { ...filter, ...subCategoryFilter }
-        : filter;
-      
+      // filter already has $and with category + subcategory when present
       businesses = await models.businesses
-        .find(finalFilter)
+        .find(filter)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .toArray();
       
-      total = await models.businesses.countDocuments(finalFilter);
+      total = await models.businesses.countDocuments(filter);
     }
     
     // Build CDN URLs for logos
