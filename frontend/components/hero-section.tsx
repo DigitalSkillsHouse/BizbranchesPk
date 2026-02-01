@@ -162,14 +162,14 @@ export function HeroSection() {
 
   return (
     <section className="relative min-h-[70vh] sm:min-h-[72vh] flex items-center justify-center overflow-hidden py-8 sm:py-10 md:py-12 z-50" aria-label="Hero">
-      {/* Lightweight background: gradient + optional image (image loads after LCP) */}
+      {/* Background: Pakistan heritage (Lahore historical – Minar-e-Pakistan, Badshahi area). Replace with hero-pakistan-landmarks.webp for a custom collage. */}
       <div className="absolute inset-0 bg-slate-800" />
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40"
-        style={{ backgroundImage: 'url(/local-business-directory-city-buildings.webp)' }}
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-45"
+        style={{ backgroundImage: 'url(/lahore-historical-architecture-and-modern-city.webp)' }}
         aria-hidden
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/70 to-slate-900/90" aria-hidden />
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/75 to-slate-900/92" aria-hidden />
 
       <div className="relative container mx-auto px-4 sm:px-6 text-center z-10 max-w-3xl">
         {/* 1. Headline — SEO + value in 3 seconds */}
@@ -330,15 +330,15 @@ export function HeroSection() {
               </Select>
             </div>
 
-            {/* Search Button */}
-            <div className="sm:col-span-1">
-              <Button 
-                type="submit" 
-                className="w-full min-h-[48px] h-12 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 rounded-xl text-base font-bold flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+            {/* Search Button – clear, accessible, matches CTA style */}
+            <div className="sm:col-span-1 flex items-stretch">
+              <Button
+                type="submit"
+                className="w-full min-h-[48px] h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 aria-label="Search businesses"
               >
-                <Search className="h-5 w-5" aria-hidden />
-                <span className="hidden sm:inline">Search</span>
+                <Search className="h-5 w-5 shrink-0" aria-hidden />
+                <span>Search</span>
               </Button>
             </div>
             </div>

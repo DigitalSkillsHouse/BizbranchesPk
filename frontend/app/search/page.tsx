@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button"
 import { ListingCard } from "@/components/listing-card"
 import { useSearchParams, useRouter } from "next/navigation"
-import { useState, useEffect, useMemo, useRef } from "react"
+import React, { useState, useEffect, useMemo, useRef } from "react"
 import Link from "next/link"
 import { Filter, Grid, List, Search, SlidersHorizontal, X } from "lucide-react"
 import { BreadcrumbSchema } from "@/components/breadcrumb-schema"
@@ -208,13 +208,39 @@ export default function SearchPage() {
   ), [cities, showAllCities])
 
   const [citySearch, setCitySearch] = useState("")
+  const [searchInput, setSearchInput] = useState(query)
+  const searchInputRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    setSearchInput(query)
+  }, [query])
+
+  const setSearchQueryLive = (value: string) => {
+    setSearchInput(value)
+    if (searchInputRef.current) clearTimeout(searchInputRef.current)
+    searchInputRef.current = setTimeout(() => {
+      const params = new URLSearchParams(window.location.search)
+      if (value.trim()) params.set("q", value.trim())
+      else params.delete("q")
+      params.delete("page")
+      router.push(`/search?${params.toString()}`, { scroll: false })
+      searchInputRef.current = null
+    }, 300)
+  }
 
   const resultsList = useMemo(() => {
-    return businesses.map((b) => (
-      <div key={b.id} className={viewMode === 'grid' ? '' : 'border-b border-gray-100 last:border-b-0'}>
-        <ListingCard business={b} variant={viewMode === 'list' ? 'compact' : 'card'} />
-      </div>
-    ))
+    const out: React.ReactNode[] = []
+    businesses.forEach((b, index) => {
+      if (index > 0 && index % 4 === 0) {
+        out.push(<div key={`ad-${index}`} className={viewMode === 'grid' ? 'md:col-span-2 lg:col-span-3' : ''}><AdSection slotId="search-inline-ad" className="my-6" /></div>)
+      }
+      out.push(
+        <div key={b.id} className={viewMode === 'grid' ? '' : 'border-b border-gray-100 last:border-b-0'}>
+          <ListingCard business={b} variant={viewMode === 'list' ? 'compact' : 'card'} />
+        </div>
+      )
+    })
+    return out
   }, [businesses, viewMode])
 
   const breadcrumbItems = [
@@ -233,6 +259,20 @@ export default function SearchPage() {
             <span aria-hidden>/</span>
             <span className="font-medium text-gray-900">{query ? "Search Results" : "Browse Businesses"}</span>
           </nav>
+          {/* Live search: per-letter filter – updates URL debounced so results refetch */}
+          <div className="mb-4">
+            <div className="relative max-w-xl">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                type="search"
+                placeholder="Search businesses (e.g. D, Doctor, Restaurant)..."
+                value={searchInput}
+                onChange={(e) => setSearchQueryLive(e.target.value)}
+                className="pl-10 h-11 rounded-lg border-gray-200 bg-white"
+                aria-label="Search businesses"
+              />
+            </div>
+          </div>
           <div className="flex flex-col gap-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
@@ -426,8 +466,6 @@ export default function SearchPage() {
                   {resultsList}
                 </div>
 
-                {/* Ad + CTA: after listings only (AdSense-safe) */}
-                <AdSection slotId="search-after-listings-ad" />
                 <CtaAddBusiness className="my-6 sm:my-8" />
                 
                 <div ref={sentinelRef} className="min-h-[120px] flex flex-col items-center justify-center py-8 gap-4">

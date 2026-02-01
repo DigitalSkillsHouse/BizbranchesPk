@@ -1,4 +1,5 @@
 "use client"
+import React from "react"
 import { ListingCard } from "@/components/listing-card"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -315,12 +316,14 @@ export function CategoryPageClient() {
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
                   {filteredBusinesses.map((business, index) => (
-                    <div key={business.id || business._id}>
-                      {index > 0 && index % 6 === 0 && (
-                        <AdSection slotId="category-inline-ad" className="col-span-full my-4" />
+                    <React.Fragment key={business.id || business._id}>
+                      {index > 0 && index % 4 === 0 && (
+                        <div className="col-span-full">
+                          <AdSection slotId="category-inline-ad" className="my-6" />
+                        </div>
                       )}
                       <ListingCard business={business} variant="card" />
-                    </div>
+                    </React.Fragment>
                   ))}
                 </div>
 

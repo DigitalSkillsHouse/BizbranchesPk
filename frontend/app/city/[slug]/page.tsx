@@ -1,5 +1,5 @@
 "use client"
-import { Suspense } from "react"
+import React, { Suspense } from "react"
 import { useEffect, useMemo, useState, useRef, useCallback } from "react"
 import { useParams, useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
@@ -260,13 +260,20 @@ export default function CityPage() {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
                   {pairs.map((pair, idx) => (
-                    <div key={idx} className="rounded-xl border bg-card text-card-foreground shadow-sm p-3 sm:p-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                        {pair.map((business) => (
-                          <ListingCard key={business.id} business={business} variant="card" />
-                        ))}
+                    <React.Fragment key={idx}>
+                      {idx > 0 && idx % 2 === 0 && (
+                        <div className="md:col-span-2">
+                          <AdSection slotId="city-inline-ad" className="my-6" />
+                        </div>
+                      )}
+                      <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-3 sm:p-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                          {pair.map((business) => (
+                            <ListingCard key={business.id} business={business} variant="card" />
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    </React.Fragment>
                   ))}
                 </div>
 

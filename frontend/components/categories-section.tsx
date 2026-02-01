@@ -1,11 +1,10 @@
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowRight, Grid3x3, Sparkles } from "lucide-react"
+import { ChevronRight, Grid3x3, Layers } from "lucide-react"
 
 type Category = { name: string; slug: string; count?: number; icon?: string; image?: string }
 
@@ -19,7 +18,6 @@ function mapApiToCategory(c: any): Category {
   }
 }
 
-// Image mapping per category slug (served from /public - webp for fast load)
 const categoryImages: Record<string, string> = {
   restaurants: "/pakistani-restaurant-interior.webp",
   healthcare: "/modern-hospital.webp",
@@ -35,7 +33,6 @@ const categoryImages: Record<string, string> = {
   finance: "/placeholder.svg",
 }
 
-// Fallback icons by common slugs (optional, for a nicer UI when image missing)
 const fallbackIcon: Record<string, string> = {
   restaurants: "🍽️",
   healthcare: "🏥",
@@ -140,138 +137,114 @@ export function CategoriesSection({ initialCategories = [] }: { initialCategorie
   const visibleCategories = (showAll ? categories : categories.slice(0, 7))
 
   return (
-    <section id="categories-section" className="pt-6 sm:pt-8 md:pt-12 pb-12 sm:pb-16 md:pb-20 bg-gradient-to-b from-white via-gray-50/30 to-white relative overflow-hidden">
-      {/* Decorative background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
-      </div>
-
-      <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 max-w-7xl relative z-10">
-        {/* Header Section */}
-        <div className="text-center mb-6 sm:mb-8 md:mb-10">
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20 rounded-full px-3 py-1.5 sm:px-4 sm:py-2 mb-3 sm:mb-4">
-            <Grid3x3 className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
-            <span className="text-xs sm:text-sm font-semibold text-primary">Explore Categories</span>
-            <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500 animate-pulse" />
-          </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-2 sm:mb-3 md:mb-4">
-            Browse by <span className="bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">Category</span>
+    <section id="categories-section" className="pt-12 sm:pt-16 md:pt-20 pb-16 sm:pb-20 md:pb-24 bg-muted/30 relative overflow-hidden">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8 max-w-6xl relative z-10">
+        {/* Section header */}
+        <div className="text-center mb-10 sm:mb-12">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-semibold uppercase tracking-wide mb-4">
+            <Layers className="h-3.5 w-3.5" aria-hidden />
+            Categories
+          </span>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2">
+            Browse by Category
           </h2>
-          <p className="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed px-4">
-            Explore businesses across different categories and find exactly what you're looking for.
+          <p className="text-muted-foreground text-sm sm:text-base max-w-xl mx-auto">
+            Find businesses across Pakistan by category. Pick one to see subcategories and listings.
           </p>
-          {/* Empty / error state */}
           {!loading && categories.length === 0 && (
-            <div className="text-center mt-8">
-              <p className="text-sm text-gray-600 mb-4">{error ? "Failed to load categories." : "No categories available."}</p>
+            <div className="mt-8">
+              <p className="text-muted-foreground text-sm mb-4">{error ? "Failed to load categories." : "No categories available."}</p>
               <Button variant="outline" onClick={() => { setLoading(true); setReloadKey((k) => k + 1) }}>Retry</Button>
             </div>
           )}
         </div>
 
-        {/* Categories Grid */}
-        <div className="w-full">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
-            {(loading ? Array.from({ length: 8 }) : visibleCategories).map((category: any, idx: number) =>
+        {/* Category cards – modern grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+          {(loading ? Array.from({ length: 8 }) : visibleCategories).map((category: any, idx: number) =>
             loading ? (
-                <div key={idx} className="rounded-2xl border-0 bg-white shadow-lg overflow-hidden">
-                  <div className="relative w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 animate-pulse rounded-t-2xl" />
-                  <div className="p-6">
-                    <div className="h-5 w-24 bg-gray-200 animate-pulse rounded mb-3" />
-                    <div className="h-4 w-16 bg-gray-200 animate-pulse rounded" />
+              <div key={idx} className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
+                <div className="h-32 sm:h-36 bg-muted animate-pulse" />
+                <div className="p-4 sm:p-5">
+                  <div className="h-5 w-28 bg-muted rounded animate-pulse mb-2" />
+                  <div className="h-4 w-20 bg-muted rounded animate-pulse" />
                 </div>
               </div>
             ) : (
-                <Link
-                  key={category.slug}
-                  href={`/category/${category.slug}`}
-                  prefetch
-                  className="block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-2xl"
-                  aria-label={`Browse ${category.name} businesses`}
-                >
-                  <Card className="h-full overflow-hidden border-0 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 bg-gradient-to-br from-white to-gray-50/50 group cursor-pointer rounded-2xl border border-gray-200/80">
-                  <CardContent className="p-0">
-                      <div className="relative h-40 sm:h-44 md:h-48 overflow-hidden bg-gradient-to-br from-primary/5 to-purple-50 min-h-[160px]">
-                      {category.image ? (
-                        <Image
-                          src={category.image}
-                          alt={`${category.name} category`}
-                          fill
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                          className="object-contain bg-white group-hover:opacity-90 transition-opacity duration-500"
-                          loading="lazy"
-                        />
-                      ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <span className="text-6xl group-hover:opacity-80 transition-opacity duration-300">{category.icon || "📦"}</span>
-                        </div>
-                      )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <div className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                            <ArrowRight className="h-5 w-5 text-primary" />
-                          </div>
-                        </div>
-                        {typeof category.count === "number" && (
-                          <div className="absolute bottom-3 left-3">
-                            <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg">
-                              <p className="text-xs font-semibold text-gray-900">{category.count} businesses</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-4 sm:p-5 md:p-6">
-                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-primary transition-colors mb-1.5 sm:mb-2">
-                          {category.name}
-                        </h3>
-                        <p className="text-xs sm:text-sm text-gray-600 flex items-center gap-2">
-                          <span>Explore subcategories</span>
-                          <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
-                        </p>
+              <Link
+                key={category.slug}
+                href={`/category/${category.slug}`}
+                prefetch
+                className="group block h-full rounded-xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                aria-label={`Browse ${category.name} businesses`}
+              >
+                {/* Card image / icon area */}
+                <div className="relative h-32 sm:h-36 bg-muted/50 overflow-hidden">
+                  {category.image && category.image !== "/placeholder.svg" ? (
+                    <Image
+                      src={category.image}
+                      alt=""
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/5 to-accent/5">
+                      <span className="text-5xl sm:text-6xl opacity-90 group-hover:scale-110 transition-transform duration-200" aria-hidden>
+                        {category.icon || "📦"}
+                      </span>
                     </div>
-                  </CardContent>
-                </Card>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                  {typeof category.count === "number" && (
+                    <span className="absolute bottom-2 left-2 rounded-md bg-background/90 px-2 py-1 text-xs font-medium text-foreground shadow-sm">
+                      {category.count} listings
+                    </span>
+                  )}
+                </div>
+                {/* Card body */}
+                <div className="p-4 sm:p-5 flex items-center justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-semibold text-foreground text-base sm:text-lg truncate group-hover:text-primary transition-colors">
+                      {category.name}
+                    </h3>
+                    <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">
+                      View businesses
+                    </p>
+                  </div>
+                  <span className="flex-shrink-0 w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-200" aria-hidden>
+                    <ChevronRight className="h-4 w-4" />
+                  </span>
+                </div>
               </Link>
             )
-            )}
-            
-            {/* View All Categories Button (8th position when collapsed) */}
+          )}
+
+          {/* View all card (when collapsed) */}
           {!loading && !showAll && categories.length > 7 && (
             <button
               type="button"
               onClick={() => setShowAll(true)}
-                className="group h-full rounded-2xl border-0 bg-gradient-to-br from-primary/10 via-purple-50/50 to-pink-50/50 text-card-foreground shadow-xl hover:shadow-2xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/40 cursor-pointer"
+              className="group flex flex-col items-center justify-center min-h-[200px] sm:min-h-[220px] rounded-xl border-2 border-dashed border-border bg-muted/30 hover:border-primary/40 hover:bg-primary/5 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 text-center p-6"
               aria-label="View all categories"
             >
-                <div className="p-6 sm:p-8 h-full w-full flex flex-col items-center justify-center text-center min-h-[240px] sm:min-h-[280px]">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center mb-3 sm:mb-4 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                    <Grid3x3 className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-white" />
-                  </div>
-                  <div className="text-lg sm:text-xl md:text-2xl mb-1.5 sm:mb-2 font-bold bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                    View All Categories
-                </div>
-                  <p className="text-xs sm:text-sm text-gray-600">Explore {categories.length - 7} more categories</p>
-              </div>
+              <span className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-200" aria-hidden>
+                <Grid3x3 className="h-6 w-6" />
+              </span>
+              <span className="font-semibold text-foreground text-base">View all</span>
+              <span className="text-muted-foreground text-xs mt-0.5">{categories.length - 7} more</span>
             </button>
           )}
-          </div>
         </div>
 
-        {/* Show Less Button */}
         {!loading && showAll && (
-          <div className="text-center mt-8 sm:mt-10">
-            <Button
-              variant="outline"
-              size="lg"
-              className="px-6 sm:px-8 md:px-10 py-4 sm:py-5 md:py-6 text-sm sm:text-base font-semibold border-2 hover:bg-primary/5 hover:border-primary transition-all"
-              onClick={() => setShowAll(false)}
-            >
-              {loadingMore ? "Loading…" : "Show Less"}
+          <div className="text-center mt-8">
+            <Button variant="outline" size="lg" className="rounded-lg" onClick={() => setShowAll(false)}>
+              {loadingMore ? "Loading…" : "Show less"}
             </Button>
           </div>
         )}
-        
       </div>
     </section>
   )
