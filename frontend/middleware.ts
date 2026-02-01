@@ -43,7 +43,7 @@ export function middleware(req: NextRequest) {
     "img-src 'self' data: https: blob:",
     "font-src 'self' https://fonts.gstatic.com data:",
     "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://pagead2.googlesyndication.com https://analytics.google.com https://stats.g.doubleclick.net https://fundingchoicesmessages.google.com https://ep1.adtrafficquality.google",
-    "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://maps.google.com https://www.google.com",
+    "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://maps.google.com https://www.google.com https://ep2.adtrafficquality.google",
   ].join('; ')
   res.headers.set('Content-Security-Policy', csp)
 
