@@ -44,9 +44,13 @@ function getSiteUrl(): string {
  * Call with .catch() from route — does not throw to caller.
  */
 export async function sendConfirmationEmail(business: BusinessForEmail): Promise<void> {
+  if (!business.email || !business.email.trim()) {
+    logger.error('Confirmation email skipped: no recipient email for business', business.name);
+    return;
+  }
   const transporter = getTransporter();
   if (!transporter) {
-    logger.warn('Email not sent: SMTP_HOST, SMTP_USER, or SMTP_PASS not set');
+    logger.error('Confirmation email not sent: set SMTP_HOST, SMTP_USER, SMTP_PASS in Railway Variables');
     return;
   }
 
@@ -108,7 +112,7 @@ If you have any questions, contact us at ${supportEmail}.
     });
     logger.log('Confirmation email sent for:', business.name);
   } catch (err) {
-    logger.error('Confirmation email error:', business.name, err);
+    logger.error('Confirmation email failed:', business.name, (err as Error)?.message || err);
   }
 }
 

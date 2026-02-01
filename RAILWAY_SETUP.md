@@ -38,6 +38,21 @@ In **Variables**, set these (at least):
 | `PORT` | Set by Railway | Railway sets this; do not use 3001/3002 here |
 | `NODE_ENV` | Optional | `production` |
 
+**Email (confirmation after listing submit)** – add these so customers receive the “Your listing is live” email:
+
+| Variable | Required | Example |
+|----------|----------|---------|
+| `SMTP_HOST` | Yes (for email) | `mail.digitalskillshouse.pk` |
+| `SMTP_PORT` | Optional | `465` |
+| `SMTP_SECURE` | Optional | `true` |
+| `SMTP_USER` | Yes (for email) | `support@digitalskillshouse.pk` |
+| `SMTP_PASS` | Yes (for email) | Your email account password |
+| `EMAIL_FROM` | Optional | Same as SMTP_USER |
+| `EMAIL_FROM_NAME` | Optional | `BizBranches Support` |
+| `SITE_URL` | Optional | `https://bizbranches.pk` |
+
+If these are not set, the listing still succeeds but no email is sent. Check Railway logs for: `Confirmation email not sent: set SMTP_HOST...`.
+
 **Backend** runs on **3002 inside the container** (set in `start.sh`).  
 **Frontend** runs on **PORT** (e.g. 3000) – Railway sends traffic to this port.
 
