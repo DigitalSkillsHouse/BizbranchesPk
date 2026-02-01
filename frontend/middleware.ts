@@ -35,15 +35,15 @@ export function middleware(req: NextRequest) {
   if (req.nextUrl.protocol === 'https:') {
     res.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload')
   }
-  // CSP: allow self, AdSense, GA, inline scripts/hashes required by Next.js
+  // CSP: allow self, AdSense, GA4, Funding Choices, Google Maps
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://www.google.com https://www.gstatic.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://www.google.com https://www.gstatic.com https://fundingchoicesmessages.google.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https: blob:",
     "font-src 'self' https://fonts.gstatic.com data:",
-    "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://pagead2.googlesyndication.com",
-    "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com",
+    "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://pagead2.googlesyndication.com https://analytics.google.com",
+    "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://maps.google.com https://www.google.com",
   ].join('; ')
   res.headers.set('Content-Security-Policy', csp)
 

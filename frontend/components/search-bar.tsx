@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { logger } from "@/lib/logger"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 
 interface BusinessSuggestion {
@@ -86,7 +87,7 @@ export function SearchBar() {
         }
       } catch (error) {
         if ((error as any)?.name !== 'AbortError') {
-          console.error("Failed to fetch search suggestions:", error)
+          logger.error("Failed to fetch search suggestions:", error)
         }
       } finally {
         setIsLoading(false)

@@ -108,8 +108,9 @@ export default function SearchPage() {
         if (!res.ok || !data?.ok) throw new Error(data?.error || `Server ${res.status} ${res.statusText}`)
         const cloud = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
         const items: Business[] = (data.businesses || []).map((b: any) => {
-          const derivedLogoUrl = (!b.logoUrl && b.logoPublicId && cloud)
-            ? `https://res.cloudinary.com/${cloud}/image/upload/c_fit,w_200,h_200,q_auto,f_auto/${b.logoPublicId}`
+          const cleanLogoId = (b.logoPublicId || "").trim().replace(/^\/+/, "").replace(/\/+/g, "/")
+          const derivedLogoUrl = (!b.logoUrl && cleanLogoId && cloud)
+            ? `https://res.cloudinary.com/${cloud}/image/upload/c_fit,w_200,h_200,q_auto,f_auto/${cleanLogoId}`
             : undefined
           return {
             id: b.id || b._id?.toString?.() || "",

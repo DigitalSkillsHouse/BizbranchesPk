@@ -28,7 +28,12 @@ export const getBusinessLogoUrl = (
   if (/^https?:\/\//i.test(raw)) return raw
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
   if (!cloudName) return "/placeholder.svg"
-  const cleanId = String(raw).replace(/\.[^/.]+$/, "")
+  const cleanId = String(raw)
+    .replace(/\.[^/.]+$/, "")
+    .trim()
+    .replace(/^\/+/, "")
+    .replace(/\/+/g, "/") || ""
+  if (!cleanId) return "/placeholder.svg"
   const dim = size === "thumb" ? "200" : size === "medium" ? "400" : "600"
   return `https://res.cloudinary.com/${cloudName}/image/upload/c_fit,w_${dim},h_${dim},q_auto,f_auto/${cleanId}`
 }

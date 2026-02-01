@@ -12,8 +12,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { BusinessSchema } from "@/components/business-schema"
 import { BreadcrumbSchema } from "@/components/breadcrumb-schema"
-import { CtaAddBusiness } from "@/components/cta-add-business"
 import { AdSection } from "@/components/ad-section"
+import { logger } from "@/lib/logger"
 
 export default function BusinessDetailPage({
   initialBusiness,
@@ -56,7 +56,7 @@ export default function BusinessDetailPage({
           setBusiness(data.business)
         }
       } catch (error) {
-        console.error("Error fetching business:", error)
+        logger.error("Error fetching business:", error)
       } finally {
         setLoading(false)
       }
@@ -84,7 +84,7 @@ export default function BusinessDetailPage({
           }
         }
       } catch (error) {
-        console.error('Error fetching reviews:', error)
+        logger.error('Error fetching reviews:', error)
       }
     }
 
@@ -125,7 +125,7 @@ export default function BusinessDetailPage({
           }
         }
       } catch (error) {
-        console.error('Error fetching related businesses:', error)
+        logger.error('Error fetching related businesses:', error)
       }
     }
 
@@ -150,8 +150,6 @@ export default function BusinessDetailPage({
       })
       
       const result = await response.json()
-      console.log('Review submission result:', result)
-      
       if (response.ok && result.ok) {
         const newReview = {
           name: reviewerName.trim() || 'Anonymous',
@@ -167,11 +165,11 @@ export default function BusinessDetailPage({
         setReviewComment('')
         setOpenReview(false)
       } else {
-        console.error('Review submission failed:', result)
+        logger.error('Review submission failed:', result)
         alert('Failed to submit review. Please try again.')
       }
     } catch (error) {
-      console.error('Error submitting review:', error)
+      logger.error('Error submitting review:', error)
       alert('Failed to submit review. Please try again.')
     } finally {
       setSubmitting(false)
@@ -294,9 +292,9 @@ export default function BusinessDetailPage({
 
       {/* Business Description & Map */}
       {business.description && (
-        <section className="mt-8">
+        <section className="mt-4 sm:mt-5">
           {/* Breadcrumb at top of description */}
-          <div className="mb-4">
+          <div className="mb-3">
             <nav className="flex items-center space-x-2 text-sm text-gray-600" aria-label="Breadcrumb">
               <Link href="/" className="hover:text-blue-600">Home</Link>
               <span>/</span>
@@ -363,10 +361,8 @@ export default function BusinessDetailPage({
 
       <AdSection slotId="business-center-ad" />
 
-      <CtaAddBusiness className="my-6 sm:my-8" />
-
       {/* Business Information & Reviews */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6 sm:mt-8">
         {/* Reviews Section */}
         <div className="lg:col-span-2">
           <h2 className="text-2xl font-semibold mb-6">Customer Reviews</h2>
@@ -682,28 +678,29 @@ export default function BusinessDetailPage({
         )}
       </section>
 
-      {/* Similar Businesses */}
+      {/* Similar Businesses - fully clickable cards */}
       {related.length > 0 && (
-        <section className="mt-12">
+        <section className="mt-10">
           <h2 className="text-2xl font-semibold mb-6">
             Similar Businesses in {business.category}
           </h2>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {related.slice(0, 5).map((relatedBusiness, index) => (
-              <div
+              <Link
                 key={relatedBusiness.id || relatedBusiness._id || index}
-                className="border rounded-lg overflow-hidden hover:shadow-lg transition bg-white"
+                href={`/${relatedBusiness.slug || relatedBusiness._id}`}
+                className="border rounded-lg overflow-hidden hover:shadow-lg transition bg-white block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                aria-label={`View ${relatedBusiness.name}`}
               >
                 <div className="relative h-24 bg-gray-50">
                   <Image
                     src={relatedBusiness.logoUrl || "/placeholder.svg"}
-                    alt={relatedBusiness.name}
+                    alt=""
                     fill
                     className="object-contain p-2"
                   />
                 </div>
-
                 <div className="p-3">
                   <h3 className="font-semibold text-sm mb-1 line-clamp-2">
                     {relatedBusiness.name}
@@ -711,14 +708,11 @@ export default function BusinessDetailPage({
                   <p className="text-xs text-gray-500 mb-2">
                     {relatedBusiness.category}
                   </p>
-                  <Link
-                    href={`/${relatedBusiness.slug || relatedBusiness._id}`}
-                    className="text-red-500 text-xs font-medium hover:underline"
-                  >
+                  <span className="text-primary text-xs font-medium">
                     View Details →
-                  </Link>
+                  </span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </section>

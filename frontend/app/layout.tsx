@@ -137,12 +137,10 @@ export default function RootLayout({
           </>
         )}
 
-        {/* ✅ Google AdSense: load once globally - Production only */}
+        {/* ✅ Google AdSense: native script (no data-nscript) - Production only */}
         {process.env.NODE_ENV === 'production' && (
-          <Script
-            id="adsbygoogle-init"
+          <script
             async
-            strategy="afterInteractive"
             src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4083132987699578"
             crossOrigin="anonymous"
           />

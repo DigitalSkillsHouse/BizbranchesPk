@@ -13,6 +13,7 @@ import { BreadcrumbSchema } from "@/components/breadcrumb-schema"
 import { CtaAddBusiness } from "@/components/cta-add-business"
 import { AdSection } from "@/components/ad-section"
 import { slugify } from "@/lib/utils"
+import { logger } from "@/lib/logger"
 
 type Subcategory = { name: string; slug: string }
 
@@ -63,7 +64,7 @@ export default function CategoryPage() {
           }
         }
       } catch (error) {
-        console.error("Error fetching category:", error)
+        logger.error("Error fetching category:", error)
       } finally {
         if (active) setLoading(false)
       }
@@ -85,7 +86,8 @@ export default function CategoryPage() {
       try {
         setLoading(true)
         // Fetch businesses filtered by category and subcategory
-        const bizRes = await fetch(`/api/business?category=${encodeURIComponent(categorySlug)}&subCategory=${encodeURIComponent(selectedSubcategory)}&page=1&limit=${PAGE_SIZE}`)
+        const subSlug = subcategories.find((s) => s.name === selectedSubcategory || s.slug === selectedSubcategory)?.slug || selectedSubcategory
+        const bizRes = await fetch(`/api/business?category=${encodeURIComponent(categorySlug)}&subCategory=${encodeURIComponent(subSlug)}&page=1&limit=${PAGE_SIZE}`)
         if (!bizRes.ok) throw new Error("Failed to fetch businesses")
         const bizData = await bizRes.json()
         if (!active) return
@@ -97,7 +99,7 @@ export default function CategoryPage() {
         setApiTotalPages(pages)
         setApiTotal(total)
       } catch (error) {
-        console.error("Error fetching businesses:", error)
+        logger.error("Error fetching businesses:", error)
         if (active) {
           setBusinesses([])
         }
@@ -107,15 +109,16 @@ export default function CategoryPage() {
     }
     fetchBusinesses()
     return () => { active = false }
-  }, [selectedSubcategory, categorySlug])
+  }, [selectedSubcategory, categorySlug, subcategories])
 
   const loadMore = useCallback(async () => {
     if (loadingMore || !selectedSubcategory) return
     const next = apiPage + 1
     if (next > apiTotalPages) return
+    const subSlug = subcategories.find((s) => s.name === selectedSubcategory || s.slug === selectedSubcategory)?.slug || selectedSubcategory
     setLoadingMore(true)
     try {
-      const res = await fetch(`/api/business?category=${encodeURIComponent(categorySlug)}&subCategory=${encodeURIComponent(selectedSubcategory)}&page=${next}&limit=${PAGE_SIZE}`)
+      const res = await fetch(`/api/business?category=${encodeURIComponent(categorySlug)}&subCategory=${encodeURIComponent(subSlug)}&page=${next}&limit=${PAGE_SIZE}`)
       if (!res.ok) throw new Error("Failed to fetch more")
       const data = await res.json()
       const pagination = data?.pagination || {}
@@ -126,11 +129,11 @@ export default function CategoryPage() {
       setApiTotalPages(pages)
       if (total > 0) setApiTotal(total)
     } catch (e) {
-      console.error("Load more failed", e)
+      logger.error("Load more failed", e)
     } finally {
       setLoadingMore(false)
     }
-  }, [categorySlug, selectedSubcategory, apiPage, apiTotalPages, loadingMore])
+  }, [categorySlug, selectedSubcategory, subcategories, apiPage, apiTotalPages, loadingMore])
 
   useEffect(() => {
     let filtered = businesses
@@ -307,28 +310,34 @@ export default function CategoryPage() {
               </Select>
             </div>
 
-            {/* Business Listings - all loaded items, AdSense every 3, infinite scroll */}
+            {/* Business Listings - ad every 3 cards, smooth infinite scroll + Load more button */}
             {loading ? (
               <div className="py-16 flex items-center justify-center">
                 <FancyLoader />
               </div>
             ) : filteredBusinesses.length > 0 ? (
               <>
-                <div className="mb-8 divide-y divide-gray-100 border-y space-y-4">
-                  {filteredBusinesses.map((business) => (
-                    <div key={business.id || business._id} className="py-4">
-                      <ListingCard business={business} variant="compact" />
+                <div className="mb-8">
+                  {filteredBusinesses.map((business, index) => (
+                    <div key={business.id || business._id}>
+                      {index > 0 && index % 3 === 0 && (
+                        <AdSection slotId="category-inline-ad" className="my-6 sm:my-8" />
+                      )}
+                      <div className="py-4 border-b border-gray-100 last:border-b-0">
+                        <ListingCard business={business} variant="compact" />
+                      </div>
                     </div>
                   ))}
                 </div>
 
-                <AdSection slotId="category-after-listings-ad" />
-
-                {/* Infinite scroll sentinel - load more when this is in view */}
+                {/* Load more: button + infinite scroll sentinel */}
                 {apiPage < apiTotalPages && (
-                  <div ref={loadMoreSentinelRef} className="min-h-[120px] flex flex-col items-center justify-center py-8 gap-4">
+                  <div ref={loadMoreSentinelRef} className="min-h-[100px] flex flex-col items-center justify-center py-6 gap-4">
                     {loadingMore ? (
-                      <FancyLoader />
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <FancyLoader />
+                        <span className="text-sm">Loading more businesses...</span>
+                      </div>
                     ) : (
                       <Button
                         type="button"
@@ -336,7 +345,7 @@ export default function CategoryPage() {
                         onClick={loadMore}
                         className="shrink-0"
                       >
-                        Load more branches
+                        Load more businesses
                       </Button>
                     )}
                   </div>

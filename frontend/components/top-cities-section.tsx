@@ -1,6 +1,7 @@
 'use client'
 
 import { Card } from "@/components/ui/card"
+import { logger } from "@/lib/logger"
 import Link from "next/link"
 import { MapPin, Building2, ArrowRight } from "lucide-react"
 import { useState, useEffect } from "react"
@@ -73,7 +74,7 @@ export function TopCitiesSection() {
           setTopCities(mappedCities)
         }
       } catch (error) {
-        console.error('Failed to fetch cities:', error)
+        logger.error('Failed to fetch cities:', error)
         const fallbackCities = [
           { id: "karachi", name: "Karachi" },
           { id: "lahore", name: "Lahore" },

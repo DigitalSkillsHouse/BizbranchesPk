@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { BusinessSchema } from "@/components/business-schema";
 import { BreadcrumbSchema } from "@/components/breadcrumb-schema";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { logger } from "@/lib/logger";
 import BusinessDetailPage from "../business/[id]/page";
 
 function serializeId(doc: any): any {
@@ -65,8 +66,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         business = serializeId(data.business);
       }
     }
-  } catch (error) {
-    console.error("Error fetching metadata for business:", error);
+  } catch {
     // Continue with null business, will use fallbacks
   }
 
@@ -125,7 +125,7 @@ export default async function BusinessBySlugPage({
     if (!bizResponse.ok) {
       // Only log non-404 errors (404 is expected for missing businesses)
       if (bizResponse.status !== 404) {
-        console.error(`Failed to fetch business: ${bizResponse.status} - ${bizResponse.statusText}`);
+        logger.error(`Failed to fetch business: ${bizResponse.status} - ${bizResponse.statusText}`);
       }
       // Return a page with error information instead of throwing
       return (
@@ -145,7 +145,7 @@ export default async function BusinessBySlugPage({
     if (!bizData.ok || !bizData.business) {
       // Only log if it's not a simple "not found" error
       if (bizData.error && !bizData.error.toLowerCase().includes('not found')) {
-        console.error(bizData.error);
+        logger.error(bizData.error);
       }
       // Return a page with error information
       return (
@@ -186,7 +186,7 @@ export default async function BusinessBySlugPage({
           }
         }
       } catch (error) {
-        console.error("Error fetching related businesses:", error);
+        logger.error("Error fetching related businesses:", error);
         // Continue with empty related array
       }
     }
@@ -207,11 +207,11 @@ export default async function BusinessBySlugPage({
         }
       }
     } catch (error) {
-      console.error("Error fetching reviews:", error);
+      logger.error("Error fetching reviews:", error);
       // Continue with empty reviews array
     }
   } catch (error) {
-    console.error("Error in BusinessBySlugPage:", error);
+    logger.error("Error in BusinessBySlugPage:", error);
     // Return a page with error information
     return (
       <div className="max-w-4xl mx-auto px-6 py-8">

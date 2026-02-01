@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { logger } from '@/lib/logger'
 
 interface CacheOptions {
   ttl?: number // Time to live in milliseconds
@@ -50,7 +51,7 @@ export function useApiCache<T>(
         cache.set(key, newEntry)
         setData(freshData)
       } catch (err) {
-        console.warn('Background fetch failed:', err)
+        logger.warn('Background fetch failed:', err)
       }
       return cached.data
     }
@@ -113,7 +114,7 @@ export async function preloadApiCache<T>(
     cache.set(key, entry)
     return data
   } catch (err) {
-    console.warn('Preload failed:', err)
+    logger.warn('Preload failed:', err)
     throw err
   }
 }
