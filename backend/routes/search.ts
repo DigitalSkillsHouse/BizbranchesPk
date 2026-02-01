@@ -1,5 +1,6 @@
 import express from 'express';
 import { getModels } from '../lib/models';
+import { logger } from '../lib/logger';
 
 const router = express.Router();
 
@@ -56,7 +57,7 @@ router.get('/', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error fetching search suggestions:', error);
+    logger.error('Error fetching search suggestions:', error);
     res.status(500).json(
       { ok: false, error: 'Failed to fetch search suggestions' }
     );

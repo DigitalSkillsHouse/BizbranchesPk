@@ -1,5 +1,6 @@
 import express from 'express';
-import { getAllBusinessSlugs } from '../lib/mongodb'; // Assuming moved to backend/lib/mongodb.ts or similar
+import { getAllBusinessSlugs } from '../lib/mongodb';
+import { logger } from '../lib/logger';
 
 const router = express.Router();
 
@@ -9,7 +10,7 @@ router.get('/', async (req, res) => {
     let baseUrl = process.env.SITE_URL || process.env.FRONTEND_URL || (process.env.NODE_ENV === 'production' ? "https://bizbranches.pk" : "http://localhost:3000");
     baseUrl = (baseUrl || '').replace(/\/$/, ''); // remove trailing slash
     
-    console.log('Sitemap: Found', slugs.length, 'business slugs');
+    logger.log('Sitemap: Found', slugs.length, 'business slugs');
 
     // Static pages
     const staticPages = [
@@ -56,7 +57,7 @@ ${businessUrls}
     res.set("Cache-Control", "public, max-age=3600"); // Cache for 1 hour
     res.send(sitemap);
   } catch (error) {
-    console.error('Error generating sitemap:', error);
+    logger.error('Error generating sitemap:', error);
     res.status(500).send('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>');
   }
 });

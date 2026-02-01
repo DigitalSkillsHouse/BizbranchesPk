@@ -1,4 +1,5 @@
 import { MongoClient } from "mongodb"
+import { logger } from "./logger"
 
 declare global {
   // eslint-disable-next-line no-var
@@ -7,7 +8,7 @@ declare global {
 
 const uri = process.env.MONGODB_PROFILE_URI
 if (!uri) {
-  console.warn("[profiles] MONGODB_PROFILE_URI is not set. Profile lookup will be disabled.")
+  logger.warn("[profiles] MONGODB_PROFILE_URI is not set. Profile lookup will be disabled.")
 }
 
 const client = uri
@@ -30,14 +31,14 @@ function createClientPromise(): Promise<MongoClient> {
       const c = await client.connect()
       await c.db().command({ ping: 1 })
       if (attempt > 1) {
-        console.log(`[MongoDB:profiles] Connected after retry #${attempt - 1}`)
+        logger.log(`[MongoDB:profiles] Connected after retry #${attempt - 1}`)
       } else {
-        console.log("[MongoDB:profiles] Connected successfully")
+        logger.log("[MongoDB:profiles] Connected successfully")
       }
       return c
     } catch (err: any) {
       lastErr = err
-      console.error(`[MongoDB:profiles] Connect attempt ${attempt} failed:`, err?.message || err)
+      logger.error(`[MongoDB:profiles] Connect attempt ${attempt} failed:`, err?.message || err)
       if (attempt < maxAttempts) {
         await new Promise(res => setTimeout(res, delayMs * attempt))
         return attemptConnect(attempt + 1)

@@ -1,5 +1,5 @@
 "use client"
-import BusinessListItem from "@/components/business-list-item"
+import { ListingCard } from "@/components/listing-card"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -7,9 +7,12 @@ import { cities } from "@/lib/mock-data"
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useParams, useSearchParams, useRouter } from "next/navigation"
 import FancyLoader from "@/components/fancy-loader"
-import { AdSenseSlot } from "@/components/adsense-slot"
 import { ArrowRight, Building2, Grid3x3, List } from "lucide-react"
 import Link from "next/link"
+import { BreadcrumbSchema } from "@/components/breadcrumb-schema"
+import { CtaAddBusiness } from "@/components/cta-add-business"
+import { AdSection } from "@/components/ad-section"
+import { slugify } from "@/lib/utils"
 
 type Subcategory = { name: string; slug: string }
 
@@ -30,6 +33,7 @@ export default function CategoryPage() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [apiPage, setApiPage] = useState(1)
   const [apiTotalPages, setApiTotalPages] = useState(1)
+  const [apiTotal, setApiTotal] = useState(0)
   const PAGE_SIZE = 12
   const loadMoreSentinelRef = useRef<HTMLDivElement>(null)
 
@@ -53,7 +57,7 @@ export default function CategoryPage() {
               const subCats = catData.category.subcategories || []
               setSubcategories(subCats.map((s: any) => ({
                 name: s.name || s.slug,
-                slug: s.slug || (s.name ? s.name.toLowerCase().replace(/\s+/g, '-') : '')
+                slug: s.slug || (s.name ? slugify(s.name) : '')
               })))
             }
           }
@@ -85,9 +89,13 @@ export default function CategoryPage() {
         if (!bizRes.ok) throw new Error("Failed to fetch businesses")
         const bizData = await bizRes.json()
         if (!active) return
+        const pagination = bizData?.pagination || {}
+        const total = pagination.total ?? 0
+        const pages = pagination.pages ?? (Math.ceil(total / PAGE_SIZE) || 1)
         setBusinesses(bizData.businesses || [])
         setApiPage(1)
-        setApiTotalPages(bizData?.pagination?.pages || 1)
+        setApiTotalPages(pages)
+        setApiTotal(total)
       } catch (error) {
         console.error("Error fetching businesses:", error)
         if (active) {
@@ -110,9 +118,13 @@ export default function CategoryPage() {
       const res = await fetch(`/api/business?category=${encodeURIComponent(categorySlug)}&subCategory=${encodeURIComponent(selectedSubcategory)}&page=${next}&limit=${PAGE_SIZE}`)
       if (!res.ok) throw new Error("Failed to fetch more")
       const data = await res.json()
+      const pagination = data?.pagination || {}
+      const total = pagination.total ?? apiTotal
+      const pages = pagination.pages ?? (Math.ceil(total / PAGE_SIZE) || apiTotalPages)
       setBusinesses((prev) => prev.concat(data.businesses || []))
       setApiPage(next)
-      setApiTotalPages(data?.pagination?.pages || apiTotalPages)
+      setApiTotalPages(pages)
+      if (total > 0) setApiTotal(total)
     } catch (e) {
       console.error("Load more failed", e)
     } finally {
@@ -133,7 +145,7 @@ export default function CategoryPage() {
     setFilteredBusinesses(filtered)
   }, [businesses, selectedCity])
 
-  // Infinite scroll: load more when sentinel is in view
+  // Infinite scroll: load more when sentinel is in view (trigger 500px before bottom)
   useEffect(() => {
     if (!selectedSubcategory || loadingMore || apiPage >= apiTotalPages) return
     const el = loadMoreSentinelRef.current
@@ -142,7 +154,7 @@ export default function CategoryPage() {
       (entries) => {
         if (entries[0]?.isIntersecting) loadMore()
       },
-      { root: null, rootMargin: "200px", threshold: 0 }
+      { root: null, rootMargin: "500px 0px", threshold: 0 }
     )
     observer.observe(el)
     return () => observer.disconnect()
@@ -161,18 +173,29 @@ export default function CategoryPage() {
   const categoryName = categoryInfo?.name || prettyName
   const categoryIcon = categoryInfo?.icon || "📦"
 
+  const breadcrumbItems = [
+    { name: "Home", url: "/" },
+    { name: categoryName, url: `/category/${categorySlug}` },
+  ]
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-gray-50/30 to-white">
+      <BreadcrumbSchema items={breadcrumbItems} />
       <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 md:py-12 max-w-7xl">
-        {/* Header Section */}
+        {/* Header Section - One H1 per page: primary keyword + location */}
         <div className="mb-6 sm:mb-8">
+          <nav className="flex items-center gap-2 text-sm text-gray-600 mb-4" aria-label="Breadcrumb">
+            <Link href="/" className="hover:text-primary">Home</Link>
+            <span aria-hidden>/</span>
+            <span className="font-medium text-gray-900">{categoryName}</span>
+          </nav>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-lg flex-shrink-0">
-              <span className="text-2xl sm:text-3xl md:text-4xl">{categoryIcon}</span>
+              <span className="text-2xl sm:text-3xl md:text-4xl" aria-hidden>{categoryIcon}</span>
             </div>
             <div className="flex-1 min-w-0">
               <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-1 sm:mb-2 break-words">
-                {categoryName}
+                {categoryName} Businesses in Pakistan
               </h1>
               {categoryInfo?.count !== undefined && (
                 <p className="text-sm sm:text-base text-gray-600">
@@ -206,7 +229,7 @@ export default function CategoryPage() {
               <>
                 <div className="mb-4 sm:mb-6">
                   <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Browse Subcategories</h2>
-                  <p className="text-sm sm:text-base text-gray-600">Select a subcategory to view businesses</p>
+                  <p className="text-sm sm:text-base text-gray-600">Select a subcategory to view businesses in Pakistan</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                   {subcategories.map((subcat) => (
@@ -242,10 +265,7 @@ export default function CategoryPage() {
           </div>
         )}
 
-        {/* Center ad - between subcategories and business list */}
-        <div className="my-6 sm:my-8">
-          <AdSenseSlot slotId="category-center-ad" />
-        </div>
+        <AdSection slotId="category-center-ad" className="my-6 sm:my-8" />
 
         {/* Show Businesses when subcategory is selected */}
         {selectedSubcategory && (
@@ -255,10 +275,12 @@ export default function CategoryPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    {selectedSubcategory}
+                    {selectedSubcategory} – Listings
                   </h2>
                   <p className="text-gray-600">
-                    {filteredBusinesses.length} businesses found
+                    {apiTotal > 0
+                      ? `Showing ${filteredBusinesses.length} of ${apiTotal.toLocaleString()} businesses`
+                      : `${filteredBusinesses.length} businesses found`}
                     {selectedCity !== "all" && (
                       <span> in {selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1)}</span>
                     )}
@@ -292,25 +314,31 @@ export default function CategoryPage() {
               </div>
             ) : filteredBusinesses.length > 0 ? (
               <>
-                <div className="mb-8 divide-y divide-gray-100 border-y">
-                  {filteredBusinesses.map((business, idx) => (
-                    <div key={business.id || business._id}>
-                      {(idx > 0 && idx % 3 === 0) && (
-                        <div className="py-6">
-                          <AdSenseSlot slotId={`category-branches-ad-${Math.floor(idx / 3)}`} />
-                        </div>
-                      )}
-                      <div className="py-4">
-                        <BusinessListItem business={business} compact />
-                      </div>
+                <div className="mb-8 divide-y divide-gray-100 border-y space-y-4">
+                  {filteredBusinesses.map((business) => (
+                    <div key={business.id || business._id} className="py-4">
+                      <ListingCard business={business} variant="compact" />
                     </div>
                   ))}
                 </div>
 
+                <AdSection slotId="category-after-listings-ad" />
+
                 {/* Infinite scroll sentinel - load more when this is in view */}
                 {apiPage < apiTotalPages && (
-                  <div ref={loadMoreSentinelRef} className="h-4 flex items-center justify-center py-8">
-                    {loadingMore && <FancyLoader />}
+                  <div ref={loadMoreSentinelRef} className="min-h-[120px] flex flex-col items-center justify-center py-8 gap-4">
+                    {loadingMore ? (
+                      <FancyLoader />
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={loadMore}
+                        className="shrink-0"
+                      >
+                        Load more branches
+                      </Button>
+                    )}
                   </div>
                 )}
               </>

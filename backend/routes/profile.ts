@@ -1,5 +1,6 @@
 import express from 'express';
 import { getProfileDb } from '../lib/mongodb-profile';
+import { logger } from '../lib/logger';
 
 const router = express.Router();
 
@@ -43,7 +44,7 @@ router.get('/', async (req, res) => {
 
     res.json({ ok: true, profile: { username, name, title, avatarUrl } });
   } catch (e: any) {
-    console.error("/api/profile error", e?.message || e);
+    logger.error("/api/profile error", e?.message || e);
     res.status(500).json({ ok: false, error: "Failed to fetch profile" });
   }
 });

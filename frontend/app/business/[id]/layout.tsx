@@ -23,10 +23,12 @@ export async function generateMetadata({
     // use fallbacks
   }
 
+  const cityPart = business?.city ? ` in ${business.city}, Pakistan` : " in Pakistan";
   const title = business?.name
-    ? `${business.name} - ${business.category || "Business"} | ${SITE_NAME}`
+    ? `${business.name} | ${business.category || "Business"}${cityPart} – ${SITE_NAME}`
     : `Business | ${SITE_NAME}`;
-  let description = "View business details, contact info, reviews and location on LocatorBranches.";
+  let description =
+    "View business details, contact info, reviews and location on Pakistan's free business directory.";
   if (business?.description) {
     const d = String(business.description).replace(/\s+/g, " ").trim();
     description = d.length > 160 ? `${d.slice(0, 157)}...` : d;

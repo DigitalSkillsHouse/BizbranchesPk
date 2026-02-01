@@ -1,14 +1,16 @@
 "use client"
 import { Button } from "@/components/ui/button"
-import BusinessListItem from "@/components/business-list-item"
+import { ListingCard } from "@/components/listing-card"
 import { useSearchParams, useRouter } from "next/navigation"
 import { useState, useEffect, useMemo, useRef } from "react"
 import Link from "next/link"
-import { Filter, Grid, List, MapPin, Star, Clock, DollarSign, Search, SlidersHorizontal, X } from "lucide-react"
+import { Filter, Grid, List, Search, SlidersHorizontal, X } from "lucide-react"
+import { BreadcrumbSchema } from "@/components/breadcrumb-schema"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import dynamic from "next/dynamic"
-import { AdSenseSlot } from "@/components/adsense-slot"
+import { AdSection } from "@/components/ad-section"
+import { CtaAddBusiness } from "@/components/cta-add-business"
 import { cities as mockCities } from "@/lib/mock-data"
 
 // Client-only wrapper to prevent hydration issues
@@ -127,8 +129,11 @@ export default function SearchPage() {
           }
         })
         setBusinesses((prev) => currentPage === 1 ? items : prev.concat(items))
-        setTotal(data.pagination?.total || items.length)
-        setTotalPages(data.pagination?.pages || 1)
+        const pagination = data?.pagination || {}
+        const totalCount = pagination.total ?? items.length
+        const pagesCount = pagination.pages ?? (Math.ceil(totalCount / limit) || 1)
+        setTotal(totalCount)
+        setTotalPages(pagesCount)
       } catch (e: any) {
         if (e?.name === 'AbortError') return
         setError(e?.message || "Failed to load listings")
@@ -203,34 +208,38 @@ export default function SearchPage() {
 
   const [citySearch, setCitySearch] = useState("")
 
-  const interleavedList = useMemo(() => {
-    const elements: React.ReactNode[] = []
-    businesses.forEach((b, idx) => {
-      elements.push(
-        <div key={b.id} className={viewMode === 'grid' ? '' : 'border-b border-gray-100 last:border-b-0'}>
-          <BusinessListItem business={b} compact={viewMode === 'list'} />
-        </div>
-      )
-      if ((idx + 1) % 6 === 0) {
-        elements.push(<div key={`ad-${currentPage}-${idx}`} className="my-6"><AdSenseSlot slotId={`search-inline-${idx}`} /></div>)
-      }
-    })
-    return elements
-  }, [businesses, currentPage, viewMode])
+  const resultsList = useMemo(() => {
+    return businesses.map((b) => (
+      <div key={b.id} className={viewMode === 'grid' ? '' : 'border-b border-gray-100 last:border-b-0'}>
+        <ListingCard business={b} variant={viewMode === 'list' ? 'compact' : 'card'} />
+      </div>
+    ))
+  }, [businesses, viewMode])
+
+  const breadcrumbItems = [
+    { name: "Home", url: "/" },
+    { name: query ? `Search: ${query}` : "Browse Businesses", url: query ? `/search?q=${encodeURIComponent(query)}` : "/search" },
+  ]
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header Section */}
+      <BreadcrumbSchema items={breadcrumbItems} />
+      {/* Header Section - One H1 per page */}
       <div className="bg-white border-b border-gray-200">
         <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6">
+          <nav className="flex items-center gap-2 text-sm text-gray-600 mb-4" aria-label="Breadcrumb">
+            <Link href="/" className="hover:text-primary">Home</Link>
+            <span aria-hidden>/</span>
+            <span className="font-medium text-gray-900">{query ? "Search Results" : "Browse Businesses"}</span>
+          </nav>
           <div className="flex flex-col gap-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 break-words">
-                {query ? `Search Results for "${query}"` : 'Browse Businesses'}
+                {query ? `Search Results for "${query}" in Pakistan` : "Browse Businesses in Pakistan"}
               </h1>
                 <p className="text-sm sm:text-base text-gray-600">
-                Found {total.toLocaleString()} businesses
+                {total > 0 ? `Showing ${businesses.length} of ${total.toLocaleString()} businesses` : "Browse businesses"}
                 {city && <span> in {city.charAt(0).toUpperCase() + city.slice(1)}</span>}
                 {category && <span> in {category.replace("-", " ")}</span>}
               </p>
@@ -411,18 +420,31 @@ export default function SearchPage() {
               <>
                 <div className={viewMode === 'grid' 
                   ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8" 
-                  : "bg-card border border-border rounded-xl shadow-md hover:shadow-lg transition-all duration-300 divide-y divide-gray-100"
+                  : "bg-card border border-border rounded-xl shadow-md divide-y divide-gray-100"
                 }>
-                  {interleavedList}
+                  {resultsList}
                 </div>
+
+                {/* Ad + CTA: after listings only (AdSense-safe) */}
+                <AdSection slotId="search-after-listings-ad" />
+                <CtaAddBusiness className="my-6 sm:my-8" />
                 
-                <div ref={sentinelRef} className="h-10" />
-                {(isFetchingMore || (hasMore && !isLoading)) && (
-                  <div className="flex justify-center items-center py-8">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mr-3"></div>
-                    <span className="text-gray-600">Loading more businesses...</span>
-                  </div>
-                )}
+                <div ref={sentinelRef} className="min-h-[120px] flex flex-col items-center justify-center py-8 gap-4">
+                  {isFetchingMore ? (
+                    <div className="flex justify-center items-center gap-3">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+                      <span className="text-gray-600">Loading more businesses...</span>
+                    </div>
+                  ) : hasMore && !isLoading ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setCurrentPage((p) => (p < totalPages ? p + 1 : p))}
+                    >
+                      Load more businesses
+                    </Button>
+                  ) : null}
+                </div>
               </>
             ) : null}
             

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import BusinessListItem from "@/components/business-list-item"
+import { ListingCard } from "@/components/listing-card"
 
  type Business = {
   id: string
@@ -97,7 +97,7 @@ export default function PendingSubmissionsPage() {
               <div className="divide-y rounded-lg border bg-card">
                 {businesses.map((b) => (
                   <div key={b.id} className="p-4 md:p-5">
-                    <BusinessListItem business={b} compact />
+                    <ListingCard business={b} variant="compact" />
                   </div>
                 ))}
               </div>

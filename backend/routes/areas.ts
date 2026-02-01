@@ -1,5 +1,6 @@
 import express from 'express';
-import { courierGet } from '../lib/courier'; // Adjust path based on where you place courier.ts
+import { courierGet } from '../lib/courier';
+import { logger } from '../lib/logger';
 
 const router = express.Router();
 
@@ -19,7 +20,7 @@ router.get('/', async (req, res) => {
     const response = await courierGet(`/areas?cityId=${encodeURIComponent(cityId as string)}`);
     const text = await response.text();
     if (!response.ok) {
-      console.error('/api/areas upstream error', response.status, text);
+      logger.error('/api/areas upstream error', response.status, text);
       let body: any;
       try {
         body = JSON.parse(text);
@@ -44,7 +45,7 @@ router.get('/', async (req, res) => {
     }));
     return res.json(normalized);
   } catch (err) {
-    console.error('/api/areas error', err);
+    logger.error('/api/areas error', err);
     return res.status(500).json({ error: 'Failed to fetch areas' });
   }
 });

@@ -16,7 +16,6 @@ export function BusinessSchema({ business, ratingAvg = 0, ratingCount = 0 }: Bus
   const sameAs = [business.facebookUrl, business.youtubeUrl, business.gmbUrl, business.websiteUrl].filter(
     (v: unknown) => typeof v === "string" && v.trim().length > 0
   );
-
   const schemaData: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -38,6 +37,17 @@ export function BusinessSchema({ business, ratingAvg = 0, ratingCount = 0 }: Bus
     description: typeof business.description === "string" ? business.description : undefined,
     sameAs: sameAs.length > 0 ? sameAs : undefined,
   };
+
+  if (business.openingHours && Array.isArray(business.openingHours) && business.openingHours.length > 0) {
+    schemaData.openingHoursSpecification = business.openingHours.map((h: { day?: string; open?: string; close?: string }) => ({
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: h.day || undefined,
+      opens: h.open || undefined,
+      closes: h.close || undefined,
+    }));
+  } else if (typeof business.openingHours === "string" && business.openingHours.trim()) {
+    schemaData.openingHours = business.openingHours;
+  }
 
   if (business.latitude && business.longitude) {
     schemaData.geo = {

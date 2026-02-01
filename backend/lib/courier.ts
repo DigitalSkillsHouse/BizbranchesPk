@@ -1,5 +1,6 @@
 // Server-side helper for Courier (e.g., Leopards) auth + requests
 // Caches bearer token in-memory with expiry to avoid frequent logins.
+import { logger } from './logger'
 
 let cachedToken: string | null = null
 let tokenExpiresAt = 0 // epoch ms
@@ -32,7 +33,7 @@ async function loginAndGetToken(): Promise<{ token: string; expiresInSec: number
   
   for (const endpoint of loginEndpoints) {
     try {
-      console.log(`[Courier Auth] Trying login endpoint: ${endpoint}`);
+      logger.log(`[Courier Auth] Trying login endpoint: ${endpoint}`);
       
       // Try with API key format first (if apiKey is available)
       let loginBody: any;
@@ -77,7 +78,7 @@ async function loginAndGetToken(): Promise<{ token: string; expiresInSec: number
 
       const text = await res.text();
   if (!res.ok) {
-        console.log(`[Courier Auth] ${endpoint} returned ${res.status}: ${text.substring(0, 200)}`);
+        logger.log(`[Courier Auth] ${endpoint} returned ${res.status}: ${text.substring(0, 200)}`);
         lastError = new Error(`Login failed (${res.status}): ${text.substring(0, 200)}`);
         continue;
   }
@@ -90,11 +91,11 @@ async function loginAndGetToken(): Promise<{ token: string; expiresInSec: number
       const expiresInSec: number = Number(data?.expires_in || data?.expiresIn || 3600);
 
       if (token) {
-        console.log(`[Courier Auth] ✅ Successfully authenticated using ${endpoint}`);
+        logger.log(`[Courier Auth] Successfully authenticated using ${endpoint}`);
         return { token, expiresInSec };
       }
     } catch (error: any) {
-      console.log(`[Courier Auth] Error with ${endpoint}:`, error.message);
+      logger.log(`[Courier Auth] Error with ${endpoint}:`, error.message);
       lastError = error;
       continue;
     }
@@ -102,7 +103,7 @@ async function loginAndGetToken(): Promise<{ token: string; expiresInSec: number
   
   // If all login endpoints failed, try API key in headers instead
   if (apiKey) {
-    console.log('[Courier Auth] ✅ Using API key directly (Leopard API style - no login required)');
+    logger.log('[Courier Auth] Using API key directly (Leopard API style - no login required)');
     // Leopard API uses API key directly without login
     // Return the API key as "token" to be used in headers
     return { token: apiKey, expiresInSec: 3600 * 24 }; // 24 hours
@@ -161,8 +162,8 @@ export async function courierGet(path: string): Promise<Response> {
     headers['Authorization'] = `Bearer ${token}`;
   }
   
-  console.log(`[Courier] Making request to: ${base}${path.substring(0, 100)}${path.length > 100 ? '...' : ''}`);
-  console.log(`[Courier] Using API Key: ${apiKey ? '***' + apiKey.slice(-4) : 'No'}`);
+  logger.log(`[Courier] Making request to: ${base}${path.substring(0, 100)}${path.length > 100 ? '...' : ''}`);
+  logger.log(`[Courier] Using API Key: ${apiKey ? '***' + apiKey.slice(-4) : 'No'}`);
   
   return fetch(`${base}${path}`, {
     headers,
@@ -189,9 +190,9 @@ export async function courierPost(path: string, body?: any): Promise<Response> {
       "Content-Type": "application/json",
   };
   
-  console.log(`[Courier] Making POST request to: ${base}${path}`);
-  console.log(`[Courier] Using API Key: ${apiKey ? '***' + apiKey.slice(-4) : 'No'}`);
-  console.log(`[Courier] Request body keys:`, Object.keys(requestBody));
+  logger.log(`[Courier] Making POST request to: ${base}${path}`);
+  logger.log(`[Courier] Using API Key: ${apiKey ? '***' + apiKey.slice(-4) : 'No'}`);
+  logger.log(`[Courier] Request body keys:`, Object.keys(requestBody));
   
   return fetch(`${base}${path}`, {
     method: "POST",

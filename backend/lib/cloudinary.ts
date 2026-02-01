@@ -1,12 +1,10 @@
 import { v2 as cloudinary } from "cloudinary"
+import { logger } from "./logger"
 
-// Configure Cloudinary from environment variables
-// Required: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
 const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } = process.env
 
 if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
-  // Do not throw here to allow app to boot without Cloudinary for non-image flows
-  console.warn(
+  logger.warn(
     "Cloudinary environment variables are missing. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET in .env",
   )
 }

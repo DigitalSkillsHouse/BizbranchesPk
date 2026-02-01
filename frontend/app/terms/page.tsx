@@ -6,13 +6,13 @@ export default function TermsPage() {
         <p className="text-muted-foreground mb-8">Last updated: January 2025</p>
 
         <p className="text-foreground/90 leading-relaxed mb-4">
-          Welcome to LocatorBranches. By using our business directory and related services, you agree to these Terms of Service.
+          Welcome to BizBranches. By using our Pakistan business directory and related services, you agree to these Terms of Service.
         </p>
 
         <section className="mb-8">
           <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-3">Use of the Service</h2>
           <p className="text-foreground/90 leading-relaxed mb-4">
-            You may use LocatorBranches to search for businesses, view listings, read reviews, and contact businesses. Business owners may list their businesses in accordance with our listing guidelines. You must not use the service for illegal purposes or to submit false or misleading information.
+            You may use BizBranches to search for businesses in Pakistan, view listings, read reviews, and contact businesses. Business owners may add their business free in accordance with our listing guidelines. You must not use the service for illegal purposes or to submit false or misleading information.
           </p>
         </section>
 

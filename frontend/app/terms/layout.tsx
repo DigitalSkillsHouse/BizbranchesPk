@@ -2,14 +2,14 @@ import { Metadata } from "next";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: `Terms of Service - ${SITE_NAME}`,
+  title: `Terms of Service – ${SITE_NAME}`,
   description:
-    "Terms of Service for LocatorBranches. Rules and guidelines for using our Pakistan business directory and listing services.",
-  keywords: "terms of service, LocatorBranches terms, directory terms",
+    "Terms of Service for BizBranches. Rules and guidelines for using our Pakistan free business listing directory.",
+  keywords: "terms of service BizBranches, Pakistan business directory terms",
   alternates: { canonical: `${SITE_URL}/terms` },
   openGraph: {
     title: `Terms of Service | ${SITE_NAME}`,
-    description: "Terms of use for LocatorBranches business directory.",
+    description: "Terms of use for BizBranches Pakistan business directory.",
     url: `${SITE_URL}/terms`,
     type: "website",
   },

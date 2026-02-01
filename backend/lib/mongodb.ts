@@ -1,4 +1,5 @@
 import { MongoClient, Db } from 'mongodb';
+import { logger } from './logger';
 
 const MONGODB_DB = process.env.MONGODB_DB || 'BizBranches';
 
@@ -10,14 +11,10 @@ function getClient(): MongoClient {
   if (!client) {
     const uri = process.env.MONGODB_URI;
     if (!uri) {
-      console.error('MONGODB_URI is undefined. Check environment variables.');
+      logger.error('MONGODB_URI is undefined. Check environment variables.');
       throw new Error('MONGODB_URI environment variable is not defined');
     }
-
-    // Log connection attempt (without credentials)
-    const redactedUri = uri.replace(/\/\/.*@/, '//<credentials>@');
-    console.log('Connecting to MongoDB:', redactedUri);
-    console.log('Database:', MONGODB_DB);
+    logger.log('Connecting to MongoDB (database:', MONGODB_DB + ')');
 
     client = new MongoClient(uri, {
       maxPoolSize: 10,
@@ -34,7 +31,7 @@ export async function getDb(): Promise<Db> {
       await cachedDb.admin().ping();
       return cachedDb;
     } catch (error) {
-      console.log('Cached connection failed, reconnecting...');
+      logger.log('Cached connection failed, reconnecting...');
       cachedDb = null;
       client = null;
     }
@@ -44,10 +41,10 @@ export async function getDb(): Promise<Db> {
     const mongoClient = getClient();
     await mongoClient.connect();
     cachedDb = mongoClient.db(MONGODB_DB);
-    console.log('✅ Connected to MongoDB database:', MONGODB_DB);
+    logger.log('Connected to MongoDB:', MONGODB_DB);
     return cachedDb;
   } catch (error) {
-    console.error('❌ MongoDB connection error:', (error as Error).message);
+    logger.error('MongoDB connection error:', (error as Error).message);
     throw new Error(`Failed to connect to MongoDB: ${(error as Error).message}`);
   }
 }
@@ -67,6 +64,6 @@ export async function closeDb(): Promise<void> {
     await client.close();
     client = null;
     cachedDb = null;
-    console.log('MongoDB connection closed');
+    logger.log('MongoDB connection closed');
   }
 }

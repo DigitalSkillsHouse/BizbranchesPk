@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { HeroSection } from "@/components/hero-section";
 import { TopListingsSection } from "@/components/top-listings-section";
+import { SEOIntroSection } from "@/components/seo-intro-section";
 import { AdSenseSlot } from "@/components/adsense-slot";
 
 const CategoriesSection = dynamic(
@@ -82,6 +83,7 @@ export function HomePageClient({ initialCategories = [], initialFeatured = [] }:
       <main>
         <HeroSection />
         <TopListingsSection initialFeatured={initialFeatured} />
+        <SEOIntroSection />
 
         <div className="w-full px-4 py-4 sm:py-6 max-w-4xl mx-auto">
           <AdSenseSlot slotId="home-center-ad" />

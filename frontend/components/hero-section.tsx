@@ -178,10 +178,10 @@ export function HeroSection() {
         {/* Hero Content */}
         <div className="max-w-4xl mx-auto mb-8 sm:mb-12">
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-4 sm:mb-6 leading-tight px-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] shadow-black">
-            Discover Local Businesses & Branches Near You
+            Pakistan Free Business Listing Directory
           </h1>
-          <p className="text-sm sm:text-base md:text-lg font-medium text-white mb-4 sm:mb-6 leading-tight px-2 whitespace-nowrap overflow-hidden drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)] shadow-black">
-            Search verified business listings by city and category in one place.
+          <p className="text-sm sm:text-base md:text-lg font-medium text-white mb-4 sm:mb-6 leading-tight px-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)] shadow-black max-w-2xl mx-auto">
+            Find local businesses across Pakistan. Add your business free, search by city and category, read reviews, and get contact details.
           </p>
 
 
@@ -340,9 +340,10 @@ export function HeroSection() {
             <div className="sm:col-span-1">
               <Button 
                 type="submit" 
-                className="w-full h-12 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 rounded-xl text-base font-bold flex items-center justify-center gap-2 hover:scale-105 active:scale-95"
+                className="w-full min-h-[48px] h-12 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 rounded-xl text-base font-bold flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+                aria-label="Search businesses"
               >
-                <Search className="h-5 w-5" />
+                <Search className="h-5 w-5" aria-hidden />
                 <span className="hidden sm:inline">Search</span>
               </Button>
             </div>
@@ -350,6 +351,22 @@ export function HeroSection() {
           </div>
         </form>
 
+        {/* CTAs: Find businesses + Add your business free */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-6 sm:mt-8">
+          <Link
+            href="/search"
+            className="min-h-[48px] inline-flex items-center justify-center px-6 py-3 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white font-semibold text-sm sm:text-base transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/20"
+          >
+            Browse All Businesses
+          </Link>
+          <Link
+            href="/add"
+            className="min-h-[48px] inline-flex items-center justify-center px-6 py-3 rounded-xl bg-green-500 hover:bg-green-600 text-white font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/20"
+            aria-label="Add your business free"
+          >
+            Add Your Business Free
+          </Link>
+        </div>
       </div>
     </section>
   )

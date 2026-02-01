@@ -12,8 +12,8 @@ export async function generateMetadata({
     .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
     .join(" ");
 
-  const title = `Businesses in ${cityName} - Local Directory | ${SITE_NAME}`;
-  const description = `Find local businesses in ${cityName}. Browse by category, read reviews, and get contact information on LocatorBranches.`;
+  const title = `Businesses in ${cityName}, Pakistan – ${SITE_NAME}`;
+  const description = `Find local businesses in ${cityName}. Browse by category, read reviews, and get contact details. Pakistan free business listing directory.`;
   const canonicalUrl = `${SITE_URL}/city/${slug}`;
 
   return {

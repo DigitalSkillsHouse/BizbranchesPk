@@ -183,8 +183,14 @@ export function CategoriesSection({ initialCategories = [] }: { initialCategorie
                 </div>
               </div>
             ) : (
-                <Link key={category.slug} href={`/category/${category.slug}`} prefetch>
-                  <Card className="h-full overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50/50 group cursor-pointer">
+                <Link
+                  key={category.slug}
+                  href={`/category/${category.slug}`}
+                  prefetch
+                  className="block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-2xl"
+                  aria-label={`Browse ${category.name} businesses`}
+                >
+                  <Card className="h-full overflow-hidden border-0 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 bg-gradient-to-br from-white to-gray-50/50 group cursor-pointer rounded-2xl border border-gray-200/80">
                   <CardContent className="p-0">
                       <div className="relative h-40 sm:h-44 md:h-48 overflow-hidden bg-gradient-to-br from-primary/5 to-purple-50 min-h-[160px]">
                       {category.image ? (

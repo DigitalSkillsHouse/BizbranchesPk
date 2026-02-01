@@ -4,14 +4,13 @@ const isRailway = !!(
   process.env.RAILWAY_PROJECT_ID ||
   process.env.RAILWAY_SERVICE_NAME
 );
+const isProd = process.env.NODE_ENV === "production";
 
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  eslint: { ignoreDuringBuilds: true },
+  typescript: { ignoreBuildErrors: true },
+  productionBrowserSourceMaps: false,
+  compiler: isProd ? { removeConsole: { exclude: ['error'] } } : undefined,
   images: {
     unoptimized: false,
     domains: ["res.cloudinary.com"],

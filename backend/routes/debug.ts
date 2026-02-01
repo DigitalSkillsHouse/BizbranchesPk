@@ -31,7 +31,8 @@ router.get('/', async (req, res) => {
       }
     });
   } catch (error: any) {
-    console.error('Debug endpoint error:', error);
+    const { logger } = await import('../lib/logger');
+    logger.error('Debug endpoint error:', error);
     res.status(500).json({
       ok: false,
       error: error?.message || 'Debug failed',

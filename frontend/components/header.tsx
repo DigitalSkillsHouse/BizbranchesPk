@@ -71,10 +71,10 @@ export function Header() {
                   <Star className="h-4 w-4 lg:h-5 lg:w-5" />
                 <span>Pending Listings</span>
               </Link>
-                <Link href="/add" onClick={closeMenu} className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-4 py-2 lg:px-6 lg:py-3 rounded-lg lg:rounded-xl font-semibold transition-all duration-300 flex items-center space-x-2 shadow-lg hover:shadow-xl text-sm lg:text-base">
-                  <Plus className="h-4 w-4 lg:h-5 lg:w-5" />
-                  <span className="hidden lg:inline">List Business</span>
-                  <span className="lg:hidden">Add</span>
+                <Link href="/add" onClick={closeMenu} className="min-h-[44px] inline-flex items-center justify-center bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-4 py-2.5 lg:px-6 lg:py-3 rounded-lg lg:rounded-xl font-semibold transition-all duration-300 flex items-center space-x-2 shadow-lg hover:shadow-xl text-sm lg:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900" aria-label="Add your business free">
+                  <Plus className="h-4 w-4 lg:h-5 lg:w-5" aria-hidden />
+                  <span className="hidden lg:inline">Add Your Business Free</span>
+                  <span className="lg:hidden">Add Free</span>
               </Link>
             </nav>
             </div>

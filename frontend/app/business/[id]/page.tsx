@@ -10,9 +10,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { AdSenseSlot } from "@/components/adsense-slot"
 import { BusinessSchema } from "@/components/business-schema"
 import { BreadcrumbSchema } from "@/components/breadcrumb-schema"
+import { CtaAddBusiness } from "@/components/cta-add-business"
+import { AdSection } from "@/components/ad-section"
 
 export default function BusinessDetailPage({
   initialBusiness,
@@ -197,10 +198,11 @@ export default function BusinessDetailPage({
   }
 
   const categorySlug = business.category ? String(business.category).toLowerCase().replace(/\s+/g, "-") : "";
+  const businessUrl = `/${business.slug || businessId}`;
   const breadcrumbItems = [
     { name: "Home", url: "/" },
     ...(categorySlug ? [{ name: business.category || categorySlug, url: `/category/${categorySlug}` }] : []),
-    { name: business.name, url: `/business/${businessId}` },
+    { name: business.name, url: businessUrl },
   ];
 
   return (
@@ -214,17 +216,23 @@ export default function BusinessDetailPage({
         <div className="w-40 h-40 relative border rounded-lg overflow-hidden bg-white">
           <Image
             src={business.logoUrl || "/placeholder.svg"}
-            alt={business.name}
+            alt={`${business.name} – ${business.category || "Business"} in ${business.city || "Pakistan"}`}
             fill
             className="object-contain p-2"
+            sizes="160px"
             onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg" }}
           />
         </div>
 
-        {/* Info */}
+        {/* Info - H1: business name + location for SEO */}
         <div className="flex-1">
           <h1 className="text-3xl font-bold mb-2">
             {business.name}
+            {business.city && (
+              <span className="font-normal text-gray-600 text-xl sm:text-2xl ml-2">
+                in {business.city}, Pakistan
+              </span>
+            )}
           </h1>
 
           {/* Rating */}
@@ -353,10 +361,9 @@ export default function BusinessDetailPage({
         </section>
       )}
 
-      {/* Center ad - between description and reviews */}
-      <div className="my-8">
-        <AdSenseSlot slotId="business-center-ad" />
-      </div>
+      <AdSection slotId="business-center-ad" />
+
+      <CtaAddBusiness className="my-6 sm:my-8" />
 
       {/* Business Information & Reviews */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">

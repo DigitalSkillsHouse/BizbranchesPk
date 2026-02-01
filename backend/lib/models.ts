@@ -1,6 +1,7 @@
 import { getDb } from './mongodb';
 import { Collection, Db } from 'mongodb';
 import { Business, Category, City, Review } from './schemas';
+import { logger } from './logger';
 
 // Database Models Class
 class DatabaseModels {
@@ -43,9 +44,9 @@ class DatabaseModels {
             // Review indexes
             await this.reviews.createIndex({ businessId: 1, createdAt: -1 });
             await this.reviews.createIndex({ businessId: 1, rating: -1 });
-            console.log("Database indexes created successfully");
+            logger.log("Database indexes created successfully");
         } catch (error) {
-            console.error("Error creating indexes:", error);
+            logger.error("Error creating indexes:", error);
         }
     }
     // Initialize default data
@@ -117,7 +118,7 @@ class DatabaseModels {
                     },
                 ];
                 await this.categories.insertMany(defaultCategories);
-                console.log("Default categories inserted");
+                logger.log("Default categories inserted");
             }
             // Check if cities exist
             const cityCount = await this.cities.countDocuments();
@@ -142,10 +143,10 @@ class DatabaseModels {
                     { name: "Multan", slug: "multan", province: "Punjab", country: "Pakistan", isActive: true, createdAt: new Date() }
                 ];
                 await this.cities.insertMany(defaultCities);
-                console.log("Default cities inserted");
+                logger.log("Default cities inserted");
             }
         } catch (error) {
-            console.error("Error initializing default data:", error);
+            logger.error("Error initializing default data:", error);
         }
     }
 }
@@ -166,7 +167,7 @@ const getModels: GetModelsFunction = async () => {
             getModels._indexesCreated = true;
         }
     } catch (e) {
-        console.warn("Index creation skipped/failed:", (e as Error)?.message || e);
+        logger.warn("Index creation skipped/failed:", (e as Error)?.message || e);
     }
     return models;
 };

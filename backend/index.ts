@@ -1,8 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import { logger } from './lib/logger';
 
-// Load environment variables from .env file
 dotenv.config();
 import areasRouter from './routes/areas';
 import businessRouter from './routes/business';
@@ -17,30 +17,16 @@ import sitemapRouter from './routes/sitemap';
 import businessRelatedRouter from './routes/business-related';
 import debugRouter from './routes/debug';
 
-console.log('MONGODB_URI in index.ts:', process.env.MONGODB_URI ? process.env.MONGODB_URI.replace(/\/\/.*@/, '//<redacted>@') : 'undefined');
-console.log('MONGODB_DB in index.ts:', process.env.MONGODB_DB);
+const isProd = process.env.NODE_ENV === 'production';
+logger.log('MongoDB configured:', process.env.MONGODB_URI ? 'yes' : 'no');
+logger.log('Database:', process.env.MONGODB_DB || 'not set');
 
-// Log Leopard API configuration status (without exposing sensitive data)
 const leopardBase = process.env.LEOPARDS_API_BASE_URL || process.env.COURIER_API_BASE_URL;
 const leopardApiKey = process.env.LEOPARDS_API_KEY || process.env.COURIER_API_KEY;
 const leopardUsername = process.env.LEOPARDS_API_USERNAME || process.env.COURIER_API_USERNAME;
 const leopardPassword = process.env.LEOPARDS_API_PASSWORD || process.env.COURIER_API_PASSWORD;
-
-console.log('🔑 Leopard API Configuration:');
-console.log('  Base URL:', leopardBase ? `${leopardBase.substring(0, 50)}...` : '❌ NOT SET');
-console.log('  API Key:', leopardApiKey ? `✅ SET (***${leopardApiKey.slice(-4)})` : '❌ NOT SET');
-console.log('  Username:', leopardUsername ? `✅ SET (***${leopardUsername.slice(-4)})` : '⚠️ NOT SET (will use API Key)');
-console.log('  Password:', leopardPassword ? '✅ SET' : '❌ NOT SET');
-
-if (leopardBase && (leopardApiKey || leopardUsername) && leopardPassword) {
-  console.log('✅ Leopard API credentials are configured correctly!');
-} else {
-  console.log('⚠️ WARNING: Leopard API credentials are incomplete. Pakistan cities may not load from API.');
-  const missing = [];
-  if (!leopardBase) missing.push('LEOPARDS_API_BASE_URL');
-  if (!leopardApiKey && !leopardUsername) missing.push('LEOPARDS_API_KEY or LEOPARDS_API_USERNAME');
-  if (!leopardPassword) missing.push('LEOPARDS_API_PASSWORD');
-  console.log('   Missing:', missing.join(', '));
+if (!isProd) {
+  logger.log('Leopard API: Base', leopardBase ? 'set' : 'not set', '| Key/User', (leopardApiKey || leopardUsername) ? 'set' : 'not set');
 }
 
 const app = express();
@@ -52,17 +38,26 @@ const allowedOrigins = [
   'http://127.0.0.1:3000',
   process.env.FRONTEND_URL || 'http://localhost:3000',
 ];
+if (process.env.NEXT_PUBLIC_SITE_URL) allowedOrigins.push(process.env.NEXT_PUBLIC_SITE_URL);
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // allow non-browser tools
+    if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
     return callback(null, false);
   },
-  methods: ['GET','HEAD','OPTIONS','POST','PUT','PATCH','DELETE'],
-  allowedHeaders: ['Content-Type','Authorization','x-admin-secret'],
+  methods: ['GET', 'HEAD', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-secret'],
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '512kb' }));
+app.use(express.urlencoded({ extended: true, limit: '512kb' }));
+
+// Security response headers for all API responses
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
 
 app.use('/api/areas', areasRouter);
 app.use('/api/business', businessRouter);
@@ -75,7 +70,7 @@ app.use('/api/reviews', reviewsRouter);
 app.use('/api/search', searchRouter);
 app.use('/api/sitemap.xml', sitemapRouter);
 app.use('/api/business/related', businessRelatedRouter);
-app.use('/api/debug', debugRouter);
+if (!isProd) app.use('/api/debug', debugRouter);
 
 // Root route
 app.get('/', (req, res) => {
@@ -88,13 +83,12 @@ app.get('/api/ping', (req, res) => {
 });
 
 app.listen(PORT, HOST, async () => {
-  console.log(`🚀 Server running at http://${HOST}:${PORT}`);
-  
+  logger.log(`Server running at http://${HOST}:${PORT}`);
   try {
     const { getModels } = await import('./lib/models');
     const models = await getModels();
     await models.initializeDefaultData();
   } catch (error) {
-    console.error('Failed to initialize default data:', error);
+    logger.error('Failed to initialize default data:', error);
   }
 });

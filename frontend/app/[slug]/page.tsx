@@ -71,8 +71,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 
   const businessName = business?.name || slug;
-  const title = `${businessName} - ${business?.category || "Business"} | ${SITE_NAME}`;
-  let description = "Discover this business on LocatorBranches. View contact details, reviews, and location.";
+  const categoryName = business?.category || "Business";
+  const cityName = business?.city ? `${business.city}, Pakistan` : "Pakistan";
+  const title = `${businessName} | ${categoryName} in ${cityName} – ${SITE_NAME}`;
+  let description =
+    "View contact details, reviews, and location for this business on Pakistan's free business directory.";
   if (business?.description) {
     const rawDesc = typeof business.description === "string" ? business.description : "";
     const normalized = rawDesc.replace(/\s+/g, " ").trim();

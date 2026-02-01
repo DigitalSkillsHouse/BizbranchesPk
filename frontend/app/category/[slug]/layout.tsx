@@ -25,8 +25,8 @@ export async function generateMetadata({
     // use prettyName
   }
 
-  const title = `${categoryName} - Businesses by Category | ${SITE_NAME}`;
-  const description = `Find and explore ${categoryName} businesses on LocatorBranches. Browse listings, read reviews, and get contact details.`;
+  const title = `${categoryName} – Businesses in Pakistan | ${SITE_NAME}`;
+  const description = `Find ${categoryName} businesses across Pakistan. Browse listings, read reviews, and get contact details. Free business directory.`;
   const canonicalUrl = `${SITE_URL}/category/${slug}`;
 
   return {

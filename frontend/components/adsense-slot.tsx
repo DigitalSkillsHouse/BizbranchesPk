@@ -56,7 +56,12 @@ export function AdSenseSlot({
   }
 
   return (
-    <div ref={adRef} className={`min-h-[90px] overflow-hidden ${className}`}>
+    <div
+      ref={adRef}
+      role="complementary"
+      aria-label="Advertisement"
+      className={`min-h-[90px] overflow-hidden my-6 sm:my-8 ${className}`}
+    >
       <ins
         className="adsbygoogle"
         style={{ display: "block" }}

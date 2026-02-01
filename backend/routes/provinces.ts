@@ -1,4 +1,5 @@
 import express from 'express';
+import { logger } from '../lib/logger';
 
 const router = express.Router();
 
@@ -22,7 +23,7 @@ router.get('/', (req, res) => {
     res.set("Cache-Control", "s-maxage=86400, stale-while-revalidate=604800");
     res.json(provinces);
   } catch (error) {
-    console.error('Error in provinces route:', error);
+    logger.error('Error in provinces route:', error);
     if (!res.headersSent) {
       res.status(500).json({ error: 'Internal server error' });
     }

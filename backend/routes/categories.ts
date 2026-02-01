@@ -1,5 +1,6 @@
 import express from 'express';
 import { getModels } from '../lib/models';
+import { logger } from '../lib/logger';
 
 // Helper to derive a slug from a display name when DB slug is missing
 const toSlug = (s: string = "") =>
@@ -121,7 +122,7 @@ router.get('/', async (req, res) => {
         }));
         categories = dynamicCategories.slice(0, safeLimit);
       } catch (dbError) {
-        console.error('Error fetching business categories:', dbError);
+        logger.error('Error fetching business categories:', dbError);
         categories = [];
       }
     }
@@ -143,7 +144,7 @@ router.get('/', async (req, res) => {
     }
     res.json({ ok: true, categories: enriched });
   } catch (error) {
-    console.error("Error fetching categories:", error);
+    logger.error("Error fetching categories:", error);
     res.status(500).json({ ok: false, error: "Failed to fetch businesses" });
   }
 });

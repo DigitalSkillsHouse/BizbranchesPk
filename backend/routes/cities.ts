@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import express from 'express';
 import { courierGet, courierPost } from '../lib/courier';
+import { logger } from '../lib/logger';
 
 const router = express.Router();
 
@@ -22,7 +23,7 @@ const loadPakistanCities = (): Array<{ id: string; name: string; country: string
     const data = fs.readFileSync(filePath, 'utf8');
     return JSON.parse(data);
   } catch (error) {
-    console.error('Error loading Pakistan cities:', error);
+    logger.error('Error loading Pakistan cities:', error);
     return [];
   }
 };
@@ -433,7 +434,7 @@ async function fetchPakistanCitiesFromLeopard(): Promise<Array<{ id: string; nam
       }
       const list = normalize(data);
       if (list.length > 0) {
-        console.log(`[Cities API] Leopard API: got ${list.length} cities from ${p}`);
+        logger.log(`[Cities API] Leopard API: got ${list.length} cities from ${p}`);
         return list;
       }
     } catch (_) {
@@ -452,7 +453,7 @@ async function fetchPakistanCitiesFromLeopard(): Promise<Array<{ id: string; nam
     }
     const list = normalize(data);
     if (list.length > 0) {
-      console.log(`[Cities API] Leopard API: got ${list.length} cities from POST /cities`);
+      logger.log(`[Cities API] Leopard API: got ${list.length} cities from POST /cities`);
       return list;
     }
   } catch (_) {
@@ -470,13 +471,13 @@ router.get('/', async (req, res) => {
     let cities: Array<{ id: string; name: string; country: string }> = [];
     
     if (isPakistan) {
-      console.log('[Cities API] Fetching Pakistan cities from Leopard API...');
+      logger.log('[Cities API] Fetching Pakistan cities from Leopard API...');
       cities = await fetchPakistanCitiesFromLeopard();
       if (cities.length === 0) {
-        console.log('[Cities API] Leopard API returned no cities; using local JSON fallback.');
+        logger.log('[Cities API] Leopard API returned no cities; using local JSON fallback.');
         cities = loadPakistanCities();
       }
-      console.log(`[Cities API] Loaded ${cities.length} Pakistan cities`);
+      logger.log(`[Cities API] Loaded ${cities.length} Pakistan cities`);
     } else {
       cities = [...globalCities, ...loadPakistanCities()];
       if (country && country.trim()) {
@@ -487,12 +488,12 @@ router.get('/', async (req, res) => {
     // Sort by name
     cities.sort((a, b) => a.name.localeCompare(b.name));
     
-    console.log(`[Cities API] Returning ${cities.length} cities for ${country || 'all countries'}`);
+    logger.log(`[Cities API] Returning ${cities.length} cities for ${country || 'all countries'}`);
     
     res.set('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
     res.json({ ok: true, cities });
   } catch (error: any) {
-    console.error('Error fetching cities:', error);
+    logger.error('Error fetching cities:', error);
     res.status(500).json({ ok: false, error: 'Failed to fetch cities' });
   }
 });
@@ -520,12 +521,12 @@ router.post('/', async (req, res) => {
       country: countryName
     };
     
-    console.log(`[Cities API] Adding new city: ${cityName}, ${countryName}`);
+    logger.log(`[Cities API] Adding new city: ${cityName}, ${countryName}`);
     
     // For now, just return the city (in a real app, you'd save to database)
     res.json({ ok: true, city: newCity });
   } catch (error: any) {
-    console.error('Error adding city:', error);
+    logger.error('Error adding city:', error);
     res.status(500).json({ ok: false, error: 'Failed to add city' });
   }
 });
@@ -537,7 +538,7 @@ router.get('/countries', async (req, res) => {
     res.set('Cache-Control', 's-maxage=86400, stale-while-revalidate=604800');
     res.json({ ok: true, countries: countries.sort() });
   } catch (error) {
-    console.error('Error fetching countries:', error);
+    logger.error('Error fetching countries:', error);
     res.status(500).json({ ok: false, error: 'Failed to fetch countries' });
   }
 });

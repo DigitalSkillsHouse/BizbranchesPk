@@ -1,5 +1,6 @@
 import express from 'express';
 import { getModels } from '../lib/models';
+import { logger } from '../lib/logger';
 
 const router = express.Router();
 
@@ -40,7 +41,7 @@ router.get('/', async (req, res) => {
     res.json({ ok: true, businesses: serialized });
     res.set("Cache-Control", "s-maxage=3600, stale-while-revalidate=86400");
   } catch (err: any) {
-    console.error("Error fetching related businesses:", err);
+    logger.error("Error fetching related businesses:", err);
     res.status(500).json({ ok: false, error: "Failed to fetch related businesses" });
   }
 });

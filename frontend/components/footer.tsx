@@ -19,8 +19,8 @@ export function Footer() {
               <span className="text-xl sm:text-2xl font-bold text-white">BizBranches.Pk</span>
             </div>
             <p className="text-sm sm:text-base text-gray-300 leading-relaxed mb-6 max-w-md">
-              Pakistan&apos;s premier business directory platform, connecting millions of customers with trusted local businesses.
-              Discover services, read authentic reviews, and grow your business with our comprehensive directory.
+              Pakistan&apos;s free business listing directory. Find local businesses by city and category, add your business free,
+              read reviews, and get contact details. Trusted across Pakistan.
             </p>
 
             {/* Stats Row - like DSH (500+ Students, 95% Job Placement, etc.) */}
@@ -53,8 +53,8 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-3 text-gray-300">
                 <Mail className="h-4 w-4 text-green-400 flex-shrink-0" />
-                <a href="mailto:support@bizdirectory.pk" className="hover:text-green-400 transition-colors break-all">
-                  support@bizdirectory.pk
+                <a href="mailto:support@bizbranches.pk" className="hover:text-green-400 transition-colors break-all">
+                  support@bizbranches.pk
                 </a>
               </div>
             </div>

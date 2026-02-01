@@ -7,6 +7,8 @@ import { Footer } from "@/components/footer";
 import { GlobalTopbar } from "@/components/global-topbar";
 import GlobalContainer from "@/components/global-container";
 import { AdBanner } from "@/components/ad-banner";
+import { CtaAddBusiness } from "@/components/cta-add-business";
+import { CopyDeterrent } from "@/components/copy-deterrent";
 import { Suspense } from "react";
 import Script from "next/script";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/site";
@@ -17,17 +19,17 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-const defaultTitle = `${SITE_NAME} - Discover Amazing Businesses Worldwide | Pakistan's Premier Business Directory`;
-const defaultDesc = "Discover Amazing Businesses Worldwide. Find and connect with trusted local businesses across Pakistan and worldwide. Search by category, location, or business name. Read reviews, view contact information, and grow your business with our comprehensive directory platform.";
+const defaultTitle = `${SITE_NAME} – Pakistan Free Business Listing Directory`;
+const defaultDesc = "Pakistan's free business listing directory. Find local businesses by city and category. Add your business free, read reviews, and get contact details. Trusted across Pakistan.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: defaultTitle,
-    template: `%s | ${SITE_NAME}`,
+    template: `%s – ${SITE_NAME}`,
   },
   description: defaultDesc,
-  keywords: "business directory, find businesses, local businesses, business search, Pakistan businesses, worldwide businesses, business listings, discover businesses, LocatorBranches",
+  keywords: "Pakistan business directory, free business listing Pakistan, Pakistani business listing site, add business free Pakistan, local businesses Pakistan",
   authors: [{ name: SITE_NAME, url: SITE_URL }],
   creator: SITE_NAME,
   publisher: SITE_NAME,
@@ -51,7 +53,7 @@ export const metadata: Metadata = {
         url: "/local-business-directory-city-buildings.webp",
         width: 1200,
         height: 630,
-        alt: "LocatorBranches - Pakistan Business Directory",
+        alt: "BizBranches – Pakistan free business listing directory",
       },
     ],
   },
@@ -147,7 +149,8 @@ export default function RootLayout({
         )}
       </head>
 
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning={true}>
+      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} pb-20 md:pb-0`} suppressHydrationWarning={true}>
+        <CopyDeterrent />
         <Header />
         <AdBanner placement="header" />
         <Suspense fallback={null}>
@@ -155,6 +158,7 @@ export default function RootLayout({
         </Suspense>
         <GlobalContainer>{children}</GlobalContainer>
         <Footer />
+        <CtaAddBusiness variant="sticky" />
       </body>
     </html>
   );

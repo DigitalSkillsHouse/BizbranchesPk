@@ -2,10 +2,9 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { MapPin, Phone, Star, TrendingUp, ArrowRight, Sparkles, ChevronLeft, ChevronRight } from "lucide-react"
+import { ListingCard } from "@/components/listing-card"
+import { Star, TrendingUp, ArrowRight, Sparkles, ChevronLeft, ChevronRight } from "lucide-react"
 import Link from "next/link"
-import Image from "next/image"
 import useEmblaCarousel from "embla-carousel-react"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { categories, mockBusinesses } from "@/lib/mock-data"
@@ -15,60 +14,8 @@ type FeaturedCategoryCardProps = {
   categorySlug: string
 }
 
-function BusinessCard({ b }: { b: (typeof mockBusinesses)[number] }) {
-  return (
-    <Link href={`/${b.slug || b.id}`} className="block group">
-      <Card className="h-full overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50/50 group-hover:from-white group-hover:to-primary/5">
-        <div className="relative h-32 overflow-hidden bg-gradient-to-br from-primary/5 to-purple-50">
-          <div className="absolute inset-0 flex items-center justify-center p-4">
-            <Image
-              src={b.image || "/placeholder.svg"}
-              alt={b.name}
-              width={200}
-              height={200}
-              unoptimized
-              className="w-full h-full object-contain transition-opacity duration-500 group-hover:opacity-90"
-            />
-          </div>
-          <div className="absolute top-3 right-3 flex gap-2">
-            <Badge className="bg-gradient-to-r from-primary to-purple-600 text-white border-0 shadow-lg flex items-center gap-1">
-              <Star className="h-3 w-3 fill-white" />
-              <span className="text-xs font-semibold">Featured</span>
-            </Badge>
-          </div>
-          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white via-white/90 to-transparent" />
-        </div>
-        <CardContent className="p-3 sm:p-4">
-          <div className="space-y-1.5 sm:space-y-2">
-            <div>
-              <h3 className="font-bold text-sm sm:text-base text-gray-900 group-hover:text-primary transition-colors line-clamp-2 mb-1.5">
-                {b.name}
-              </h3>
-              <Badge variant="secondary" className="text-[9px] sm:text-[10px] font-medium bg-primary/10 text-primary border-primary/20">
-                {b.category}
-              </Badge>
-            </div>
-            <div className="space-y-1 sm:space-y-1.5 pt-1.5 border-t border-gray-100">
-              <div className="flex items-center gap-2 text-[10px] sm:text-xs text-gray-600">
-                <MapPin className="h-3 w-3 text-primary flex-shrink-0" />
-                <span className="capitalize font-medium truncate">{b.city}</span>
-              </div>
-              {b.phone && (
-                <div className="flex items-center gap-2 text-[10px] sm:text-xs text-gray-600">
-                  <Phone className="h-3 w-3 text-primary flex-shrink-0" />
-                  <span className="truncate">{b.phone}</span>
-                </div>
-              )}
-            </div>
-            <div className="pt-1.5 flex items-center justify-between">
-              <span className="text-[9px] sm:text-[10px] text-gray-500 font-medium">View Details</span>
-              <ArrowRight className="h-3 w-3 text-primary opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </Link>
-  )
+function toListingBusiness(b: { id: string; slug?: string; name: string; category: string; city?: string; image?: string }) {
+  return { id: b.id, slug: b.slug ?? b.id, name: b.name, category: b.category, city: b.city, image: b.image }
 }
 
 function FeaturedCategoryCard({ categoryName, categorySlug }: FeaturedCategoryCardProps) {
@@ -125,7 +72,7 @@ function FeaturedCategoryCard({ categoryName, categorySlug }: FeaturedCategoryCa
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {first ? (
             <div className={`transition-all duration-500 ${anim ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`} key={`b1-${first.id}`}>
-              <BusinessCard b={first} />
+              <ListingCard business={toListingBusiness(first)} variant="mini" />
             </div>
           ) : (
             <div className="flex items-center justify-center h-48 text-sm text-gray-400 bg-gray-50 rounded-lg">
@@ -134,7 +81,7 @@ function FeaturedCategoryCard({ categoryName, categorySlug }: FeaturedCategoryCa
           )}
           {second && (
             <div className={`transition-all duration-500 ${anim ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`} key={`b2-${second.id}`}>
-              <BusinessCard b={second} />
+              <ListingCard business={toListingBusiness(second)} variant="mini" />
             </div>
           )}
         </div>
@@ -146,12 +93,11 @@ function FeaturedCategoryCard({ categoryName, categorySlug }: FeaturedCategoryCa
 function mapFeatured(b: any) {
   return {
     id: String(b._id || b.id || b.slug || b.name),
-    slug: b.slug,
+    slug: b.slug ?? String(b._id || b.id),
     name: b.name,
     category: b.category,
     city: (b.city || '').toLowerCase(),
-    phone: b.phone || '',
-    image: b.logoUrl || '/placeholder.svg',
+    image: b.logoUrl || b.image || '/placeholder.svg',
   }
 }
 
@@ -323,7 +269,7 @@ export function TopListingsSection({ initialFeatured = [] }: { initialFeatured?:
                         </div>
                         <div className="grid grid-cols-1 gap-3 sm:gap-4 flex-1">
                           {pair.map((b) => (
-                            <BusinessCard key={b.id} b={b} />
+                            <ListingCard key={b.id} business={toListingBusiness(b)} variant="mini" />
                           ))}
                         </div>
                       </div>
@@ -457,7 +403,7 @@ export function TopListingsSection({ initialFeatured = [] }: { initialFeatured?:
                         </div>
                         <div className="grid grid-cols-1 gap-3 sm:gap-4 flex-1">
                           {pair.map((b) => (
-                            <BusinessCard key={b.id} b={b} />
+                            <ListingCard key={b.id} business={toListingBusiness(b)} variant="mini" />
                           ))}
                         </div>
                       </div>

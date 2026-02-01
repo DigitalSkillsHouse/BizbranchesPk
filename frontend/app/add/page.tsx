@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cities } from "@/lib/mock-data"
+import { slugify } from "@/lib/utils"
 import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -40,8 +41,8 @@ interface FormState {
 }
 
 export function AddBusinessForm({
-  title = "List Your Business",
-  description = "Join the world's premier business directory",
+  title = "Add Your Business Free",
+  description = "Pakistan's free business listing directory. Get visibility in minutes.",
   categories = [],
   onSubmitted,
 }: {
@@ -151,8 +152,6 @@ export function AddBusinessForm({
     profileUsername: "",
   })
 
-  const toSlug = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-")
-
   const fetchSubcategories = async () => {
     const cat = form.category?.trim()
     if (!cat) {
@@ -161,7 +160,7 @@ export function AddBusinessForm({
     }
     try {
       setSubCatLoading(true)
-      const res = await fetch(`/api/categories?slug=${encodeURIComponent(toSlug(cat))}`, { cache: "no-store" })
+      const res = await fetch(`/api/categories?slug=${encodeURIComponent(slugify(cat))}`, { cache: "no-store" })
       const data = await res.json().catch(() => ({}))
       const list: string[] = Array.isArray(data?.category?.subcategories)
         ? data.category.subcategories.map((s: any) => s?.name || s?.slug).filter(Boolean)
@@ -375,6 +374,15 @@ export function AddBusinessForm({
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50">
       <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 md:py-12">
         <div className="max-w-6xl mx-auto">
+          {/* Page title and CTA */}
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              {title}
+            </h1>
+            <p className="text-gray-600 text-sm sm:text-base max-w-xl mx-auto">
+              {description}
+            </p>
+          </div>
           {/* Enhanced Progress Card */}
           <div className="mb-6 sm:mb-8 md:mb-10">
             <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-xl border border-gray-100/50 backdrop-blur-sm">
@@ -490,18 +498,20 @@ export function AddBusinessForm({
                       </Label>
                       <Input 
                         id="phone" 
-                        placeholder="+1-XXX-XXX-XXXX (with country code)" 
+                        placeholder="+92 3XX XXXXXXX (Pakistan)" 
                         value={form.phone} 
                         onChange={handleChange} 
                         className={`h-12 border-2 rounded-lg transition-all ${fieldErrors.phone ? 'border-red-400 bg-red-50/50' : 'border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200'} bg-white`}
+                        aria-describedby="phone-help"
                       />
+                      <p id="phone-help" className="text-xs text-gray-500 mt-1">Include country code for Pakistan (+92)</p>
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="whatsapp" className="text-gray-700 font-semibold text-sm">WhatsApp Number</Label>
                       <Input 
                         id="whatsapp" 
-                        placeholder="+1-XXX-XXX-XXXX (with country code)" 
+                        placeholder="+92 3XX XXXXXXX (optional)" 
                         value={form.whatsapp} 
                         onChange={handleChange} 
                         className="h-12 border-2 rounded-lg border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 bg-white transition-all" 
@@ -789,25 +799,26 @@ export function AddBusinessForm({
                   <div className="max-w-2xl mx-auto text-center">
                     <Button
                       type="submit"
-                      className="w-full md:w-auto px-12 h-16 text-lg font-bold bg-white text-indigo-600 hover:bg-gray-50 shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-xl mb-6"
+                      className="w-full md:w-auto min-h-[48px] px-8 sm:px-12 py-4 text-base sm:text-lg font-bold bg-white text-indigo-600 hover:bg-gray-50 shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-xl mb-6 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-600"
                       disabled={submitting}
+                      aria-busy={submitting}
                     >
                       {submitting ? (
                         <div className="flex items-center gap-3">
-                          <div className="animate-spin rounded-full h-6 w-6 border-2 border-indigo-600 border-t-transparent"></div>
-                          <span>Submitting Your Listing...</span>
+                          <div className="animate-spin rounded-full h-6 w-6 border-2 border-indigo-600 border-t-transparent" aria-hidden />
+                          <span>Submitting...</span>
                         </div>
                       ) : (
                         <div className="flex items-center gap-3">
-                          <Star className="h-6 w-6" />
-                          <span>Submit Business Listing</span>
-                          <Star className="h-6 w-6" />
+                          <Star className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden />
+                          <span>Add Your Business Free</span>
+                          <Star className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden />
                         </div>
                       )}
                     </Button>
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-5 border border-white/20">
-                      <p className="text-white font-semibold text-base">
-                        🚀 Your business will be reviewed and published within 24-48 hours
+                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-5 border border-white/20">
+                      <p className="text-white font-semibold text-sm sm:text-base">
+                        Your listing will be reviewed and published within 24–48 hours. Free forever.
                       </p>
                     </div>
                   </div>

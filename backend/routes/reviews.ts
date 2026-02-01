@@ -1,6 +1,8 @@
 import express from 'express';
 import { getModels } from '../lib/models';
 import { CreateReviewSchema } from '../lib/schemas';
+import { logger } from '../lib/logger';
+import { rateLimit, getClientIp } from '../lib/rate-limit';
 
 const router = express.Router();
 
@@ -58,12 +60,7 @@ router.get('/', async (req, res) => {
       ratingCount: calcCount,
     });
   } catch (err: any) {
-    console.error('Error fetching reviews:', {
-      error: err?.message || 'Unknown error',
-      stack: err?.stack,
-      businessId: req.query.businessId,
-      timestamp: new Date().toISOString()
-    });
+    logger.error('Error fetching reviews:', err?.message);
     res.status(500).json({ 
       ok: false, 
       error: process.env.NODE_ENV === 'development' ? err?.message || 'Failed to fetch reviews' : 'Failed to fetch reviews. Please try again later.'
@@ -131,12 +128,7 @@ router.post('/', async (req, res) => {
     res.set("Cache-Control", "no-store");
     res.json({ ok: true, ratingAvg: newAvg, ratingCount: newCount });
   } catch (err: any) {
-    console.error('Error submitting review:', {
-      error: err?.message || 'Unknown error',
-      stack: err?.stack,
-      businessId: req.body?.businessId,
-      timestamp: new Date().toISOString()
-    });
+    logger.error('Error submitting review:', err?.message);
     res.status(500).json({ 
       ok: false, 
       error: process.env.NODE_ENV === 'development' ? err?.message || 'Failed to submit review' : 'Failed to submit review. Please try again later.'

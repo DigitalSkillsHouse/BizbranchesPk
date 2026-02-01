@@ -2,8 +2,10 @@ import express from 'express';
 import multer from 'multer';
 import { getModels } from '../lib/models';
 import { CreateBusinessSchema, BusinessSchema } from '../lib/schemas';
-import cloudinary from '../lib/cloudinary'; // Assuming this exports configured cloudinary v2
+import cloudinary from '../lib/cloudinary';
 import { pingGoogleSitemap } from '../lib/google-ping';
+import { logger } from '../lib/logger';
+import { rateLimit, getClientIp } from '../lib/rate-limit';
 
 // Set up Multer for memory storage (buffers)
 const storage = multer.memoryStorage();
@@ -40,7 +42,7 @@ async function uploadToCloudinary(buffer: Buffer): Promise<{ url: string; public
         },
         (error, result) => {
           if (error || !result) {
-            console.error("Cloudinary upload_stream error:", error);
+            logger.error("Cloudinary upload_stream error:", error);
             return reject(error);
           }
           resolve({ url: result.secure_url, public_id: result.public_id });
@@ -49,7 +51,7 @@ async function uploadToCloudinary(buffer: Buffer): Promise<{ url: string; public
       stream.end(buffer);
     });
   } catch (e) {
-    console.error("uploadToCloudinary failed:", e);
+    logger.error("uploadToCloudinary failed:", e);
     return null;
   }
 }
@@ -71,8 +73,8 @@ async function validateUniqueBusinessName(name: string, excludeId?: string): Pro
     const existing = await models.businesses.findOne(filter);
     return !existing; // Return true if name is unique (no existing business found)
   } catch (error) {
-    console.error('Error validating unique business name:', error);
-    return false; // Assume not unique on error for safety
+    logger.error('Error validating unique business name:', error);
+    return false;
   }
 }
 
@@ -121,7 +123,7 @@ router.get('/pending', async (req, res) => {
       }
     });
   } catch (err: any) {
-    console.error('Error fetching pending businesses:', err);
+    logger.error('Error fetching pending businesses:', err);
     res.status(500).json({ ok: false, error: err?.message || 'Failed to fetch pending businesses' });
   }
 });
@@ -146,7 +148,7 @@ router.get('/featured', async (req, res) => {
     res.set('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
     res.json({ ok: true, businesses: enriched });
   } catch (err: any) {
-    console.error('Error fetching featured businesses:', err);
+    logger.error('Error fetching featured businesses:', err);
     res.status(500).json({ ok: false, error: err?.message || 'Failed to fetch featured businesses' });
   }
 });
@@ -267,7 +269,10 @@ router.get('/', async (req, res) => {
       ...business,
       logoUrl: business.logoUrl || buildCdnUrl(business.logoPublicId)
     }));
-    
+
+    // Cache list responses for 5 min, stale-while-revalidate 10 min (SEO & performance)
+    res.set('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
+
     res.json({
       ok: true,
       businesses: enrichedBusinesses,
@@ -279,7 +284,7 @@ router.get('/', async (req, res) => {
       }
     });
   } catch (err: any) {
-    console.error('Error fetching businesses:', err);
+    logger.error('Error fetching businesses:', err);
     res.status(500).json({ ok: false, error: err?.message || 'Failed to fetch businesses' });
   }
 });
@@ -319,7 +324,7 @@ router.patch('/', async (req, res) => {
 
     // Ping Google when business is approved
     if (nextStatus === "approved" && result.modifiedCount > 0) {
-      pingGoogleSitemap().catch(console.error);
+      pingGoogleSitemap().catch((e) => logger.error('Sitemap ping:', e));
     }
 
     res.json({ ok: true, modifiedCount: result.modifiedCount });
@@ -330,13 +335,14 @@ router.patch('/', async (req, res) => {
 
 // POST /api/business/check-duplicates - Check for duplicate phone or email
 router.post('/check-duplicates', async (req, res) => {
+  const ip = getClientIp(req);
+  const rl = rateLimit(ip, 'check-duplicates', 60);
+  if (!rl.ok) {
+    return res.status(429).set('Retry-After', String(rl.retryAfter ?? 60)).json({ ok: false, error: 'Too many requests' });
+  }
   try {
-    console.log('Checking duplicates endpoint called');
     const models = await getModels();
-    console.log('Database models initialized');
-    
     const { phone, email } = req.body || {};
-    console.log('Received request body:', { phone, email });
     
     if (!phone && !email) {
       return res.status(400).json({ 
@@ -365,7 +371,7 @@ router.post('/check-duplicates', async (req, res) => {
           duplicates.hasDuplicates = true;
         }
       } catch (phoneErr) {
-        console.error("Error checking phone duplicates:", phoneErr);
+        logger.error("Error checking phone duplicates:", phoneErr);
       }
     }
     
@@ -383,18 +389,17 @@ router.post('/check-duplicates', async (req, res) => {
           duplicates.hasDuplicates = true;
         }
       } catch (emailErr) {
-        console.error("Error checking email duplicates:", emailErr);
+        logger.error("Error checking email duplicates:", emailErr);
       }
     }
     
-    console.log('Sending response:', { duplicates, hasDuplicates: duplicates.hasDuplicates });
     res.json({
       ok: true,
       duplicates,
       hasDuplicates: duplicates.hasDuplicates
     });
   } catch (err: any) {
-    console.error("Error checking duplicates:", err);
+    logger.error("Error checking duplicates:", err);
     res.status(500).json({ 
       ok: false, 
       error: err?.message || "Internal server error" 
@@ -404,6 +409,11 @@ router.post('/check-duplicates', async (req, res) => {
 
 // POST /api/business - Create business with optional logo upload
 router.post('/', upload.single('logo'), async (req, res) => {
+  const ip = getClientIp(req);
+  const rl = rateLimit(ip, 'business-create', 10);
+  if (!rl.ok) {
+    return res.status(429).set('Retry-After', String(rl.retryAfter ?? 60)).json({ ok: false, error: 'Too many submissions. Try again later.' });
+  }
   try {
     const models = await getModels();
 
@@ -446,13 +456,7 @@ router.post('/', upload.single('logo'), async (req, res) => {
     formData.gmbUrl = ensureUrl(formData.gmbUrl);
     formData.youtubeUrl = ensureUrl(formData.youtubeUrl);
 
-    console.log("Raw form data received:", formData);
-    console.log("Form data keys:", Object.keys(formData));
-    console.log("Description field specifically:", JSON.stringify(formData.description));
-    
-    // Check if description contains error messages
     if (formData.description && formData.description.includes('Business Not Found')) {
-      console.error('ERROR: Description contains error messages!');
       return res.status(400).json({ 
         ok: false, 
         error: "Invalid description content detected", 
@@ -463,20 +467,11 @@ router.post('/', upload.single('logo'), async (req, res) => {
     // Validate using Zod schema
     const validationResult = CreateBusinessSchema.safeParse(formData);
     if (!validationResult.success) {
-      console.error("Validation failed:", validationResult.error.errors);
-      console.error("Each validation error:");
-      validationResult.error.errors.forEach((err, index) => {
-        console.error(`Error ${index + 1}:`, {
-          field: err.path.join('.'),
-          message: err.message,
-          code: err.code
-        });
-      });
+      logger.error("Validation failed:", validationResult.error.errors);
       return res.status(400).json({ 
         ok: false, 
         error: "Validation failed", 
-        details: validationResult.error.errors,
-        receivedData: formData 
+        details: validationResult.error.errors
       });
     }
 
@@ -535,7 +530,7 @@ router.post('/', upload.single('logo'), async (req, res) => {
       business: { ...businessDoc, _id: result.insertedId } 
     });
   } catch (err: any) {
-    console.error("Business creation error:", err);
+    logger.error("Business creation error:", err);
     res.status(500).json({ 
       ok: false, 
       error: err?.message || "Internal server error" 
@@ -582,12 +577,7 @@ router.get('/:slug', async (req, res) => {
     res.set('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
     res.json({ ok: true, business: enrichedBusiness });
   } catch (err: any) {
-    console.error('Error fetching business:', {
-      error: err?.message || 'Unknown error',
-      stack: err?.stack,
-      slug: req.params.slug,
-      timestamp: new Date().toISOString()
-    });
+    logger.error('Error fetching business:', err?.message, req.params.slug);
     res.status(500).json({ 
       ok: false, 
       error: process.env.NODE_ENV === 'development' ? err?.message || 'Failed to fetch business' : 'Failed to fetch business. Please try again later.'

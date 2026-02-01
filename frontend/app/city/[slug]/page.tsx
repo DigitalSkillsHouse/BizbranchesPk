@@ -1,11 +1,13 @@
 "use client"
 import { Suspense } from "react"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useRef, useCallback } from "react"
 import { useParams, useSearchParams, useRouter } from "next/navigation"
-import { BusinessCard } from "@/components/business-card"
+import Link from "next/link"
+import { ListingCard } from "@/components/listing-card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { AdSenseSlot } from "@/components/adsense-slot"
+import { AdSection } from "@/components/ad-section"
+import { BreadcrumbSchema } from "@/components/breadcrumb-schema"
 
 type ListBusiness = {
   id: string
@@ -50,6 +52,8 @@ export default function CityPage() {
   const limit = 12
   const [totalPages, setTotalPages] = useState<number>(1)
   const [total, setTotal] = useState<number>(0)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const loadMoreSentinelRef = useRef<HTMLDivElement>(null)
 
   // Fetch categories for filters
   useEffect(() => {
@@ -94,12 +98,13 @@ export default function CityPage() {
     run()
   }, [selectedCategory])
 
-  // Fetch businesses for city + filters
+  // Fetch businesses for city + filters (page 1 replace, page > 1 append)
   useEffect(() => {
     const controller = new AbortController()
     const load = async () => {
       try {
-        setLoading(true)
+        if (page === 1) setLoading(true)
+        else setLoadingMore(true)
         setError("")
         const params = new URLSearchParams()
         params.set("city", cityName)
@@ -111,46 +116,70 @@ export default function CityPage() {
         const data = await res.json().catch(() => ({}))
         if (!res.ok || data?.ok === false) throw new Error(data?.error || `Failed (${res.status})`)
         const list: ListBusiness[] = Array.isArray(data?.businesses) ? data.businesses : []
-        setBusinesses(list)
-        const p = data?.pagination?.pages || 1
-        const t = data?.pagination?.total || list.length
+        const pagination = data?.pagination || {}
+        const t = pagination.total ?? list.length
+        const p = pagination.pages ?? (Math.ceil(t / limit) || 1)
+        setBusinesses((prev) => page === 1 ? list : prev.concat(list))
         setTotalPages(p)
         setTotal(t)
       } catch (e: any) {
         if (e?.name === 'AbortError') return
         setError(e?.message || 'Failed to load')
-        setBusinesses([])
-        setTotalPages(1)
-        setTotal(0)
+        if (page === 1) {
+          setBusinesses([])
+          setTotalPages(1)
+          setTotal(0)
+        }
       } finally {
         setLoading(false)
+        setLoadingMore(false)
       }
     }
     load()
     return () => controller.abort()
   }, [cityName, citySlug, selectedCategory, selectedSubCategory, page])
 
-  // Sync subcategory and page changes back to URL
-  useEffect(() => {
-    const current = new URLSearchParams(searchParams as any)
-    if (selectedSubCategory && selectedSubCategory !== "all") current.set("subcategory", selectedSubCategory)
-    else current.delete("subcategory")
-    if (page && page > 1) current.set("page", String(page))
-    else current.delete("page")
-    router.replace(`?${current.toString()}`)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSubCategory, page])
+  const loadMore = useCallback(() => {
+    if (loadingMore || page >= totalPages) return
+    setPage((prev) => prev + 1)
+  }, [loadingMore, page, totalPages])
 
+  // Infinite scroll: load more when sentinel is in view
+  useEffect(() => {
+    if (loading || loadingMore || page >= totalPages || businesses.length === 0) return
+    const el = loadMoreSentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) loadMore()
+      },
+      { root: null, rootMargin: "500px 0px", threshold: 0 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [loading, loadingMore, page, totalPages, businesses.length, loadMore])
+
+
+  const breadcrumbItems = [
+    { name: "Home", url: "/" },
+    { name: cityName, url: `/city/${citySlug}` },
+  ]
 
   return (
     <Suspense fallback={<div className="py-8 text-center text-muted-foreground">Loading...</div>}>
+      <BreadcrumbSchema items={breadcrumbItems} />
       <div className="min-h-screen bg-background">
         <main className="px-4 sm:px-6 py-6 sm:py-8">
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-4" aria-label="Breadcrumb">
+            <Link href="/" className="hover:text-primary">Home</Link>
+            <span aria-hidden>/</span>
+            <span className="font-medium text-foreground">{cityName}</span>
+          </nav>
           <div className="mb-6 sm:mb-8">
             <div className="mb-4 sm:mb-6">
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Businesses in {cityName}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Businesses in {cityName}, Pakistan</h1>
               <p className="text-sm sm:text-base text-muted-foreground">
-                {loading ? "Loading..." : `${total} businesses found`}
+                {loading ? "Loading..." : total > 0 ? `Showing ${businesses.length} of ${total.toLocaleString()} businesses` : `${businesses.length} businesses found`}
                 {selectedCategory !== "all" && (
                   <span>
                     {" "}in {categories.find((cat) => cat.slug === selectedCategory)?.name || selectedCategory}
@@ -228,46 +257,37 @@ export default function CityPage() {
               pairs.push(businesses.slice(i, i + 2))
             }
             return (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
-                {pairs.map((pair, idx) => (
-                  <div key={idx} className="rounded-xl border bg-card text-card-foreground shadow-sm p-3 sm:p-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                      {pair.map((business) => (
-                        <BusinessCard key={business.id} business={business} />
-                      ))}
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                  {pairs.map((pair, idx) => (
+                    <div key={idx} className="rounded-xl border bg-card text-card-foreground shadow-sm p-3 sm:p-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        {pair.map((business) => (
+                          <ListingCard key={business.id} business={business} variant="card" />
+                        ))}
+                      </div>
                     </div>
+                  ))}
+                </div>
+
+                {/* Infinite scroll sentinel + Load more button */}
+                {page < totalPages && businesses.length > 0 && (
+                  <div ref={loadMoreSentinelRef} className="min-h-[120px] flex flex-col items-center justify-center py-8 gap-4">
+                    {loadingMore ? (
+                      <div className="flex items-center gap-3 text-muted-foreground">
+                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent" />
+                        <span>Loading more businesses...</span>
+                      </div>
+                    ) : (
+                      <Button type="button" variant="outline" onClick={loadMore}>
+                        Load more businesses
+                      </Button>
+                    )}
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )
           })()}
-
-
-          {totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                disabled={page === 1}
-                className="w-full sm:w-auto"
-              >
-                Previous
-              </Button>
-
-              <span className="text-sm sm:text-base text-muted-foreground">
-                Page {page} of {totalPages}
-              </span>
-
-              <Button
-                variant="outline"
-                onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                disabled={page === totalPages}
-                className="w-full sm:w-auto"
-              >
-                Next
-              </Button>
-            </div>
-          )}
         </main>
       </div>
     </Suspense>
