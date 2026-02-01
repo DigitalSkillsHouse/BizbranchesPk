@@ -111,9 +111,9 @@ router.get('/', async (req, res) => {
     // If no categories found, create them from existing business data
     if (categories.length === 0) {
       try {
-        const businessCategories = await models.businesses.distinct('category');
+        const businessCategories = await models.businesses.distinct('category') as (string | null | undefined)[];
         const dynamicCategories = businessCategories
-          .filter((cat): cat is string => cat != null && String(cat).trim() !== '')
+          .filter((cat: string | null | undefined): cat is string => cat != null && String(cat).trim() !== '')
           .map((cat: string) => ({
             name: cat,
             slug: toSlug(cat),
