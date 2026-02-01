@@ -73,7 +73,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const businessName = business?.name || slug;
   const categoryName = business?.category || "Business";
   const cityName = business?.city ? `${business.city}, Pakistan` : "Pakistan";
-  const title = `${businessName} | ${categoryName} in ${cityName} – ${SITE_NAME}`;
+  const title = `${businessName} – ${categoryName} in ${cityName} | ${SITE_NAME}`;
   let description =
     "View contact details, reviews, and location for this business on Pakistan's free business directory.";
   if (business?.description) {

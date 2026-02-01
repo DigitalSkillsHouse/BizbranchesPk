@@ -57,6 +57,8 @@ export function AddBusinessForm({
   const [submitted, setSubmitted] = useState(false)
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<Record<string, boolean>>({})
+  const [fieldErrorMessages, setFieldErrorMessages] = useState<Record<string, string>>({})
+  const [formErrorMessage, setFormErrorMessage] = useState<string | null>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [activeSection, setActiveSection] = useState(0)
   const DESCRIPTION_MAX = 1000
@@ -221,12 +223,18 @@ export function AddBusinessForm({
     setForm((prev) => ({ ...prev, [id]: value }))
     if (fieldErrors[id]) {
       setFieldErrors(prev => ({ ...prev, [id]: false }))
+      setFieldErrorMessages(prev => ({ ...prev, [id]: "" }))
     }
+    setFormErrorMessage(null)
   }
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null
     setForm((prev) => ({ ...prev, logoFile: file }))
+    if (fieldErrors.logo) {
+      setFieldErrors(prev => ({ ...prev, logo: false }))
+      setFieldErrorMessages(prev => ({ ...prev, logo: "" }))
+    }
     if (file) {
       const url = URL.createObjectURL(file)
       setLogoPreview(url)
@@ -235,21 +243,19 @@ export function AddBusinessForm({
     }
   }
 
-  const validate = () => {
-    const friendlyLabels: Record<string, { label: string; inputId: string }> = {
-      businessName: { label: "Business Name", inputId: "businessName" },
-      contactPersonName: { label: "Contact Person", inputId: "contactPersonName" },
-      category: { label: "Category", inputId: "category" },
-      country: { label: "Country", inputId: "country" },
-      province: { label: "Province", inputId: "province" },
-      city: { label: "City", inputId: "city" },
-      address: { label: "Complete Address", inputId: "address" },
-      phone: { label: "Phone Number", inputId: "phone" },
-      email: { label: "Email Address", inputId: "email" },
-      description: { label: "Business Description", inputId: "description" },
-      logo: { label: "Business Logo", inputId: "logo" },
-    }
+  const friendlyLabels: Record<string, { label: string; inputId: string; message: string }> = {
+    businessName: { label: "Business Name", inputId: "businessName", message: "Enter your business name" },
+    category: { label: "Category", inputId: "category", message: "Select a category" },
+    country: { label: "Country", inputId: "country", message: "Country is required" },
+    city: { label: "City", inputId: "city", message: "Select your city" },
+    address: { label: "Complete Address", inputId: "address", message: "Enter your full address" },
+    phone: { label: "Phone Number", inputId: "phone", message: "Enter a phone number" },
+    description: { label: "Business Description", inputId: "description", message: "Add a short description" },
+    logo: { label: "Business Logo", inputId: "logo", message: "Upload your business logo" },
+  }
 
+  const validate = () => {
+    setFormErrorMessage(null)
     const required = [
       ["businessName", form.businessName],
       ["category", form.category],
@@ -264,20 +270,20 @@ export function AddBusinessForm({
     if (!form.logoFile) missingKeys.push("logo")
 
     const errors: Record<string, boolean> = {}
-    missingKeys.forEach(key => { errors[key] = true })
+    const messages: Record<string, string> = {}
+    missingKeys.forEach(key => {
+      errors[key] = true
+      messages[key] = friendlyLabels[key]?.message || "This field is required"
+    })
     setFieldErrors(errors)
+    setFieldErrorMessages(messages)
 
     if (missingKeys.length) {
-      const friendlyList = missingKeys
-        .map((k) => friendlyLabels[k]?.label || k)
-        .join(", ")
-
       toast({
-        title: "Please fill all required fields",
-        description: friendlyList,
+        title: "Please fix the errors below",
+        description: "Check the fields marked in red.",
         variant: "destructive",
       })
-
       const firstKey = missingKeys[0]
       const inputId = friendlyLabels[firstKey]?.inputId || firstKey
       const el = document.getElementById(inputId)
@@ -328,7 +334,7 @@ export function AddBusinessForm({
           contactPersonName: "",
           category: "",
           subCategory: "",
-          country: "",
+          country: "Pakistan",
           city: "",
           postalCode: "",
           address: "",
@@ -345,26 +351,48 @@ export function AddBusinessForm({
         })
         setSubmitted(true)
         setShowSuccessDialog(true)
+        setFieldErrors({})
+        setFieldErrorMessages({})
+        setFormErrorMessage(null)
         onSubmitted?.()
       } else {
-        let message = "Please try again."
+        setFormErrorMessage(null)
+        let userMessage = "Something went wrong. Please check your entries and try again."
+        const fieldMap: Record<string, string> = {}
         try {
           const data = await res.json()
-          const details = Array.isArray(data?.details)
-            ? data.details
-                .map((d: any) => `${d?.path?.join?.('.') || d?.path || ''}: ${d?.message || d?.code || 'invalid'}`)
-                .join("; ")
-            : ""
-          message = [data?.error, details].filter(Boolean).join(" — ") || JSON.stringify(data)
+          if (Array.isArray(data?.details)) {
+            for (const d of data.details) {
+              const path = (d?.path && (Array.isArray(d.path) ? d.path.join(".") : String(d.path))) || ""
+              const msg = d?.message || "Invalid"
+              const key = path === "name" ? "businessName" : path === "logo" ? "logo" : path
+              if (friendlyLabels[key]) {
+                fieldMap[key] = friendlyLabels[key].message
+              }
+            }
+            if (Object.keys(fieldMap).length) {
+              setFieldErrors(prev => ({ ...prev, ...Object.fromEntries(Object.keys(fieldMap).map(k => [k, true])) }))
+              setFieldErrorMessages(prev => ({ ...prev, ...fieldMap }))
+            }
+          }
+          if (data?.error && typeof data.error === "string") {
+            const lower = data.error.toLowerCase()
+            if (lower.includes("duplicate") || lower.includes("already")) userMessage = "This business may already be listed. Check the directory or try different details."
+            else if (lower.includes("invalid") || lower.includes("validation")) userMessage = "Please fix the highlighted fields and try again."
+            else userMessage = data.error
+          }
         } catch (_) {
           try {
-            message = await res.text()
+            const text = await res.text()
+            if (text && text.length < 120) userMessage = text
           } catch {}
         }
-        toast({ title: `Submission failed (${res.status})`, description: message, variant: "destructive" })
+        setFormErrorMessage(userMessage)
+        toast({ title: "Submission failed", description: userMessage, variant: "destructive" })
       }
     } catch (err) {
-      toast({ title: "Network error", description: "Please check your connection.", variant: "destructive" })
+      setFormErrorMessage("Check your connection and try again.")
+      toast({ title: "Connection error", description: "Check your connection and try again.", variant: "destructive" })
     } finally {
       setSubmitting(false)
     }
@@ -424,7 +452,12 @@ export function AddBusinessForm({
             )}
             
             <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
-              <form onSubmit={handleSubmit} noValidate className="space-y-0" role="form" aria-label="Business listing registration form">
+              <form onSubmit={handleSubmit} noValidate className="space-y-0" role="form" aria-label="Business listing registration form" aria-describedby={formErrorMessage ? "form-error" : undefined}>
+                {formErrorMessage && (
+                  <div id="form-error" className="mx-4 sm:mx-6 md:mx-8 lg:mx-10 mt-4 sm:mt-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm" role="alert">
+                    {formErrorMessage}
+                  </div>
+                )}
                 {/* Basic Information */}
                 <section className="p-4 sm:p-6 md:p-8 lg:p-10 border-b border-gray-100 bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/30">
                   <div className="flex items-start gap-3 sm:gap-4 md:gap-5 mb-6 sm:mb-8">
@@ -448,10 +481,11 @@ export function AddBusinessForm({
                         placeholder="e.g., ABC Restaurant, XYZ Services" 
                           value={form.businessName} 
                           onChange={handleChange} 
-                          aria-describedby="businessName-help"
-                        className={`h-12 border-2 rounded-lg transition-all ${fieldErrors.businessName ? 'border-red-400 bg-red-50/50' : 'border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200'} bg-white`}
+                          aria-describedby={fieldErrors.businessName ? "businessName-error" : "businessName-help"}
+                          aria-invalid={!!fieldErrors.businessName}
+                        className={`h-12 border-2 rounded-lg transition-all min-h-[44px] ${fieldErrors.businessName ? 'border-red-400 bg-red-50/50' : 'border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200'} bg-white`}
                         />
-                      <p id="businessName-help" className="text-xs text-gray-500">Official business name as on documents</p>
+                      {fieldErrorMessages.businessName ? <p id="businessName-error" className="text-sm text-red-600 mt-1" role="alert">{fieldErrorMessages.businessName}</p> : <p id="businessName-help" className="text-xs text-gray-500">Official business name as on documents</p>}
                     </div>
 
                     <div className="space-y-2">
@@ -555,8 +589,8 @@ export function AddBusinessForm({
                               </Label>
                             </div>
                           </div>
-                          <Select value={form.city || ""} onValueChange={(v) => setForm((s) => ({ ...s, city: v }))}>
-                            <SelectTrigger className={`w-full h-14 rounded-lg border-2 transition-all ${fieldErrors.city ? 'border-red-400 bg-red-50/50' : 'border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200'} bg-white shadow-sm hover:shadow-md`}>
+                          <Select value={form.city || ""} onValueChange={(v) => { setForm((s) => ({ ...s, city: v })); if (fieldErrors.city) { setFieldErrors(prev => ({ ...prev, city: false })); setFieldErrorMessages(prev => ({ ...prev, city: "" })); setFormErrorMessage(null); } }}>
+                            <SelectTrigger className={`w-full h-14 min-h-[44px] rounded-lg border-2 transition-all ${fieldErrors.city ? 'border-red-400 bg-red-50/50' : 'border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200'} bg-white shadow-sm hover:shadow-md`} aria-invalid={!!fieldErrors.city} aria-describedby={fieldErrors.city ? "city-error" : undefined}>
                               <SelectValue placeholder="Select your city" />
                             </SelectTrigger>
                             <SelectContent className="max-h-[300px]">
@@ -567,6 +601,7 @@ export function AddBusinessForm({
                               ))}
                             </SelectContent>
                           </Select>
+                          {fieldErrorMessages.city && <p id="city-error" className="text-sm text-red-600 mt-1" role="alert">{fieldErrorMessages.city}</p>}
                         </div>
                       </div>
 
@@ -616,6 +651,7 @@ export function AddBusinessForm({
                           </Command>
                         </PopoverContent>
                       </Popover>
+                      {fieldErrorMessages.category && <p className="text-sm text-red-600 mt-1" role="alert">{fieldErrorMessages.category}</p>}
                     </div>
 
                     <div className="space-y-2">
@@ -665,8 +701,11 @@ export function AddBusinessForm({
                       placeholder="Street address, building, floor, etc." 
                       value={form.address} 
                       onChange={handleChange} 
-                      className={`h-12 border-2 rounded-lg transition-all ${fieldErrors.address ? 'border-red-400 bg-red-50/50' : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200'} bg-white`}
+                      aria-invalid={!!fieldErrors.address}
+                      aria-describedby={fieldErrors.address ? "address-error" : undefined}
+                      className={`h-12 border-2 rounded-lg transition-all min-h-[44px] ${fieldErrors.address ? 'border-red-400 bg-red-50/50' : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200'} bg-white`}
                     />
+                    {fieldErrorMessages.address && <p id="address-error" className="text-sm text-red-600 mt-1" role="alert">{fieldErrorMessages.address}</p>}
                   </div>
                 </section>
 
@@ -694,8 +733,11 @@ export function AddBusinessForm({
                         onChange={handleChange}
                         maxLength={DESCRIPTION_MAX}
                         rows={5}
-                        className={`border-2 rounded-lg resize-none transition-all ${fieldErrors.description ? 'border-red-400 bg-red-50/50' : 'border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200'} bg-white`}
+                        aria-invalid={!!fieldErrors.description}
+                        aria-describedby={fieldErrors.description ? "description-error" : undefined}
+                        className={`border-2 rounded-lg resize-none transition-all min-h-[44px] ${fieldErrors.description ? 'border-red-400 bg-red-50/50' : 'border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200'} bg-white`}
                       />
+                      {fieldErrorMessages.description && <p id="description-error" className="text-sm text-red-600 mt-1" role="alert">{fieldErrorMessages.description}</p>}
                       <div className="flex justify-between text-sm text-gray-500">
                         <span>Describe your business and services</span>
                         <span className="font-medium">{form.description.length}/{DESCRIPTION_MAX}</span>
@@ -722,10 +764,13 @@ export function AddBusinessForm({
                               type="file" 
                               accept="image/png,image/jpeg,image/webp,image/svg+xml" 
                               onChange={handleFile} 
-                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              aria-invalid={!!fieldErrors.logo}
+                              aria-describedby={fieldErrors.logo ? "logo-error" : undefined}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer min-h-[44px]"
                             />
                           </div>
                         </div>
+                        {fieldErrorMessages.logo && <p id="logo-error" className="text-sm text-red-600 mt-1" role="alert">{fieldErrorMessages.logo}</p>}
                         {logoPreview && (
                           <div className="flex-shrink-0">
                             <div className="w-32 h-32 rounded-xl border-2 border-gray-200 overflow-hidden bg-white shadow-lg">
@@ -799,21 +844,23 @@ export function AddBusinessForm({
                   <div className="max-w-2xl mx-auto text-center">
                     <Button
                       type="submit"
-                      className="w-full md:w-auto min-h-[48px] px-8 sm:px-12 py-4 text-base sm:text-lg font-bold bg-white text-indigo-600 hover:bg-gray-50 shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-xl mb-6 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-600"
+                      className="w-full md:w-auto min-h-[48px] min-w-[200px] px-8 sm:px-12 py-4 text-base sm:text-lg font-bold bg-white text-indigo-600 hover:bg-gray-50 shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-xl mb-6 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-600"
                       disabled={submitting}
                       aria-busy={submitting}
+                      aria-live="polite"
+                      aria-atomic="true"
                     >
                       {submitting ? (
-                        <div className="flex items-center gap-3">
-                          <div className="animate-spin rounded-full h-6 w-6 border-2 border-indigo-600 border-t-transparent" aria-hidden />
-                          <span>Submitting...</span>
-                        </div>
+                        <span className="flex items-center justify-center gap-3">
+                          <span className="animate-spin rounded-full h-5 w-5 border-2 border-indigo-600 border-t-transparent" aria-hidden />
+                          <span>Submitting…</span>
+                        </span>
                       ) : (
-                        <div className="flex items-center gap-3">
-                          <Star className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden />
+                        <span className="flex items-center justify-center gap-3">
+                          <Star className="h-5 w-5 sm:h-6 sm:w-6 shrink-0" aria-hidden />
                           <span>Add Your Business Free</span>
-                          <Star className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden />
-                        </div>
+                          <Star className="h-5 w-5 sm:h-6 sm:w-6 shrink-0" aria-hidden />
+                        </span>
                       )}
                     </Button>
                     <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-5 border border-white/20">
@@ -828,27 +875,37 @@ export function AddBusinessForm({
           </div>
           
           <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md" aria-describedby="success-desc" aria-live="polite">
               <DialogHeader className="text-center">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-                  <CheckCircle className="h-8 w-8 text-green-600" />
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100" aria-hidden>
+                  <CheckCircle className="h-8 w-8 text-emerald-600" />
                 </div>
-                <DialogTitle className="text-2xl font-bold text-green-800">
-                  Business Submitted Successfully!
+                <DialogTitle className="text-2xl font-bold text-emerald-800">
+                  Submission received
                 </DialogTitle>
-                <DialogDescription className="text-gray-600 mt-2">
-                  Thank you! Your business has been submitted and will be reviewed within 24–48 hours. You'll receive an email confirmation once it's approved.
+                <DialogDescription id="success-desc" className="text-gray-600 mt-2">
+                  Your listing has been received. We’ll review it within 24–48 hours and publish it once approved. You can add another business or return home.
                 </DialogDescription>
               </DialogHeader>
-              <div className="flex justify-center pt-6">
+              <div className="flex flex-col sm:flex-row gap-3 pt-6">
                 <Button 
                   onClick={() => {
                     setShowSuccessDialog(false)
-                    router.push('/')
+                    router.push("/")
                   }}
-                  className="w-full gradient-primary"
+                  className="flex-1 min-h-[44px]"
                 >
                   Return to Home
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setShowSuccessDialog(false)
+                    setSubmitted(false)
+                  }}
+                  className="flex-1 min-h-[44px]"
+                >
+                  Add another business
                 </Button>
               </div>
             </DialogContent>

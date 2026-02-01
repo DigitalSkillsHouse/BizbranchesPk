@@ -25,7 +25,7 @@ export async function generateMetadata({
 
   const cityPart = business?.city ? ` in ${business.city}, Pakistan` : " in Pakistan";
   const title = business?.name
-    ? `${business.name} | ${business.category || "Business"}${cityPart} – ${SITE_NAME}`
+    ? `${business.name} – ${business.category || "Business"}${cityPart} | ${SITE_NAME}`
     : `Business | ${SITE_NAME}`;
   let description =
     "View business details, contact info, reviews and location on Pakistan's free business directory.";

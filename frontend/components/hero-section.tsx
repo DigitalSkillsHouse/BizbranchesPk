@@ -161,64 +161,57 @@ export function HeroSection() {
   }
 
   return (
-    <section className="relative min-h-[75vh] sm:min-h-[80vh] md:min-h-[85vh] flex items-center justify-center overflow-visible py-6 sm:py-8 md:py-12 z-50">
-      {/* Full HD Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: 'url(/local-business-directory-city-buildings.webp)'
-        }}
-      >
-        {/* Overlay for better text readability */}
-        <div className="absolute inset-0 bg-black/20"></div>
-      </div>
-      
+    <section className="relative min-h-[70vh] sm:min-h-[72vh] flex items-center justify-center overflow-hidden py-8 sm:py-10 md:py-12 z-50" aria-label="Hero">
+      {/* Lightweight background: gradient + optional image (image loads after LCP) */}
+      <div className="absolute inset-0 bg-slate-800" />
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40"
+        style={{ backgroundImage: 'url(/local-business-directory-city-buildings.webp)' }}
+        aria-hidden
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/70 to-slate-900/90" aria-hidden />
 
-      <div className="relative container mx-auto px-4 sm:px-6 text-center z-10">
-        {/* Hero Content */}
-        <div className="max-w-4xl mx-auto mb-8 sm:mb-12">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-4 sm:mb-6 leading-tight px-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] shadow-black">
-            Pakistan Free Business Listing Directory
-          </h1>
-          <p className="text-sm sm:text-base md:text-lg font-medium text-white mb-4 sm:mb-6 leading-tight px-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)] shadow-black max-w-2xl mx-auto">
-            Find local businesses across Pakistan. Add your business free, search by city and category, read reviews, and get contact details.
-          </p>
+      <div className="relative container mx-auto px-4 sm:px-6 text-center z-10 max-w-3xl">
+        {/* 1. Headline — SEO + value in 3 seconds */}
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4 leading-tight tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
+          Free Business Listing in Pakistan
+        </h1>
+        {/* 2. Subheadline — benefits + trust, no fluff */}
+        <p className="text-sm sm:text-base md:text-lg text-white/95 mb-6 sm:mb-8 leading-snug max-w-xl mx-auto drop-shadow-[0_1px_4px_rgba(0,0,0,0.3)]">
+          List your business in minutes. Get found by customers across Pakistan. No fees, no credit card.
+        </p>
 
-
-          {/* Stats */}
-          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12 px-2">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30">
-                <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-              </div>
-              <div className="text-left">
-                <div className="text-xl sm:text-2xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">80K+</div>
-                <div className="text-xs sm:text-sm text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">Businesses</div>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30">
-                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-              </div>
-              <div className="text-left">
-                <div className="text-xl sm:text-2xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">5M+</div>
-                <div className="text-xs sm:text-sm text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">Happy Users</div>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30">
-                <Star className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-              </div>
-              <div className="text-left">
-                <div className="text-xl sm:text-2xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">1M+</div>
-                <div className="text-xs sm:text-sm text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">Reviews</div>
-              </div>
-            </div>
-          </div>
+        {/* 3. Primary CTA — stands out, action + trust */}
+        <div className="mb-6 sm:mb-8">
+          <Link
+            href="/add"
+            className="inline-flex items-center justify-center gap-2 min-h-[48px] sm:min-h-[52px] px-6 sm:px-8 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+            aria-label="Add your business free"
+          >
+            <Plus className="h-5 w-5 shrink-0" aria-hidden />
+            Add Your Business Free
+          </Link>
+          <p className="mt-2 text-xs sm:text-sm text-white/80">No credit card required.</p>
         </div>
 
-        {/* Modern Search Container */}
-        <form onSubmit={handleSearch} className="search-container max-w-5xl mx-auto mb-4 sm:mb-8 relative z-50">
+        {/* 4. Secondary CTAs — support browsing, don't compete */}
+        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <Link
+            href="/search"
+            className="inline-flex items-center justify-center min-h-[44px] px-5 py-2.5 rounded-lg bg-white/15 hover:bg-white/25 border border-white/25 text-white font-medium text-sm sm:text-base transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+          >
+            Browse Businesses
+          </Link>
+          <Link
+            href="/#categories-section"
+            className="inline-flex items-center justify-center min-h-[44px] px-5 py-2.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+          >
+            Explore Categories
+          </Link>
+        </div>
+
+        {/* Search — for users who want to search first */}
+        <form onSubmit={handleSearch} className="search-container max-w-2xl mx-auto mb-0 relative z-50" role="search" aria-label="Search businesses">
           <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-4 sm:p-5 relative z-50">
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
               {/* Search Input */}
@@ -352,20 +345,20 @@ export function HeroSection() {
           </div>
         </form>
 
-        {/* CTAs: Find businesses + Add your business free */}
+        {/* CTAs: primary = Add Business, secondary = Browse */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-6 sm:mt-8">
+          <Link
+            href="/add"
+            className="min-h-[48px] sm:min-h-[52px] inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+            aria-label="Add your business free"
+          >
+            Add Your Business Free
+          </Link>
           <Link
             href="/search"
             className="min-h-[48px] inline-flex items-center justify-center px-6 py-3 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white font-semibold text-sm sm:text-base transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/20"
           >
             Browse All Businesses
-          </Link>
-          <Link
-            href="/add"
-            className="min-h-[48px] inline-flex items-center justify-center px-6 py-3 rounded-xl bg-green-500 hover:bg-green-600 text-white font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/20"
-            aria-label="Add your business free"
-          >
-            Add Your Business Free
           </Link>
         </div>
       </div>

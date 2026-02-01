@@ -27,9 +27,9 @@ export function Header() {
   }
 
   return (
-    <header className="bg-gradient-to-r from-slate-900 via-gray-900 to-slate-900 border-b border-gray-700 sticky top-0 z-50 shadow-xl">
+    <header className="bg-slate-900 border-b border-slate-700/80 sticky top-0 z-50 shadow-md">
       <div className="container mx-auto px-4 sm:px-6 max-w-[100vw] overflow-x-hidden">
-        <div className="flex items-center justify-between gap-2 h-16 sm:h-20 min-h-[4rem]">
+        <div className="flex items-center justify-between gap-2 h-14 sm:h-16 min-h-[3.5rem]">
           {/* Mobile Menu Toggle - native button so it's always visible (no variant override) */}
           <button
             type="button"
@@ -55,11 +55,11 @@ export function Header() {
             <div className="flex items-center space-x-8 lg:space-x-12">
             {/* Left Navigation */}
               <nav className="flex items-center space-x-6 lg:space-x-8">
-                <Link href="/" className="text-white hover:text-green-400 font-semibold transition-all duration-300 flex items-center space-x-2 text-sm lg:text-base">
+                <Link href="/" className="text-white hover:text-emerald-400 font-semibold transition-all duration-300 flex items-center space-x-2 text-sm lg:text-base">
                   <Building2 className="h-4 w-4 lg:h-5 lg:w-5" />
                 <span>Home</span>
               </Link>
-                <button onClick={handleCategoriesClick} className="text-white hover:text-green-400 font-semibold transition-all duration-300 flex items-center space-x-2 text-sm lg:text-base">
+                <button onClick={handleCategoriesClick} className="text-white hover:text-emerald-400 font-semibold transition-all duration-300 flex items-center space-x-2 text-sm lg:text-base">
                   <MapPin className="h-4 w-4 lg:h-5 lg:w-5" />
                 <span>Categories</span>
               </button>
@@ -67,11 +67,11 @@ export function Header() {
 
             {/* Right Navigation */}
               <nav className="flex items-center space-x-6 lg:space-x-8">
-                <Link href="/pending" className="text-white hover:text-green-400 font-semibold transition-all duration-300 flex items-center space-x-2 text-sm lg:text-base">
+                <Link href="/pending" className="text-white hover:text-emerald-400 font-semibold transition-all duration-300 flex items-center space-x-2 text-sm lg:text-base">
                   <Star className="h-4 w-4 lg:h-5 lg:w-5" />
                 <span>Pending Listings</span>
               </Link>
-                <Link href="/add" onClick={closeMenu} className="min-h-[44px] inline-flex items-center justify-center bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-4 py-2.5 lg:px-6 lg:py-3 rounded-lg lg:rounded-xl font-semibold transition-all duration-300 flex items-center space-x-2 shadow-lg hover:shadow-xl text-sm lg:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900" aria-label="Add your business free">
+                <Link href="/add" onClick={closeMenu} className="min-h-[44px] inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 lg:px-6 lg:py-3 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg text-sm lg:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900" aria-label="Add your business free">
                   <Plus className="h-4 w-4 lg:h-5 lg:w-5" aria-hidden />
                   <span className="hidden lg:inline">Add Your Business Free</span>
                   <span className="lg:hidden">Add Free</span>
@@ -82,7 +82,7 @@ export function Header() {
 
           {/* Desktop Add Button - Right side on larger screens */}
           <div className="hidden md:block lg:hidden">
-            <Link href="/add" onClick={closeMenu} className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 flex items-center space-x-2 shadow-lg hover:shadow-xl">
+            <Link href="/add" onClick={closeMenu} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900">
               <Plus className="h-4 w-4" />
               <span>Add</span>
             </Link>
@@ -117,8 +117,8 @@ export function Header() {
                   <span>My Listing</span>
                 </Link>
               </Button>
-              <Button asChild className="w-full justify-start bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700" onClick={closeMenu}>
-                <Link href="/add" className="flex items-center space-x-2 text-white">
+              <Button asChild className="w-full justify-start bg-emerald-600 hover:bg-emerald-700 text-white" onClick={closeMenu}>
+                <Link href="/add" className="flex items-center gap-2">
                   <Plus className="h-4 w-4" />
                   <span>List Business</span>
                 </Link>

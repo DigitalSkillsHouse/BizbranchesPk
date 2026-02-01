@@ -193,7 +193,7 @@ export default function CityPage() {
 
             {/* Center ad */}
             <div className="my-6">
-              <AdSenseSlot slotId="city-center-ad" />
+              <AdSection slotId="city-center-ad" />
             </div>
 
             <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">

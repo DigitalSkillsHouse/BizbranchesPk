@@ -1,6 +1,6 @@
 "use client"
 import React, { useRef, useState, useEffect } from 'react'
-import { MapPin, Phone, Mail, Star, FileText, Globe, MessageCircle, User } from 'lucide-react'
+import { MapPin, Phone, Mail, Star, FileText, Globe, MessageCircle, User, CheckCircle } from 'lucide-react'
 import { useParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -13,7 +13,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { BusinessSchema } from "@/components/business-schema"
 import { BreadcrumbSchema } from "@/components/breadcrumb-schema"
 import { AdSection } from "@/components/ad-section"
+import { useToast } from "@/hooks/use-toast"
 import { logger } from "@/lib/logger"
+import { slugify } from "@/lib/utils"
 
 export default function BusinessDetailPage({
   initialBusiness,
@@ -42,8 +44,10 @@ export default function BusinessDetailPage({
   const [reviewRating, setReviewRating] = useState(5)
   const [reviewComment, setReviewComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [reviewError, setReviewError] = useState<string | null>(null)
   const [showAllReviews, setShowAllReviews] = useState(false)
   const [showFullDescription, setShowFullDescription] = useState(false)
+  const { toast } = useToast()
   useEffect(() => {
     const fetchBusiness = async () => {
       if (initialBusiness) return
@@ -136,6 +140,7 @@ export default function BusinessDetailPage({
 
   const handleSubmitReview = async () => {
     if (reviewComment.trim().length < 3) return
+    setReviewError(null)
     setSubmitting(true)
     try {
       const response = await fetch('/api/reviews', {
@@ -163,14 +168,23 @@ export default function BusinessDetailPage({
         setReviewerName('')
         setReviewRating(5)
         setReviewComment('')
+        setReviewError(null)
         setOpenReview(false)
+        toast({
+          title: 'Review posted',
+          description: 'Thank you. Your review has been added.',
+        })
       } else {
         logger.error('Review submission failed:', result)
-        alert('Failed to submit review. Please try again.')
+        const message = 'Couldn’t post your review. Please try again.'
+        setReviewError(message)
+        toast({ title: 'Review not posted', description: message, variant: 'destructive' })
       }
     } catch (error) {
       logger.error('Error submitting review:', error)
-      alert('Failed to submit review. Please try again.')
+      const message = 'Check your connection and try again.'
+      setReviewError(message)
+      toast({ title: 'Something went wrong', description: message, variant: 'destructive' })
     } finally {
       setSubmitting(false)
     }
@@ -195,7 +209,7 @@ export default function BusinessDetailPage({
     )
   }
 
-  const categorySlug = business.category ? String(business.category).toLowerCase().replace(/\s+/g, "-") : "";
+  const categorySlug = business.category ? slugify(business.category) : "";
   const businessUrl = `/${business.slug || businessId}`;
   const breadcrumbItems = [
     { name: "Home", url: "/" },
@@ -251,69 +265,83 @@ export default function BusinessDetailPage({
           </div>
 
           <p className="text-sm text-gray-500 mb-4">
-            Category: {business.category} • City: {business.city}
+            {business.category && (
+              <>
+                <Link href={`/category/${slugify(business.category as string)}`} className="text-primary hover:underline font-medium">
+                  {business.category}
+                </Link>
+                {" • "}
+              </>
+            )}
+            {business.city && (
+              <Link href={`/city/${slugify(business.city as string)}`} className="text-primary hover:underline font-medium">
+                {business.city}
+              </Link>
+            )}
+            {!business.city && "Pakistan"}
           </p>
 
-          {/* Action Buttons */}
-          <div className="flex flex-wrap gap-3">
-            <button 
-              onClick={() => setOpenReview(true)}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-            >
-              <FileText className="w-4 h-4" /> Add a Review
-            </button>
+          {/* Trust: verified badge */}
+          {business.status === "approved" && (
+            <p className="flex items-center gap-2 text-sm text-emerald-600 mb-4">
+              <CheckCircle className="h-4 w-4 shrink-0" aria-hidden />
+              <span>Listed on BizBranches</span>
+            </p>
+          )}
+
+          {/* Primary CTAs: Call, WhatsApp, Visit Website – above the fold, mobile-friendly */}
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             {business.phone && (
-              <a 
-                href={`tel:${business.phone}`}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+              <a
+                href={`tel:${business.phone.replace(/\s/g, "")}`}
+                className="inline-flex items-center gap-2 px-4 py-3 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity min-h-[44px]"
               >
-                <Phone className="w-4 h-4" /> Call Now
+                <Phone className="h-4 w-4 shrink-0" /> Call
               </a>
             )}
-            {business.email && (
-              <a 
-                href={`mailto:${business.email}`}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+            {business.whatsapp && (
+              <a
+                href={`https://wa.me/${(business.whatsapp as string).replace(/[^0-9]/g, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-3 rounded-lg bg-emerald-600 text-white font-semibold text-sm hover:bg-emerald-700 transition-colors min-h-[44px]"
               >
-                <Mail className="w-4 h-4" /> Email Us
+                <MessageCircle className="h-4 w-4 shrink-0" /> WhatsApp
               </a>
             )}
-            <a 
-              href={`https://maps.google.com/?q=${encodeURIComponent([business.address, business.city].filter(Boolean).join(", "))}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-            >
-              <MapPin className="w-4 h-4" /> Get Directions
-            </a>
+            {business.websiteUrl && (
+              <a
+                href={String(business.websiteUrl).startsWith("http") ? business.websiteUrl : `https://${business.websiteUrl}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-3 rounded-lg border-2 border-primary text-primary font-semibold text-sm hover:bg-primary/10 transition-colors min-h-[44px]"
+              >
+                <Globe className="h-4 w-4 shrink-0" /> Visit Website
+              </a>
+            )}
+            <Button variant="outline" size="lg" onClick={() => setOpenReview(true)} className="min-h-[44px]">
+              <FileText className="h-4 w-4 mr-2" /> Add a Review
+            </Button>
+            {business.address && (
+              <a
+                href={`https://maps.google.com/?q=${encodeURIComponent([business.address, business.city].filter(Boolean).join(", "))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-3 rounded-lg border border-gray-300 font-medium text-sm hover:bg-gray-50 transition-colors min-h-[44px]"
+              >
+                <MapPin className="h-4 w-4 shrink-0" /> Get Directions
+              </a>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Business Description & Map */}
+      {/* H2: About business */}
       {business.description && (
-        <section className="mt-4 sm:mt-5">
-          {/* Breadcrumb at top of description */}
-          <div className="mb-3">
-            <nav className="flex items-center space-x-2 text-sm text-gray-600" aria-label="Breadcrumb">
-              <Link href="/" className="hover:text-blue-600">Home</Link>
-              <span>/</span>
-              <Link href={`/category/${business.category?.toLowerCase().replace(/\s+/g, '-')}`} className="hover:text-blue-600">
-                {business.category}
-              </Link>
-              <span>/</span>
-              <span className="text-gray-800 font-medium">{business.name} - Official Details</span>
-            </nav>
-          </div>
+        <section className="mt-6 sm:mt-8" aria-labelledby="about-heading">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-            {/* Description Box - 60% */}
             <div className="lg:col-span-3 bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">ℹ</span>
-                </div>
-                <h2 className="text-xl font-bold text-gray-800">Why Choose {business.name}</h2>
-              </div>
+              <h2 id="about-heading" className="text-xl font-bold text-gray-800 mb-4">About {business.name}</h2>
               <div className="border-t border-gray-100 pt-4">
                 <p className={`text-gray-700 leading-relaxed whitespace-pre-line ${!showFullDescription ? 'line-clamp-4' : ''}`}>
                   {business.description}
@@ -329,11 +357,11 @@ export default function BusinessDetailPage({
               </div>
             </div>
 
-            {/* Map Box - 40% */}
             <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-              <div className="h-64 relative">
+              <h2 id="location-heading" className="text-lg font-bold text-gray-800 p-4 pb-0">Location</h2>
+              <div className="h-64 relative p-4 pt-2">
                 <iframe
-                  src={`https://maps.google.com/maps?q=${encodeURIComponent(business.address + ', ' + business.city)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent((business.address || "") + ", " + (business.city || ""))}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
@@ -341,14 +369,15 @@ export default function BusinessDetailPage({
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                   className="w-full h-full"
+                  title="Map location"
                 />
               </div>
               <div className="p-4 bg-gray-50">
-                <a 
-                  href={`https://maps.google.com/?q=${encodeURIComponent(business.address + ', ' + business.city)}`}
+                <a
+                  href={`https://maps.google.com/?q=${encodeURIComponent([business.address, business.city].filter(Boolean).join(", "))}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium text-sm"
+                  className="inline-flex items-center gap-2 text-primary hover:underline font-medium text-sm"
                 >
                   <MapPin className="w-4 h-4" />
                   Open in Google Maps
@@ -359,11 +388,8 @@ export default function BusinessDetailPage({
         </section>
       )}
 
-      <AdSection slotId="business-center-ad" />
-
-      {/* Business Information & Reviews */}
+      {/* H2: Contact & Location (sidebar) + Reviews */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6 sm:mt-8">
-        {/* Reviews Section */}
         <div className="lg:col-span-2">
           <h2 className="text-2xl font-semibold mb-6">Customer Reviews</h2>
           
@@ -514,11 +540,12 @@ export default function BusinessDetailPage({
           </div>
         </div>
 
-        {/* Business Information Sidebar - NAP order: Name (page title), then Address, then Phone, then rest */}
+        {/* H2: Contact & Location – sidebar NAP */}
         <div className="lg:col-span-1" itemScope itemType="https://schema.org/LocalBusiness">
           <Card>
             <CardContent className="p-6">
-              <h3 className="text-xl font-semibold mb-1 text-gray-900" itemProp="name">{business.name} – Official Details</h3>
+              <h2 className="text-xl font-semibold mb-4 text-gray-900">Contact & Location</h2>
+              <p className="text-sm text-gray-600 mb-4" itemProp="name">{business.name}</p>
               
               <div className="space-y-4">
                 {/* 1. Address (NAP - first in sidebar for consistency) */}
@@ -634,7 +661,10 @@ export default function BusinessDetailPage({
         </div>
       </div>
 
-      {/* Recently Added Businesses */}
+      {/* Ad below main content – non-intrusive */}
+      <AdSection slotId="business-center-ad" className="mt-8 mb-8" />
+
+      {/* Internal links: same city, same category */}
       <section className="mt-8">
         <h2 className="text-2xl font-semibold mb-6">
           Recently Added Businesses
@@ -719,54 +749,69 @@ export default function BusinessDetailPage({
       )}
 
       {/* Review Dialog */}
-      <Dialog open={openReview} onOpenChange={setOpenReview}>
-        <DialogContent>
+      <Dialog open={openReview} onOpenChange={(open) => { setOpenReview(open); if (!open) setReviewError(null); }}>
+        <DialogContent aria-describedby={reviewError ? "review-error" : undefined}>
           <DialogHeader>
             <DialogTitle>Leave a Review</DialogTitle>
-            <DialogDescription>Share your experience with {business.name}</DialogDescription>
+            <DialogDescription>Share your experience with {business.name}. Your comment must be at least 3 characters.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            {reviewError && (
+              <p id="review-error" className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3" role="alert">
+                {reviewError}
+              </p>
+            )}
             <div>
-              <Label htmlFor="name">Your Name</Label>
+              <Label htmlFor="review-name">Your Name</Label>
               <Input 
-                id="name" 
+                id="review-name" 
                 placeholder="Optional" 
                 value={reviewerName} 
-                onChange={e => setReviewerName(e.target.value)} 
+                onChange={e => { setReviewerName(e.target.value); setReviewError(null); }} 
+                className="min-h-[44px]"
+                aria-describedby="review-name-hint"
               />
+              <p id="review-name-hint" className="text-xs text-muted-foreground mt-1">Leave blank to post as Anonymous</p>
             </div>
             <div>
-              <Label>Rating</Label>
-              <div className="flex items-center gap-1">
+              <Label id="review-rating-label">Rating</Label>
+              <div className="flex items-center gap-1 mt-1" role="group" aria-labelledby="review-rating-label">
                 {[1,2,3,4,5].map(n => (
                   <button
                     key={n}
+                    type="button"
                     onClick={() => setReviewRating(n)}
-                    className="p-1"
+                    className="p-2 rounded-lg hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary min-h-[44px] min-w-[44px] flex items-center justify-center"
+                    aria-label={`Rate ${n} star${n === 1 ? '' : 's'}`}
+                    aria-pressed={reviewRating === n}
                   >
                     <Star className={`h-6 w-6 ${n <= reviewRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
                   </button>
                 ))}
-                <span className="text-sm text-gray-500 ml-2">{reviewRating} / 5</span>
+                <span className="text-sm text-muted-foreground ml-2">{reviewRating} / 5</span>
               </div>
             </div>
             <div>
-              <Label htmlFor="comment">Comment</Label>
+              <Label htmlFor="review-comment">Comment</Label>
               <Textarea 
-                id="comment" 
-                placeholder="Write your review..." 
+                id="review-comment" 
+                placeholder="Write your review (at least 3 characters)..." 
                 value={reviewComment} 
-                onChange={e => setReviewComment(e.target.value)} 
+                onChange={e => { setReviewComment(e.target.value); setReviewError(null); }} 
                 rows={4} 
+                className="min-h-[44px]"
+                aria-invalid={reviewComment.trim().length > 0 && reviewComment.trim().length < 3}
+                aria-describedby="review-comment-hint"
               />
+              <p id="review-comment-hint" className="text-xs text-muted-foreground mt-1">{reviewComment.length} characters (min 3)</p>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpenReview(false)} disabled={submitting}>
+            <Button variant="outline" onClick={() => setOpenReview(false)} disabled={submitting} className="min-h-[44px]">
               Cancel
             </Button>
-            <Button onClick={handleSubmitReview} disabled={submitting || reviewComment.trim().length < 3}>
-              {submitting ? 'Submitting...' : 'Submit'}
+            <Button onClick={handleSubmitReview} disabled={submitting || reviewComment.trim().length < 3} className="min-h-[44px] min-w-[120px]" aria-busy={submitting}>
+              {submitting ? 'Submitting…' : 'Submit'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -7,9 +7,9 @@ import type { ListingBusiness, ListingCardVariant } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 const CARD_LINK_CLASS =
-  "block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+  "block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-xl"
 const VIEW_DETAILS_CLASS =
-  "flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-primary/10 text-primary text-sm font-semibold border border-primary/20 hover:bg-primary hover:text-primary-foreground transition-colors"
+  "flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-primary/10 text-primary text-sm font-semibold border border-primary/20 hover:bg-primary hover:text-primary-foreground transition-colors duration-200"
 
 interface ListingCardProps {
   business: ListingBusiness
@@ -31,7 +31,7 @@ export function ListingCard({ business, variant = "compact", className }: Listin
   if (variant === "compact") {
     return (
       <Link href={href} className={cn(CARD_LINK_CLASS, "rounded-xl", className)} aria-label={ariaLabel}>
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md hover:border-primary/20 hover:scale-[1.01] transition-all duration-200 p-5 sm:p-6 min-h-[140px] sm:min-h-[160px]">
+        <div className="rounded-xl border border-border bg-card shadow-sm hover:shadow-md hover:border-primary/25 transition-all duration-200 p-5 sm:p-6 min-h-[140px] sm:min-h-[160px]">
           <div className="flex items-start gap-4 sm:gap-6">
             <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-gray-100 border-2 border-gray-200 flex-shrink-0">
               <img
@@ -74,7 +74,7 @@ export function ListingCard({ business, variant = "compact", className }: Listin
   if (variant === "mini") {
     return (
       <Link href={href} className={cn(CARD_LINK_CLASS, "block group h-full", className)} aria-label={ariaLabel}>
-        <div className="h-full overflow-hidden border-0 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50/50 group-hover:to-primary/5 border border-gray-200">
+        <div className="h-full overflow-hidden rounded-xl border border-border bg-card shadow-sm hover:shadow-md transition-all duration-200 group-hover:border-primary/20">
           <div className="relative h-32 overflow-hidden bg-gradient-to-br from-primary/5 to-purple-50">
             <div className="absolute inset-0 flex items-center justify-center p-4">
               <img
@@ -112,7 +112,7 @@ export function ListingCard({ business, variant = "compact", className }: Listin
   // Card: full card (city page, grid views)
   return (
     <Link href={href} className={cn(CARD_LINK_CLASS, "h-full rounded-xl", className)} aria-label={ariaLabel}>
-      <div className="relative bg-white border border-gray-200 rounded-xl shadow-md hover:shadow-xl hover:scale-[1.02] transition-all duration-300 p-5 sm:p-6 h-full flex flex-col min-h-[280px] group hover:border-primary/30">
+      <div className="relative bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-all duration-200 p-5 sm:p-6 h-full flex flex-col min-h-[280px] group hover:border-primary/25">
         <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
           <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-gray-100 border-2 border-gray-200 flex-shrink-0">
             <img

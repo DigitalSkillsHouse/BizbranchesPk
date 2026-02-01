@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 
 const ADD_HREF = "/add"
 const LINK_CLASS =
-  "flex items-center justify-center gap-2 min-h-[48px] px-6 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold text-base shadow-md hover:shadow-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2"
+  "flex items-center justify-center gap-2 min-h-[48px] px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-base shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2"
 const ARIA_LABEL = "Add your business free"
 
 /** Single CTA component: inline, block, or sticky (mobile bar). Reused everywhere. */
@@ -56,7 +56,7 @@ export function CtaAddBusiness({
 
   return (
     <section
-      className={cn("rounded-xl border border-gray-200 bg-gradient-to-br from-green-50/80 to-emerald-50/80 p-6 sm:p-8", className)}
+      className={cn("rounded-xl border border-border bg-muted/50 p-6 sm:p-8", className)}
       aria-label="Add your business"
     >
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
