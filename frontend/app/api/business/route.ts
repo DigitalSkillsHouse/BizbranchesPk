@@ -49,9 +49,14 @@ export async function POST(request: NextRequest) {
       return new NextResponse(text, { status: response.status })
     }
   } catch (error) {
-    console.error('Business POST proxy error:', error)
+    const err = error as Error
+    console.error('Business POST proxy error:', err?.message || err)
+    const message =
+      err?.message?.includes('fetch') || err?.message?.includes('ECONNREFUSED') || err?.message?.includes('ENOTFOUND')
+        ? 'Server is unreachable. Please try again later or contact support.'
+        : 'Failed to submit business. Please try again.'
     return NextResponse.json(
-      { ok: false, error: 'Failed to submit business' },
+      { ok: false, error: message },
       { status: 500 }
     )
   }

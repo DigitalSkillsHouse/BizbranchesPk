@@ -14,9 +14,10 @@ export async function POST(request: NextRequest) {
     const data = await res.json().catch(() => ({ ok: false, error: 'Invalid response' }))
     return NextResponse.json(data, { status: res.status })
   } catch (error) {
-    console.error('Check-duplicates proxy error:', error)
+    const err = error as Error
+    console.error('Check-duplicates proxy error:', err?.message || err)
     return NextResponse.json(
-      { ok: false, error: 'Failed to check duplicates' },
+      { ok: false, error: 'Server unreachable', hasDuplicates: false },
       { status: 500 }
     )
   }
