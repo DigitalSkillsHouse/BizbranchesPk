@@ -16,10 +16,10 @@ const toSlug = (name: string): string => {
     .replace(/-+/g, '-');
 };
 
-// Load Pakistan cities from JSON file
+// Load Pakistan cities from JSON file (works when running from dist: __dirname is dist/routes, so ../../data is backend/data)
 const loadPakistanCities = (): Array<{ id: string; name: string; country: string }> => {
   try {
-    const filePath = path.join(__dirname, '../data/pakistan-cities.json');
+    const filePath = path.join(__dirname, '../../data/pakistan-cities.json');
     const data = fs.readFileSync(filePath, 'utf8');
     return JSON.parse(data);
   } catch (error) {

@@ -112,14 +112,16 @@ router.get('/', async (req, res) => {
     if (categories.length === 0) {
       try {
         const businessCategories = await models.businesses.distinct('category');
-        const dynamicCategories = businessCategories.map((cat: string) => ({
-          name: cat,
-          slug: toSlug(cat),
-          count: 0,
-          imageUrl: null,
-          icon: '🏢',
-          subcategories: DEFAULT_SUBCATEGORIES[toSlug(cat)] || []
-        }));
+        const dynamicCategories = businessCategories
+          .filter((cat): cat is string => cat != null && String(cat).trim() !== '')
+          .map((cat: string) => ({
+            name: cat,
+            slug: toSlug(cat),
+            count: 0,
+            imageUrl: null,
+            icon: '🏢',
+            subcategories: DEFAULT_SUBCATEGORIES[toSlug(cat)] || []
+          }));
         categories = dynamicCategories.slice(0, safeLimit);
       } catch (dbError) {
         logger.error('Error fetching business categories:', dbError);
