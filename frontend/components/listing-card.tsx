@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import Image from "next/image"
 import { MapPin, Star, Clock, ExternalLink, Verified } from "lucide-react"
 import { getBusinessLogoUrl } from "@/lib/utils"
 import type { ListingBusiness, ListingCardVariant } from "@/lib/types"
@@ -78,13 +77,11 @@ export function ListingCard({ business, variant = "compact", className }: Listin
         <div className="h-full overflow-hidden border-0 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50/50 group-hover:to-primary/5 border border-gray-200">
           <div className="relative h-32 overflow-hidden bg-gradient-to-br from-primary/5 to-purple-50">
             <div className="absolute inset-0 flex items-center justify-center p-4">
-              <Image
+              <img
                 src={logoFor(business, "thumb")}
                 alt=""
-                width={200}
-                height={200}
                 className="w-full h-full object-contain transition-opacity group-hover:opacity-90"
-                unoptimized={logoFor(business, "thumb").startsWith("http")}
+                onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg" }}
               />
             </div>
             <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white via-white/90 to-transparent" />

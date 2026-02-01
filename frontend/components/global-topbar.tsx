@@ -176,7 +176,7 @@ export function GlobalTopbar() {
                     >
                       <div className="flex items-center gap-2">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={b.image || b.logoUrl || "/placeholder.svg"} alt={b.name} className="w-8 h-8 rounded object-cover" />
+                        <img src={b.image || b.logoUrl || "/placeholder.svg"} alt={b.name} className="w-8 h-8 rounded object-cover" onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg" }} />
                         <div className="min-w-0">
                           <div className="text-sm font-medium text-foreground truncate">{b.name}</div>
                           <div className="text-xs text-muted-foreground truncate">{b.category} • {String(b.city || '').charAt(0).toUpperCase() + String(b.city || '').slice(1)}</div>

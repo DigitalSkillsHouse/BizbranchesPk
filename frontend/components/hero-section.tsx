@@ -262,6 +262,7 @@ export function HeroSection() {
                           src={business.image || business.logoUrl || "/placeholder.svg"}
                           alt={business.name}
                           className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-gray-100"
+                          onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg" }}
                         />
                         <div className="flex-1 text-left">
                           <div className="font-semibold text-gray-900">{business.name}</div>
