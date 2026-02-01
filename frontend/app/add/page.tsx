@@ -223,41 +223,37 @@ export function AddBusinessForm({
             errs.businessName = true
             errs.city = true
             errs.category = true
-            msgs.businessName = "This business name, city and category is already registered."
+            msgs.businessName = "A business with this name, city and category is already listed. Try a different name or check if you already have a listing."
             msgs.city = msgs.businessName
             msgs.category = msgs.businessName
           }
           if (conflicts.phone) {
             errs.phone = true
-            msgs.phone = "This phone number is already registered in our system."
+            msgs.phone = "This number is already in our directory. Please use a different number or search for your existing listing."
           }
           if (conflicts.whatsapp) {
             errs.whatsapp = true
-            msgs.whatsapp = "This WhatsApp number is already registered in our system."
-          }
-          if (conflicts.address) {
-            errs.address = true
-            msgs.address = "This address is already registered in our system."
+            msgs.whatsapp = "This WhatsApp number is already in our directory. Please use a different number."
           }
           if (conflicts.email) {
             errs.email = true
-            msgs.email = "This email is already registered in our system."
+            msgs.email = "This email is already in our directory. Please use a different email or find your existing listing."
           }
           if (conflicts.websiteUrl) {
             errs.websiteUrl = true
-            msgs.websiteUrl = "This website URL is already registered in our system."
+            msgs.websiteUrl = "This website is already listed. Please use a different URL."
           }
           if (conflicts.facebookUrl) {
             errs.facebookUrl = true
-            msgs.facebookUrl = "This Facebook link is already registered."
+            msgs.facebookUrl = "This Facebook link is already in our directory."
           }
           if (conflicts.gmbUrl) {
             errs.gmbUrl = true
-            msgs.gmbUrl = "This Google Business link is already registered."
+            msgs.gmbUrl = "This Google Business link is already in our directory."
           }
           if (conflicts.youtubeUrl) {
             errs.youtubeUrl = true
-            msgs.youtubeUrl = "This YouTube link is already registered."
+            msgs.youtubeUrl = "This YouTube link is already in our directory."
           }
           if (Object.keys(errs).length) {
             setFieldErrors((prev) => ({ ...prev, ...errs }))
@@ -528,21 +524,20 @@ export function AddBusinessForm({
           const data = await res.json()
 
           if (res.status === 409 && data?.conflicts && typeof data.conflicts === "object") {
-            userMessage = "Some details are already registered in our system. Please check the fields below."
+            userMessage = "We already have this in our directory. Please update the fields below or search the site to find your existing listing."
             const conflicts = data.conflicts as Record<string, boolean>
             if (conflicts.nameCityCategory) {
-              fieldMap.businessName = "This business name, city and category is already registered."
-              fieldMap.city = "This business name, city and category is already registered."
-              fieldMap.category = "This business name, city and category is already registered."
+              fieldMap.businessName = "A business with this name, city and category is already listed. Try a different name or check if you already have a listing."
+              fieldMap.city = "A business with this name, city and category is already listed. Try a different name or check if you already have a listing."
+              fieldMap.category = "A business with this name, city and category is already listed. Try a different name or check if you already have a listing."
             }
-            if (conflicts.phone) fieldMap.phone = "This phone number is already registered in our system."
-            if (conflicts.whatsapp) fieldMap.whatsapp = "This WhatsApp number is already registered in our system."
-            if (conflicts.address) fieldMap.address = "This address is already registered in our system."
-            if (conflicts.email) fieldMap.email = "This email is already registered in our system."
-            if (conflicts.websiteUrl) fieldMap.websiteUrl = "This website URL is already registered in our system."
-            if (conflicts.facebookUrl) fieldMap.facebookUrl = "This Facebook link is already registered."
-            if (conflicts.gmbUrl) fieldMap.gmbUrl = "This Google Business link is already registered."
-            if (conflicts.youtubeUrl) fieldMap.youtubeUrl = "This YouTube link is already registered."
+            if (conflicts.phone) fieldMap.phone = "This number is already in our directory. Use a different number or search for your existing listing."
+            if (conflicts.whatsapp) fieldMap.whatsapp = "This WhatsApp number is already in our directory. Please use a different number."
+            if (conflicts.email) fieldMap.email = "This email is already in our directory. Use a different email or find your existing listing."
+            if (conflicts.websiteUrl) fieldMap.websiteUrl = "This website is already listed. Please use a different URL."
+            if (conflicts.facebookUrl) fieldMap.facebookUrl = "This Facebook link is already in our directory."
+            if (conflicts.gmbUrl) fieldMap.gmbUrl = "This Google Business link is already in our directory."
+            if (conflicts.youtubeUrl) fieldMap.youtubeUrl = "This YouTube link is already in our directory."
             setFieldErrors(prev => ({ ...prev, ...Object.fromEntries(Object.keys(fieldMap).map(k => [k, true])) }))
             setFieldErrorMessages(prev => ({ ...prev, ...fieldMap }))
           } else if (Array.isArray(data?.details)) {
@@ -561,7 +556,7 @@ export function AddBusinessForm({
           }
           if (data?.error && typeof data.error === "string") {
             const lower = data.error.toLowerCase()
-            if (res.status !== 409 && (lower.includes("duplicate") || lower.includes("already"))) userMessage = "Some details may already be registered. Check the directory or try different details."
+            if (res.status !== 409 && (lower.includes("duplicate") || lower.includes("already"))) userMessage = "We may already have this in our directory. Please search the site or try different details."
             else if (res.status === 409) userMessage = data.error
             else if (lower.includes("invalid") || lower.includes("validation")) userMessage = "Please fix the highlighted fields and try again."
             else userMessage = data.error
@@ -645,7 +640,7 @@ export function AddBusinessForm({
                 )}
                 {duplicateWarning && !formErrorMessage && (
                   <div className="mx-4 sm:mx-6 md:mx-8 lg:mx-10 mt-4 sm:mt-6 p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm" role="status">
-                    Some details are already registered in our system. Check the fields marked in red below and change them if this is a different business.
+                    We already have some of this information in our directory. Please update the fields marked in red, or search the site to find your existing listing.
                   </div>
                 )}
                 {/* Basic Information */}

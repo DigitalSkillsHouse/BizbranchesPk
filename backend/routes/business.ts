@@ -480,7 +480,7 @@ router.post('/', upload.single('logo'), async (req, res) => {
     if (hasAnyConflict(conflicts)) {
       return res.status(409).json({
         ok: false,
-        error: 'Some details are already registered in our system. Please check the fields below.',
+        error: 'We already have this in our directory. Please update the fields below or search the site to find your existing listing.',
         conflicts,
       });
     }

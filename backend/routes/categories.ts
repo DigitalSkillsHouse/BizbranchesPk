@@ -124,7 +124,7 @@ router.get('/', async (req, res) => {
           }));
         categories = dynamicCategories.slice(0, safeLimit);
       } catch (dbError) {
-        logger.error('Error fetching business categories:', dbError);
+        console.error('Error fetching business categories:', dbError);
         categories = [];
       }
     }

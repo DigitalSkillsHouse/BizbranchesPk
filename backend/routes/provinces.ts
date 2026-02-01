@@ -23,7 +23,7 @@ router.get('/', (req, res) => {
     res.set("Cache-Control", "s-maxage=86400, stale-while-revalidate=604800");
     res.json(provinces);
   } catch (error) {
-    logger.error('Error in provinces route:', error);
+    console.error('Error in provinces route:', error);
     if (!res.headersSent) {
       res.status(500).json({ error: 'Internal server error' });
     }

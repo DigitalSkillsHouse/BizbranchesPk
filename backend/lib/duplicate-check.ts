@@ -57,7 +57,6 @@ export type DuplicateCheckInput = {
   phone: string;
   whatsapp?: string | null;
   email: string;
-  address?: string | null;
   websiteUrl?: string | null;
   facebookUrl?: string | null;
   gmbUrl?: string | null;
@@ -80,7 +79,6 @@ export async function checkDuplicateBusiness(input: DuplicateCheckInput): Promis
     const phoneNorm = normalizePhone(input.phone);
     const whatsappNorm = input.whatsapp ? normalizePhone(input.whatsapp) : '';
     const emailNorm = normalizeEmail(input.email);
-    const addressNorm = input.address ? String(input.address).trim().toLowerCase().replace(/\s+/g, ' ') : '';
     const websiteNorm = input.websiteUrl ? normalizeUrl(input.websiteUrl) : null;
     const facebookNorm = input.facebookUrl ? normalizeUrl(input.facebookUrl) : null;
     const gmbNorm = input.gmbUrl ? normalizeUrl(input.gmbUrl) : null;
