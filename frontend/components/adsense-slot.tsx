@@ -61,6 +61,7 @@ export function AdSenseSlot({
       role="complementary"
       aria-label="Advertisement"
       className={`min-h-[90px] overflow-hidden my-6 sm:my-8 ${className}`}
+      suppressHydrationWarning
     >
       <ins
         className="adsbygoogle"

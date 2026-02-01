@@ -160,7 +160,7 @@ export function Footer() {
       <div className="border-t border-gray-800">
         <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-5">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
-            <div className="text-gray-400 text-xs sm:text-sm text-center sm:text-left">
+            <div className="text-gray-400 text-xs sm:text-sm text-center sm:text-left" suppressHydrationWarning>
               © {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
             </div>
             <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm">

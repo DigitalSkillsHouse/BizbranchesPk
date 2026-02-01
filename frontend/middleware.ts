@@ -38,7 +38,7 @@ export function middleware(req: NextRequest) {
   // CSP: allow self, AdSense, GA4, Funding Choices, Google Maps
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://www.google.com https://www.gstatic.com https://fundingchoicesmessages.google.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://www.google.com https://www.gstatic.com https://fundingchoicesmessages.google.com https://ep2.adtrafficquality.google",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https: blob:",
     "font-src 'self' https://fonts.gstatic.com data:",
