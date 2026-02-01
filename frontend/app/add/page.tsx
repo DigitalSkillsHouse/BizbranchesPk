@@ -60,6 +60,7 @@ export function AddBusinessForm({
   const [fieldErrorMessages, setFieldErrorMessages] = useState<Record<string, string>>({})
   const [formErrorMessage, setFormErrorMessage] = useState<string | null>(null)
   const [duplicateWarning, setDuplicateWarning] = useState<boolean>(false)
+  const [submittedSlug, setSubmittedSlug] = useState<string | null>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [activeSection, setActiveSection] = useState(0)
   const DESCRIPTION_MAX = 1000

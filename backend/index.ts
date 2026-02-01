@@ -16,6 +16,7 @@ import searchRouter from './routes/search';
 import sitemapRouter from './routes/sitemap';
 import sitemapApiRouter from './routes/sitemap-api';
 import businessRelatedRouter from './routes/business-related';
+import adminRouter from './routes/admin';
 import debugRouter from './routes/debug';
 
 const isProd = process.env.NODE_ENV === 'production';
