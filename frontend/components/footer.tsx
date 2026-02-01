@@ -1,143 +1,193 @@
 import Link from "next/link"
 import Image from "next/image"
-import { Mail, MapPin, Star, Users, Phone, ArrowRight } from "lucide-react"
+import {
+  Mail,
+  MapPin,
+  Phone,
+  ArrowRight,
+  Home,
+  Search,
+  PlusCircle,
+  Info,
+  Contact,
+  UtensilsCrossed,
+  HeartPulse,
+  GraduationCap,
+  Car,
+  Building2,
+  Laptop,
+  Shield,
+  FileText,
+  Map,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SITE_NAME } from "@/lib/site"
 
+const linkBase =
+  "inline-flex items-center gap-3 py-2.5 px-3 rounded-lg text-gray-300 hover:text-emerald-400 hover:bg-white/5 transition-all duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+
+const iconWrap = "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-emerald-400 group-hover:bg-emerald-500/20 group-hover:text-emerald-300 transition-colors"
+
 export function Footer() {
   return (
-    <footer className="bg-slate-900 text-white">
-      <div className="container mx-auto px-4 sm:px-6 py-10 sm:py-12 lg:py-14">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
-          {/* Brand Column - wide, like DSH */}
+    <footer className="bg-slate-950 text-white">
+      {/* Top accent */}
+      <div className="h-1 bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-400" />
+
+      <div className="container mx-auto px-4 sm:px-6 py-12 sm:py-14 lg:py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
+          {/* Brand Column */}
           <div className="sm:col-span-2 lg:col-span-2">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 shadow-lg">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 shadow-lg ring-2 ring-white/10">
                 <Image src="/BizBranches.jpeg" alt="BizBranches" fill className="object-contain" sizes="48px" />
               </div>
-              <span className="text-xl sm:text-2xl font-bold text-white">BizBranches.Pk</span>
+              <span className="text-xl sm:text-2xl font-bold text-white tracking-tight">BizBranches.Pk</span>
             </div>
-            <p className="text-sm sm:text-base text-gray-300 leading-relaxed mb-6 max-w-md">
+            <p className="text-sm sm:text-base text-slate-400 leading-relaxed mb-8 max-w-md">
               Pakistan&apos;s free business listing directory. Find local businesses by city and category, add your business free,
               read reviews, and get contact details. Trusted across Pakistan.
             </p>
 
-            {/* Stats Row - like DSH (500+ Students, 95% Job Placement, etc.) */}
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="text-center py-3 px-2 bg-slate-800/50 rounded-lg border border-slate-700/50">
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-3 mb-8">
+              <div className="text-center py-4 px-3 rounded-xl bg-slate-800/60 border border-slate-700/60 shadow-inner">
                 <div className="text-xl sm:text-2xl font-bold text-emerald-400">50K+</div>
-                <div className="text-xs text-gray-400 mt-0.5">Businesses</div>
+                <div className="text-xs text-slate-500 mt-1 font-medium">Businesses</div>
               </div>
-              <div className="text-center py-3 px-2 bg-slate-800/50 rounded-lg border border-slate-700/50">
+              <div className="text-center py-4 px-3 rounded-xl bg-slate-800/60 border border-slate-700/60 shadow-inner">
                 <div className="text-xl sm:text-2xl font-bold text-blue-400">2M+</div>
-                <div className="text-xs text-gray-400 mt-0.5">Users</div>
+                <div className="text-xs text-slate-500 mt-1 font-medium">Users</div>
               </div>
-              <div className="text-center py-3 px-2 bg-slate-800/50 rounded-lg border border-slate-700/50">
-                <div className="text-xl sm:text-2xl font-bold text-purple-400">1M+</div>
-                <div className="text-xs text-gray-400 mt-0.5">Reviews</div>
+              <div className="text-center py-4 px-3 rounded-xl bg-slate-800/60 border border-slate-700/60 shadow-inner">
+                <div className="text-xl sm:text-2xl font-bold text-violet-400">1M+</div>
+                <div className="text-xs text-slate-500 mt-1 font-medium">Reviews</div>
               </div>
             </div>
 
-            {/* Contact - Address, Phone, Email (icon + text like DSH) */}
+            {/* Contact */}
             <div className="space-y-3 text-sm">
-              <div className="flex items-start gap-3 text-gray-300">
-                <MapPin className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3 text-slate-400">
+                <span className={iconWrap.replace("group-hover:", "hover:")}>
+                  <MapPin className="h-4 w-4" />
+                </span>
                 <span>Pakistan — Find businesses in your city</span>
               </div>
-              <div className="flex items-center gap-3 text-gray-300">
-                <Phone className="h-4 w-4 text-emerald-400 flex-shrink-0" />
-                <a href="tel:+923142552851" className="hover:text-emerald-400 transition-colors">
-                  0314-2552851
-                </a>
-              </div>
-              <div className="flex items-center gap-3 text-gray-300">
-                <Mail className="h-4 w-4 text-emerald-400 flex-shrink-0" />
-                <a href="mailto:support@bizbranches.pk" className="hover:text-emerald-400 transition-colors break-all">
-                  support@bizbranches.pk
-                </a>
-              </div>
+              <a
+                href="tel:+923142552851"
+                className="flex items-center gap-3 text-slate-400 hover:text-emerald-400 transition-colors"
+              >
+                <span className={iconWrap.replace("group-hover:", "hover:")}>
+                  <Phone className="h-4 w-4" />
+                </span>
+                0314-2552851
+              </a>
+              <a
+                href="mailto:support@bizbranches.pk"
+                className="flex items-center gap-3 text-slate-400 hover:text-emerald-400 transition-colors break-all"
+              >
+                <span className={iconWrap.replace("group-hover:", "hover:")}>
+                  <Mail className="h-4 w-4" />
+                </span>
+                support@bizbranches.pk
+              </a>
             </div>
           </div>
 
-          {/* Quick Links - like DSH Quick Links */}
+          {/* Quick Links */}
           <div>
-            <h4 className="text-base font-semibold text-white mb-4 uppercase tracking-wide">Quick Links</h4>
-            <ul className="space-y-3 text-sm text-gray-300">
+            <h4 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider text-slate-200 flex items-center gap-2 pb-2 border-b border-slate-700/80 w-fit">
+              Quick Links
+            </h4>
+            <ul className="space-y-1 text-sm">
               <li>
-                <Link href="/" className="hover:text-emerald-400 transition-colors flex items-center gap-2 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 rounded">
+                <Link href="/" className={linkBase}>
+                  <span className={iconWrap}><Home className="h-4 w-4" /></span>
                   <span className="group-hover:translate-x-0.5 transition-transform">Home</span>
                 </Link>
               </li>
               <li>
-                <Link href="/search" className="hover:text-emerald-400 transition-colors flex items-center gap-2 group">
+                <Link href="/search" className={linkBase}>
+                  <span className={iconWrap}><Search className="h-4 w-4" /></span>
                   <span className="group-hover:translate-x-0.5 transition-transform">Browse Businesses</span>
                 </Link>
               </li>
               <li>
-                <Link href="/add" className="hover:text-emerald-400 transition-colors flex items-center gap-2 group">
+                <Link href="/add" className={linkBase}>
+                  <span className={iconWrap}><PlusCircle className="h-4 w-4" /></span>
                   <span className="group-hover:translate-x-0.5 transition-transform">List Your Business</span>
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="hover:text-emerald-400 transition-colors flex items-center gap-2 group">
+                <Link href="/about" className={linkBase}>
+                  <span className={iconWrap}><Info className="h-4 w-4" /></span>
                   <span className="group-hover:translate-x-0.5 transition-transform">About Us</span>
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-emerald-400 transition-colors flex items-center gap-2 group">
+                <Link href="/contact" className={linkBase}>
+                  <span className={iconWrap}><Contact className="h-4 w-4" /></span>
                   <span className="group-hover:translate-x-0.5 transition-transform">Contact</span>
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Popular Categories - like DSH Courses column */}
+          {/* Popular Categories */}
           <div>
-            <h4 className="text-base font-semibold text-white mb-4 uppercase tracking-wide">Popular Categories</h4>
-            <ul className="space-y-3 text-sm text-gray-300">
+            <h4 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider text-slate-200 flex items-center gap-2 pb-2 border-b border-slate-700/80 w-fit">
+              Popular Categories
+            </h4>
+            <ul className="space-y-1 text-sm">
               <li>
-                <Link href="/category/restaurants" className="hover:text-emerald-400 transition-colors">
-                  Restaurants
+                <Link href="/category/restaurants" className={linkBase}>
+                  <span className={iconWrap}><UtensilsCrossed className="h-4 w-4" /></span>
+                  <span className="group-hover:translate-x-0.5 transition-transform">Restaurants</span>
                 </Link>
               </li>
               <li>
-                <Link href="/category/healthcare" className="hover:text-emerald-400 transition-colors">
-                  Healthcare
+                <Link href="/category/healthcare" className={linkBase}>
+                  <span className={iconWrap}><HeartPulse className="h-4 w-4" /></span>
+                  <span className="group-hover:translate-x-0.5 transition-transform">Healthcare</span>
                 </Link>
               </li>
               <li>
-                <Link href="/category/education" className="hover:text-emerald-400 transition-colors">
-                  Education
+                <Link href="/category/education" className={linkBase}>
+                  <span className={iconWrap}><GraduationCap className="h-4 w-4" /></span>
+                  <span className="group-hover:translate-x-0.5 transition-transform">Education</span>
                 </Link>
               </li>
               <li>
-                <Link href="/category/automotive" className="hover:text-emerald-400 transition-colors">
-                  Automotive
+                <Link href="/category/automotive" className={linkBase}>
+                  <span className={iconWrap}><Car className="h-4 w-4" /></span>
+                  <span className="group-hover:translate-x-0.5 transition-transform">Automotive</span>
                 </Link>
               </li>
               <li>
-                <Link href="/category/real-estate" className="hover:text-emerald-400 transition-colors">
-                  Real Estate
+                <Link href="/category/real-estate" className={linkBase}>
+                  <span className={iconWrap}><Building2 className="h-4 w-4" /></span>
+                  <span className="group-hover:translate-x-0.5 transition-transform">Real Estate</span>
                 </Link>
               </li>
               <li>
-                <Link href="/category/technology" className="hover:text-emerald-400 transition-colors">
-                  Technology
+                <Link href="/category/technology" className={linkBase}>
+                  <span className={iconWrap}><Laptop className="h-4 w-4" /></span>
+                  <span className="group-hover:translate-x-0.5 transition-transform">Technology</span>
                 </Link>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* CTA Strip - like DSH "Ready to Start? Enroll Now | Call" */}
-        <div className="mt-10 sm:mt-12 pt-8 sm:pt-10 border-t border-gray-800">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-800/50 rounded-xl px-6 py-5 sm:px-8 sm:py-6 border border-gray-700/50">
+        {/* CTA Strip */}
+        <div className="mt-12 pt-10 border-t border-slate-800">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 rounded-2xl bg-gradient-to-r from-slate-800/80 to-slate-800/50 px-6 py-6 sm:px-8 sm:py-7 border border-slate-700/60 shadow-xl shadow-black/20">
             <div className="text-center sm:text-left">
               <h4 className="text-lg font-semibold text-white mb-1">Ready to grow your business?</h4>
-              <p className="text-sm text-gray-400">List your business for free and reach millions of customers.</p>
+              <p className="text-sm text-slate-400">List your business for free and reach millions of customers.</p>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-3">
-              <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900">
+              <Button asChild className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-6 shadow-lg shadow-emerald-900/30 focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900">
                 <Link href="/add" className="flex items-center gap-2">
                   List Your Business
                   <ArrowRight className="h-4 w-4" />
@@ -145,7 +195,7 @@ export function Footer() {
               </Button>
               <a
                 href="tel:+923142552851"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-600 text-gray-300 hover:border-green-500 hover:text-emerald-400 transition-colors text-sm font-medium"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-600 text-slate-300 hover:border-emerald-500/50 hover:text-emerald-400 transition-colors text-sm font-medium bg-slate-800/40"
               >
                 <Phone className="h-4 w-4" />
                 Call: 0314-2552851
@@ -155,21 +205,24 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Bottom Bar - Copyright + Legal (like DSH footer bottom) */}
-      <div className="border-t border-gray-800">
-        <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-5">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
-            <div className="text-gray-400 text-xs sm:text-sm text-center sm:text-left" suppressHydrationWarning>
+      {/* Bottom Bar */}
+      <div className="border-t border-slate-800 bg-slate-900/50">
+        <div className="container mx-auto px-4 sm:px-6 py-5">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="text-slate-500 text-xs sm:text-sm text-center sm:text-left" suppressHydrationWarning>
               © {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm">
-              <Link href="/privacy" className="text-gray-400 hover:text-emerald-400 transition-colors">
+            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 text-xs sm:text-sm">
+              <Link href="/privacy" className="inline-flex items-center gap-2 text-slate-500 hover:text-emerald-400 transition-colors">
+                <Shield className="h-4 w-4" />
                 Privacy Policy
               </Link>
-              <Link href="/terms" className="text-gray-400 hover:text-emerald-400 transition-colors">
+              <Link href="/terms" className="inline-flex items-center gap-2 text-slate-500 hover:text-emerald-400 transition-colors">
+                <FileText className="h-4 w-4" />
                 Terms of Service
               </Link>
-              <a href="/sitemap.xml" className="text-gray-400 hover:text-emerald-400 transition-colors">
+              <a href="/sitemap.xml" className="inline-flex items-center gap-2 text-slate-500 hover:text-emerald-400 transition-colors">
+                <Map className="h-4 w-4" />
                 Sitemap
               </a>
             </div>

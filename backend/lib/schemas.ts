@@ -13,11 +13,13 @@ export const BusinessSchema = z.object({
   postalCode: z.string().min(3).max(12).optional().transform(val => val === "" ? undefined : val),
   address: z.string().min(1, "Address is required").max(500, "Address too long"),
   phone: z.string().min(1, "Phone number is required").max(20, "Phone number too long"),
+  phoneDigits: z.string().optional(), // normalized for duplicate check index
   contactPerson: z.string().optional().transform(val => val === "" ? undefined : val),
   whatsapp: z.string().optional().transform(val => val === "" ? undefined : val),
   email: z.string().email("Invalid email format"),
   description: z.string().min(10, "Description must be at least 10 characters").max(2000, "Description too long"),
   websiteUrl: z.string().url().optional().transform(val => (val === "" ? undefined : val)),
+  websiteNormalized: z.string().optional(), // normalized for duplicate check
   facebookUrl: z.string().url().optional().transform(val => (val === "" ? undefined : val)),
   gmbUrl: z.string().url().optional().transform(val => (val === "" ? undefined : val)),
   youtubeUrl: z.string().url().optional().transform(val => (val === "" ? undefined : val)),

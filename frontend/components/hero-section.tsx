@@ -194,22 +194,6 @@ export function HeroSection() {
           <p className="mt-2 text-xs sm:text-sm text-white/80">No credit card required.</p>
         </div>
 
-        {/* 4. Secondary CTAs — support browsing, don't compete */}
-        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mb-6 sm:mb-8">
-          <Link
-            href="/search"
-            className="inline-flex items-center justify-center min-h-[44px] px-5 py-2.5 rounded-lg bg-white/15 hover:bg-white/25 border border-white/25 text-white font-medium text-sm sm:text-base transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
-          >
-            Browse Businesses
-          </Link>
-          <Link
-            href="/#categories-section"
-            className="inline-flex items-center justify-center min-h-[44px] px-5 py-2.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
-          >
-            Explore Categories
-          </Link>
-        </div>
-
         {/* Search — for users who want to search first */}
         <form onSubmit={handleSearch} className="search-container max-w-2xl mx-auto mb-0 relative z-50" role="search" aria-label="Search businesses">
           <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-4 sm:p-5 relative z-50">

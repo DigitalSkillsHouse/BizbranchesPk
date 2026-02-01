@@ -59,6 +59,7 @@ export function AddBusinessForm({
   const [fieldErrors, setFieldErrors] = useState<Record<string, boolean>>({})
   const [fieldErrorMessages, setFieldErrorMessages] = useState<Record<string, string>>({})
   const [formErrorMessage, setFormErrorMessage] = useState<string | null>(null)
+  const [duplicateWarning, setDuplicateWarning] = useState<boolean>(false)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [activeSection, setActiveSection] = useState(0)
   const DESCRIPTION_MAX = 1000
@@ -178,6 +179,44 @@ export function AddBusinessForm({
   useEffect(() => { fetchSubcategories() }, [form.category])
   useEffect(() => { if (subCatOpen) fetchSubcategories() }, [subCatOpen])
 
+  // Optional client-side duplicate check (debounced; non-blocking)
+  useEffect(() => {
+    const name = form.businessName?.trim()
+    const city = form.city?.trim()
+    const category = form.category?.trim()
+    const phone = form.phone?.trim()
+    const email = form.email?.trim()
+    const hasEnough = (name && city && category) || (phone && phone.length >= 7) || (email && email.includes("@"))
+    if (!hasEnough) {
+      setDuplicateWarning(false)
+      return
+    }
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/business/check-duplicates", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: name || "",
+            city: city || "",
+            category: category || "",
+            phone: phone || "",
+            email: email || "",
+            websiteUrl: form.websiteUrl?.trim() || undefined,
+            facebookUrl: form.facebookUrl?.trim() || undefined,
+            gmbUrl: form.gmbUrl?.trim() || undefined,
+            youtubeUrl: form.youtubeUrl?.trim() || undefined,
+          }),
+        })
+        const data = await res.json().catch(() => ({}))
+        setDuplicateWarning(!!data?.hasDuplicates)
+      } catch {
+        setDuplicateWarning(false)
+      }
+    }, 600)
+    return () => clearTimeout(t)
+  }, [form.businessName, form.city, form.category, form.phone, form.email, form.websiteUrl, form.facebookUrl, form.gmbUrl, form.youtubeUrl])
+
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
       if (e.key === "categories:version") {
@@ -226,6 +265,7 @@ export function AddBusinessForm({
       setFieldErrorMessages(prev => ({ ...prev, [id]: "" }))
     }
     setFormErrorMessage(null)
+    setDuplicateWarning(false)
   }
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -250,8 +290,13 @@ export function AddBusinessForm({
     city: { label: "City", inputId: "city", message: "Select your city" },
     address: { label: "Complete Address", inputId: "address", message: "Enter your full address" },
     phone: { label: "Phone Number", inputId: "phone", message: "Enter a phone number" },
+    email: { label: "Email", inputId: "email", message: "Enter a valid email" },
     description: { label: "Business Description", inputId: "description", message: "Add a short description" },
     logo: { label: "Business Logo", inputId: "logo", message: "Upload your business logo" },
+    websiteUrl: { label: "Website URL", inputId: "websiteUrl", message: "Check this URL" },
+    facebookUrl: { label: "Facebook", inputId: "facebookUrl", message: "Check this URL" },
+    gmbUrl: { label: "Google Business", inputId: "gmbUrl", message: "Check this URL" },
+    youtubeUrl: { label: "YouTube", inputId: "youtubeUrl", message: "Check this URL" },
   }
 
   const validate = () => {
@@ -354,6 +399,7 @@ export function AddBusinessForm({
         setFieldErrors({})
         setFieldErrorMessages({})
         setFormErrorMessage(null)
+        setDuplicateWarning(false)
         onSubmitted?.()
       } else {
         setFormErrorMessage(null)
@@ -361,7 +407,25 @@ export function AddBusinessForm({
         const fieldMap: Record<string, string> = {}
         try {
           const data = await res.json()
-          if (Array.isArray(data?.details)) {
+
+          if (res.status === 409 && data?.conflicts && typeof data.conflicts === "object") {
+            userMessage = "This business already exists in our directory. Please check your information."
+            const conflictMsg = "Already listed with this information"
+            const conflicts = data.conflicts as Record<string, boolean>
+            if (conflicts.nameCityCategory) {
+              fieldMap.businessName = conflictMsg
+              fieldMap.city = conflictMsg
+              fieldMap.category = conflictMsg
+            }
+            if (conflicts.phone) fieldMap.phone = conflictMsg
+            if (conflicts.email) fieldMap.email = conflictMsg
+            if (conflicts.websiteUrl) fieldMap.websiteUrl = conflictMsg
+            if (conflicts.facebookUrl) fieldMap.facebookUrl = conflictMsg
+            if (conflicts.gmbUrl) fieldMap.gmbUrl = conflictMsg
+            if (conflicts.youtubeUrl) fieldMap.youtubeUrl = conflictMsg
+            setFieldErrors(prev => ({ ...prev, ...Object.fromEntries(Object.keys(fieldMap).map(k => [k, true])) }))
+            setFieldErrorMessages(prev => ({ ...prev, ...fieldMap }))
+          } else if (Array.isArray(data?.details)) {
             for (const d of data.details) {
               const path = (d?.path && (Array.isArray(d.path) ? d.path.join(".") : String(d.path))) || ""
               const msg = d?.message || "Invalid"
@@ -377,7 +441,8 @@ export function AddBusinessForm({
           }
           if (data?.error && typeof data.error === "string") {
             const lower = data.error.toLowerCase()
-            if (lower.includes("duplicate") || lower.includes("already")) userMessage = "This business may already be listed. Check the directory or try different details."
+            if (res.status !== 409 && (lower.includes("duplicate") || lower.includes("already"))) userMessage = "This business may already be listed. Check the directory or try different details."
+            else if (res.status === 409) userMessage = data.error
             else if (lower.includes("invalid") || lower.includes("validation")) userMessage = "Please fix the highlighted fields and try again."
             else userMessage = data.error
           }
@@ -458,6 +523,11 @@ export function AddBusinessForm({
                     {formErrorMessage}
                   </div>
                 )}
+                {duplicateWarning && !formErrorMessage && (
+                  <div className="mx-4 sm:mx-6 md:mx-8 lg:mx-10 mt-4 sm:mt-6 p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm" role="status">
+                    A similar listing may already exist. Please check your business name, phone, email, and city before submitting.
+                  </div>
+                )}
                 {/* Basic Information */}
                 <section className="p-4 sm:p-6 md:p-8 lg:p-10 border-b border-gray-100 bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/30">
                   <div className="flex items-start gap-3 sm:gap-4 md:gap-5 mb-6 sm:mb-8">
@@ -507,8 +577,11 @@ export function AddBusinessForm({
                         placeholder="business@example.com" 
                         value={form.email} 
                         onChange={handleChange} 
-                        className="h-12 border-2 rounded-lg border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 bg-white transition-all" 
+                        className={`h-12 border-2 rounded-lg transition-all bg-white ${fieldErrors.email ? 'border-red-400 bg-red-50/50 focus:border-red-500 focus:ring-2 focus:ring-red-200' : 'border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200'}`}
+                        aria-invalid={!!fieldErrors.email}
+                        aria-describedby={fieldErrors.email ? "email-error" : undefined}
                       />
+                      {fieldErrorMessages.email && <p id="email-error" className="text-sm text-red-600 mt-1" role="alert">{fieldErrorMessages.email}</p>}
                     </div>
                   </div>
                 </section>
@@ -803,8 +876,11 @@ export function AddBusinessForm({
                         placeholder="https://www.example.com" 
                         value={form.websiteUrl} 
                         onChange={handleChange} 
-                        className="h-12 border-2 rounded-lg border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 bg-white transition-all" 
+                        className={`h-12 border-2 rounded-lg transition-all bg-white ${fieldErrors.websiteUrl ? 'border-red-400 bg-red-50/50 focus:border-red-500 focus:ring-2 focus:ring-red-200' : 'border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200'}`}
+                        aria-invalid={!!fieldErrors.websiteUrl}
+                        aria-describedby={fieldErrors.websiteUrl ? "websiteUrl-error" : undefined}
                       />
+                      {fieldErrorMessages.websiteUrl && <p id="websiteUrl-error" className="text-sm text-red-600 mt-1" role="alert">{fieldErrorMessages.websiteUrl}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="facebookUrl" className="text-gray-700 font-semibold text-sm">Facebook Page</Label>
@@ -813,8 +889,11 @@ export function AddBusinessForm({
                         placeholder="https://facebook.com/yourpage" 
                         value={form.facebookUrl} 
                         onChange={handleChange} 
-                        className="h-12 border-2 rounded-lg border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 bg-white transition-all" 
+                        className={`h-12 border-2 rounded-lg transition-all bg-white ${fieldErrors.facebookUrl ? 'border-red-400 bg-red-50/50 focus:border-red-500 focus:ring-2 focus:ring-red-200' : 'border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200'}`}
+                        aria-invalid={!!fieldErrors.facebookUrl}
+                        aria-describedby={fieldErrors.facebookUrl ? "facebookUrl-error" : undefined}
                       />
+                      {fieldErrorMessages.facebookUrl && <p id="facebookUrl-error" className="text-sm text-red-600 mt-1" role="alert">{fieldErrorMessages.facebookUrl}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="gmbUrl" className="text-gray-700 font-semibold text-sm">Google Business Profile</Label>
@@ -823,8 +902,11 @@ export function AddBusinessForm({
                         placeholder="https://maps.google.com/?cid=..." 
                         value={form.gmbUrl} 
                         onChange={handleChange} 
-                        className="h-12 border-2 rounded-lg border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 bg-white transition-all" 
+                        className={`h-12 border-2 rounded-lg transition-all bg-white ${fieldErrors.gmbUrl ? 'border-red-400 bg-red-50/50 focus:border-red-500 focus:ring-2 focus:ring-red-200' : 'border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200'}`}
+                        aria-invalid={!!fieldErrors.gmbUrl}
+                        aria-describedby={fieldErrors.gmbUrl ? "gmbUrl-error" : undefined}
                       />
+                      {fieldErrorMessages.gmbUrl && <p id="gmbUrl-error" className="text-sm text-red-600 mt-1" role="alert">{fieldErrorMessages.gmbUrl}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="youtubeUrl" className="text-gray-700 font-semibold text-sm">YouTube Channel</Label>
@@ -833,8 +915,11 @@ export function AddBusinessForm({
                         placeholder="https://youtube.com/@yourchannel" 
                         value={form.youtubeUrl} 
                         onChange={handleChange} 
-                        className="h-12 border-2 rounded-lg border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 bg-white transition-all" 
+                        className={`h-12 border-2 rounded-lg transition-all bg-white ${fieldErrors.youtubeUrl ? 'border-red-400 bg-red-50/50 focus:border-red-500 focus:ring-2 focus:ring-red-200' : 'border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200'}`}
+                        aria-invalid={!!fieldErrors.youtubeUrl}
+                        aria-describedby={fieldErrors.youtubeUrl ? "youtubeUrl-error" : undefined}
                       />
+                      {fieldErrorMessages.youtubeUrl && <p id="youtubeUrl-error" className="text-sm text-red-600 mt-1" role="alert">{fieldErrorMessages.youtubeUrl}</p>}
                     </div>
                   </div>
                 </section>

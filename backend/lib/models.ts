@@ -35,6 +35,11 @@ class DatabaseModels {
             await this.businesses.createIndex({ createdAt: -1 });
             await this.businesses.createIndex({ slug: 1 }, { unique: true, partialFilterExpression: { slug: { $exists: true } } });
             await this.businesses.createIndex({ name: "text", description: "text" });
+            // Duplicate check indexes (case-insensitive / normalized)
+            await this.businesses.createIndex({ name: 1, city: 1, category: 1 }, { collation: { locale: 'en', strength: 2 } });
+            await this.businesses.createIndex({ email: 1 }, { collation: { locale: 'en', strength: 2 } });
+            await this.businesses.createIndex({ phoneDigits: 1 }, { sparse: true });
+            await this.businesses.createIndex({ websiteNormalized: 1 }, { sparse: true });
             // Category indexes
             await this.categories.createIndex({ slug: 1 }, { unique: true });
             await this.categories.createIndex({ isActive: 1 });

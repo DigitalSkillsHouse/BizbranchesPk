@@ -4,6 +4,7 @@ import { getModels } from '../lib/models';
 import { CreateBusinessSchema, BusinessSchema } from '../lib/schemas';
 import cloudinary from '../lib/cloudinary';
 import { pingGoogleSitemap } from '../lib/google-ping';
+import { checkDuplicateBusiness, hasAnyConflict, getNormalizedForInsert } from '../lib/duplicate-check';
 import { logger } from '../lib/logger';
 import { rateLimit, getClientIp } from '../lib/rate-limit';
 
@@ -321,7 +322,7 @@ router.patch('/', async (req, res) => {
       return res.status(404).json({ ok: false, error: "Business not found" });
     }
 
-    // Ping Google when business is approved
+    // Notify Google when sitemap-relevant content changes (only on approve to avoid spam)
     if (nextStatus === "approved" && result.modifiedCount > 0) {
       pingGoogleSitemap().catch((e) => logger.error('Sitemap ping:', e));
     }
@@ -332,7 +333,7 @@ router.patch('/', async (req, res) => {
   }
 });
 
-// POST /api/business/check-duplicates - Check for duplicate phone or email
+// POST /api/business/check-duplicates - Check for duplicate business (name+city+category, phone, email, website, social)
 router.post('/check-duplicates', async (req, res) => {
   const ip = getClientIp(req);
   const rl = rateLimit(ip, 'check-duplicates', 60);
@@ -340,68 +341,48 @@ router.post('/check-duplicates', async (req, res) => {
     return res.status(429).set('Retry-After', String(rl.retryAfter ?? 60)).json({ ok: false, error: 'Too many requests' });
   }
   try {
-    const models = await getModels();
-    const { phone, email } = req.body || {};
-    
-    if (!phone && !email) {
-      return res.status(400).json({ 
-        ok: false, 
-        error: "Phone number or email is required" 
+    const body = req.body || {};
+    const name = String(body.name ?? '').trim();
+    const city = String(body.city ?? '').trim();
+    const category = String(body.category ?? '').trim();
+    const phone = String(body.phone ?? '').trim();
+    const email = String(body.email ?? '').trim();
+    const websiteUrl = body.websiteUrl != null ? String(body.websiteUrl).trim() : undefined;
+    const facebookUrl = body.facebookUrl != null ? String(body.facebookUrl).trim() : undefined;
+    const gmbUrl = body.gmbUrl != null ? String(body.gmbUrl).trim() : undefined;
+    const youtubeUrl = body.youtubeUrl != null ? String(body.youtubeUrl).trim() : undefined;
+
+    if (!name && !phone && !email) {
+      return res.status(400).json({
+        ok: false,
+        error: 'At least one of name+city+category, phone, or email is required',
       });
     }
-    
-    const duplicates: { phoneExists?: boolean; emailExists?: boolean; hasDuplicates: boolean } = {
-      hasDuplicates: false
-    };
-    
-    // Check for duplicate phone
-    if (phone) {
-      try {
-        // Remove all non-digit characters for comparison
-        const cleanPhone = phone.replace(/[^0-9]/g, '');
-        // Escape special regex characters
-        const escapedPhone = cleanPhone.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const phoneExists = await models.businesses.findOne({
-          phone: { $regex: new RegExp(escapedPhone, 'i') }
-        });
-        
-        duplicates.phoneExists = !!phoneExists;
-        if (phoneExists) {
-          duplicates.hasDuplicates = true;
-        }
-      } catch (phoneErr) {
-        logger.error("Error checking phone duplicates:", phoneErr);
-      }
-    }
-    
-    // Check for duplicate email
-    if (email) {
-      try {
-        // Escape special regex characters in email for exact match
-        const escapedEmail = email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const emailExists = await models.businesses.findOne({
-          email: { $regex: new RegExp(`^${escapedEmail}$`, 'i') }
-        });
-        
-        duplicates.emailExists = !!emailExists;
-        if (emailExists) {
-          duplicates.hasDuplicates = true;
-        }
-      } catch (emailErr) {
-        logger.error("Error checking email duplicates:", emailErr);
-      }
-    }
-    
+
+    const conflicts = await checkDuplicateBusiness({
+      name: name || '',
+      city: city || '',
+      category: category || '',
+      phone: phone || '',
+      email: email || '',
+      websiteUrl: websiteUrl || undefined,
+      facebookUrl: facebookUrl || undefined,
+      gmbUrl: gmbUrl || undefined,
+      youtubeUrl: youtubeUrl || undefined,
+    });
+
+    const hasDuplicates = hasAnyConflict(conflicts);
+
     res.json({
       ok: true,
-      duplicates,
-      hasDuplicates: duplicates.hasDuplicates
+      hasDuplicates,
+      conflicts,
     });
   } catch (err: any) {
-    logger.error("Error checking duplicates:", err);
-    res.status(500).json({ 
-      ok: false, 
-      error: err?.message || "Internal server error" 
+    logger.error('Error checking duplicates:', err);
+    res.status(500).json({
+      ok: false,
+      error: err?.message || 'Internal server error',
     });
   }
 });
@@ -477,6 +458,26 @@ router.post('/', upload.single('logo'), async (req, res) => {
     const validatedData = validationResult.data;
     const logo = req.file; // From Multer
 
+    // Server-side duplicate check (indexed; blocks duplicate submissions)
+    const conflicts = await checkDuplicateBusiness({
+      name: validatedData.name,
+      city: validatedData.city,
+      category: validatedData.category,
+      phone: validatedData.phone,
+      email: validatedData.email,
+      websiteUrl: validatedData.websiteUrl,
+      facebookUrl: validatedData.facebookUrl,
+      gmbUrl: validatedData.gmbUrl,
+      youtubeUrl: validatedData.youtubeUrl,
+    });
+    if (hasAnyConflict(conflicts)) {
+      return res.status(409).json({
+        ok: false,
+        error: 'This business already exists in our directory. Please check your information.',
+        conflicts,
+      });
+    }
+
     let logoUrl: string | undefined;
     let logoPublicId: string | undefined;
 
@@ -504,12 +505,16 @@ router.post('/', upload.single('logo'), async (req, res) => {
       uniqueSlug = `${baseSlug}-${attempt}`;
     }
 
+    const { phoneDigits, websiteNormalized } = getNormalizedForInsert(validatedData.phone, validatedData.websiteUrl);
+
     // Create business document with schema validation
     const businessDoc = BusinessSchema.parse({
       ...validatedData,
       slug: uniqueSlug,
       logoUrl: logoUrl || undefined,
       logoPublicId: logoPublicId || undefined,
+      phoneDigits,
+      websiteNormalized: websiteNormalized || undefined,
       status: "pending" as const,
       createdAt: new Date(),
     });
