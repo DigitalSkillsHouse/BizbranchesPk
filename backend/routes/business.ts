@@ -174,14 +174,20 @@ router.get('/', async (req, res) => {
     let subCategoryFilter: any = null;
     if (req.query.subCategory || req.query.subcategory) {
       const subCategoryQuery = (req.query.subCategory || req.query.subcategory) as string;
-      // Handle both slug format and proper name - check both field name variations
-      const escapedQuery = subCategoryQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const subCategoryRegex = new RegExp(`^${escapedQuery}$`, 'i');
-      // Try both field name variations (subCategory and subcategory)
+      const raw = subCategoryQuery.trim();
+      // Match both slug form (meezan-bank) and name form (Meezan Bank) - DB may store either
+      const slugForm = raw.replace(/\s+/g, '-');
+      const nameForm = raw.replace(/-/g, ' ');
+      const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const slugRegex = new RegExp(`^${escape(slugForm)}$`, 'i');
+      const nameRegex = new RegExp(`^${escape(nameForm)}$`, 'i');
+      // Try both field name variations (subCategory and subcategory) and both value formats
       subCategoryFilter = {
         $or: [
-          { subCategory: subCategoryRegex },
-          { subcategory: subCategoryRegex }
+          { subCategory: slugRegex },
+          { subCategory: nameRegex },
+          { subcategory: slugRegex },
+          { subcategory: nameRegex }
         ]
       };
     }
